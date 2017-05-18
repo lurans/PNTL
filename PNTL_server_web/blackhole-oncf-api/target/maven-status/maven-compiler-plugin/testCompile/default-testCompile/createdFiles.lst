@@ -1,0 +1,15 @@
+com\huawei\blackhole\network\common\utils\WccCrypterTest.class
+com\huawei\blackhole\network\common\exception\BaseExceptionTest.class
+com\huawei\blackhole\network\extention\service\vrm\VrmTest.class
+com\huawei\blackhole\network\ssh\SshScp.class
+com\huawei\blackhole\network\extention\service\openstack\NeutronTest.class
+com\huawei\blackhole\network\core\service\BaseRouterServiceTest.class
+com\huawei\blackhole\network\common\Main.class
+com\huawei\blackhole\network\common\utils\ConfUtilTest.class
+com\huawei\blackhole\network\core\service\RouterServiceImplTest.class
+com\huawei\blackhole\network\common\utils\SshUtilTest.class
+com\huawei\blackhole\network\common\utils\AESUtilTest.class
+com\huawei\blackhole\network\ssh\CmdResolve.class
+com\huawei\blackhole\network\extention\service\wcc\SimpleTest.class
+com\huawei\blackhole\network\extention\service\openstack\KeystoneTest.class
+com\huawei\blackhole\network\common\utils\RegexUtilTest.class

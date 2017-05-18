@@ -1,0 +1,6 @@
+- hosts: oncf
+  remote_user: "{{user_name}}"
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - include: roles/oncf/tasks/rollback.yml

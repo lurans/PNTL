@@ -1,0 +1,43 @@
+<project>
+    <property name="ui" location="src/main/webapp"/>
+
+    <target name="installGruntLinux">
+        <exec executable="npm" dir="${ui}">
+            <arg value="install"/>
+        </exec>
+    </target>
+
+    <target name="uitoolLinuxDefault">
+	  <exec executable="grunt" dir="${ui}" failonerror="true">
+	  	<arg line="package --model=all"/>
+	  </exec>
+	</target>
+    <target name="uitoolLinuxDistributed">
+        <exec executable="grunt" dir="${ui}" failonerror="true">
+            <arg line="package"/>
+        </exec>
+    </target>
+
+    <target name="installGruntWindows">
+        <exec executable="cmd" dir="${ui}">
+            <arg value="/c"/>
+            <arg value="npm install"/>
+            <arg value="-p"/>
+        </exec>
+    </target>
+
+    <target name="uitoolWindowsDefault">
+        <exec executable="cmd" dir="${ui}" failonerror="true">
+            <arg value="/c"/>
+	  	<arg value="grunt package --model=all"/>
+            <arg value="-p"/>
+        </exec>
+    </target>
+    <target name="uitoolWindowsDistributed">
+        <exec executable="cmd" dir="${ui}" failonerror="true">
+            <arg value="/c"/>
+            <arg value="grunt package"/>
+            <arg value="-p"/>
+        </exec>
+    </target>
+</project>

@@ -1,0 +1,126 @@
+<div id="tinyplus-wizard-demo">
+    <div id="stepBorder" style="margin-top: 50px">
+        <div>
+            <div class="span2 configTitle">
+                {{i18n.chkFlow_term_system_config}}
+            </div>
+            <div class="notice" >
+                <img ng-src="{{attention.url}}" style="margin-right: 5px;">{{i18n.chkFlow_term_modify_system_config}}
+            </div>
+        </div>
+        <div class="widget-box" style="margin:80px 0px">
+            <div id="step1Div">
+                <div class="container-fluid">
+                    <div class="row-fluid">
+                        <div class="span2 configText">
+                            <span style="color: #ff0000">*</span>
+                            {{i18n.chkFlow_term_porxy_ip}}
+                        </div>
+                        <div class="span10 input_content" style="width: 300px;margin-left: 0px;">
+                            <tiny-textbox id="proxyIp.id" value="proxyIp.value" width="proxyIp.width"
+                                          validate="proxyIp.validate"
+                                          max-length="proxyIp.maxLength"
+                                          disable="proxyIp.disable"></tiny-textbox>
+                        </div>
+                        <div class="common-icon-help ml10 pull-left ng-isolate-scope">
+                            <div class="icoMoon-help" tiny-tip="proxyIp.tooltip" style="margin-top: 8px"></div>
+                        </div>
+                    </div></div>
+                <div class="row-fluid config">
+                    <div class="span2 configText" >
+                        <span style="color: #ff0000">*</span>
+                        {{i18n.chkFlow_term_tenant_name}}
+                    </div>
+                    <div class="span10 input_content" style="width: 300px;margin-left: 0px;">
+                        <tiny-textbox id="tenantName.id" value="tenantName.value" width="tenantName.width"
+                                      validate="tenantName.validate"
+                                      max-length="tenantName.maxLength"
+                                      disable="tenantName.disable"></tiny-textbox>
+                    </div>
+                    <div class="common-icon-help ml10 pull-left ng-isolate-scope">
+                        <div class="icoMoon-help" tiny-tip="tenantName.tooltip" style="margin-top: 8px"></div>
+                    </div>
+                </div>
+                <div class="row-fluid config">
+                    <div class="span2 configText">
+                        <span style="color: #ff0000">*</span>
+                        {{i18n.chkFlow_term_username}}
+                    </div>
+                    <div class="span10 input_content" style="width: 300px;margin-left: 0px;">
+                        <tiny-textbox id="username.id" value="username.value" width="username.width"
+                                      validate="username.validate"
+                                      max-length="username.maxLength"
+                                      disable="username.disable"></tiny-textbox>
+                    </div>
+                    <div class="common-icon-help ml10 pull-left ng-isolate-scope">
+                        <div class="icoMoon-help" tiny-tip="username.tooltip" style="margin-top: 8px"></div>
+                    </div>
+                </div>
+                <div class="row-fluid config">
+                    <div class="span2 configText">
+                        <span style="color: #ff0000">*</span>
+                        {{i18n.chkFlow_term_password}}
+                    </div>
+                    <div class="span10 input_content" style="width: 300px;margin-left: 0px;">
+                        <tiny-textbox id="password.id" value="password.value" width="password.width"
+                                      type="password.type"
+                                      validate="password.validate"
+                                      max-length="password.maxLength"
+                                      disable="password.disable"></tiny-textbox>
+                    </div>
+                    <div class="common-icon-help ml10 pull-left ng-isolate-scope">
+                        <div class="icoMoon-help" tiny-tip="password.tooltip" style="margin-top: 8px"></div>
+                    </div>
+                </div>
+                <div class="row-fluid config">
+                    <div class="span2 configText">
+                        <span style="color: #ff0000">*</span>
+                        {{i18n.chkFlow_term_auth_url}}
+                    </div>
+                    <div class="span10 input_content" style="width: 300px;margin-left: 0px;">
+                        <tiny-textbox id="authUrl.id" value="authUrl.value" width="authUrl.width"
+                                      validate="authUrl.validate"
+                                      max-length="authUrl.maxLength"
+                                      disable="authUrl.disable"></tiny-textbox>
+                    </div>
+                    <div class="common-icon-help ml10 pull-left ng-isolate-scope">
+                        <div class="icoMoon-help" tiny-tip="authUrl.tooltip" style="margin-top: 8px"></div>
+                    </div>
+                </div>
+                <div class="row-fluid config" >
+                    <div class="span2 configText" style="padding-left: 8px">
+                        {{i18n.chkFlow_term_keyFile}}
+                    </div>
+                    <div class="span10 input_content_keyFile" style="width: 300px;margin-left: 0px;">
+                        <tiny-fileupload
+                                id="keyFile.id"
+                                input-value="keyFile.inputValue"
+                                max-size="keyFile.maxSize"
+                                show-submit-btn="keyFile.showSubmitBtn"
+                                disable="keyFile.disable"
+                                action="keyFile.action"
+                                file-obj-name="keyFile.fileObjName"
+                                select-error="keyFile.selectError"
+                                complete="keyFile.completeDefa"
+                                select="keyFile.select"
+                                cancel="keyFile.cancel">
+                        </tiny-fileupload>
+                    </div>
+                    <div class="common-icon-help ml10 pull-left ng-isolate-scope">
+                        <div class="icoMoon-help" tiny-tip="keyFile.tooltip" style="margin-top: 8px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+        <div class="wizard-actions" style="text-align: center;">
+            <span>
+                <tiny-button click="finish()" disable="btn.finishDisable" text="btn.finishTxt" style="margin-left: 5px"></tiny-button>
+            </span>
+            <span>
+                <tiny-button click="cancel()" disable="btn.cancelDisable" text="btn.cancelTxt" style="margin-left: 5px"></tiny-button>
+            </span>
+        </div>
+    </div>
+</div>

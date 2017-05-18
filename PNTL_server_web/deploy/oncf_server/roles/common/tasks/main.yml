@@ -1,0 +1,34 @@
+---
+#- name: sync NTP server
+#  shell: /usr/sbin/ntpdate {{ ntpserver }}
+#  sudo: yes
+  
+- name: mkdir of install path
+  file: state=directory path={{ install_path }} mode=0755 owner={{user_name}} group={{group_name}}
+  sudo: yes
+  
+- name: delete workspace if exists
+  file: state=absent path={{ workspace }}
+
+- name: mkdir temporary workspace
+  file: state=directory path={{ workspace }} mode=755 owner={{user_name}}
+
+- name: mkdir pkg app unpack dir
+  file: state=directory path={{ workspace }}/{{ pkg_app_unpack }}
+
+- name: download pkg app package
+  copy: src={{ pkg_app_path }} dest={{ workspace}}/{{ pkg_app_unpack }} 
+
+- name: unpack OpsNetworkChkFlow.tar.gz to workspace 
+  unarchive: copy=no src={{ workspace }}/{{ pkg_app_unpack }}/{{ pkg_app_file}} dest={{ workspace }}/{{ pkg_app_unpack }}
+
+- name: chmod /etc/hosts
+  shell: chmod 666 /etc/hosts
+  sudo: yes
+
+- name: template begin script
+  template: src=begin.sh dest={{ workspace }}
+
+- name: modify limits
+  shell: cd {{ workspace }} && sh begin.sh
+  sudo: yes

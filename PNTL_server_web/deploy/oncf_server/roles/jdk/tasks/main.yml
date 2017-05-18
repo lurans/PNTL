@@ -1,0 +1,34 @@
+---
+- name: check install dir exist
+  stat: path={{ install_path }}/{{ pkg_jdk_unpack }}
+  register: dir
+  
+- name: if install dir exist, rm it
+  file: path={{ install_path }}/{{ pkg_jdk_unpack }} state=absent force=true
+  when: dir.stat.isdir is defined and dir.stat.isdir
+
+- name: delete symlink of jdk
+  file: state=absent path={{ java_home }}
+
+- name: download jdk file
+  copy: src={{ pkg_jdk_path }} dest={{ workspace }}/
+  
+- name: install jdk
+  unarchive: copy=no src={{ workspace }}/{{ pkg_jdk_file }} dest={{install_path }}/
+
+- name: symlink jdk to java_home
+  file: src={{ install_path }}/{{ pkg_jdk_unpack }} path={{ java_home }} state=link
+  
+- name: change untar dir owner
+  file: path={{ install_path }}/{{ pkg_jdk_unpack }} force=true mode=0755 owner={{user_name}} group={{group_name}} recurse=true
+
+- name: copy java.security
+  copy: src=java.security dest={{ java_home }}/jre/lib/security/java.security
+
+- name: set java home env
+  sudo: yes
+  lineinfile: dest={{ user_bashrc }} regexp='^JAVA_HOME=' line='JAVA_HOME={{ java_home }}' state=present
+
+- name: set path env
+  sudo: yes
+  lineinfile: dest={{ user_bashrc }} regexp='^PATH=' line='PATH={{ java_home }}/bin:$PATH' state=present

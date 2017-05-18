@@ -1,0 +1,18 @@
+#Cascading layer 
+cascading_ip:
+    {{ cascading_ip }}
+OS_TENANT_NAME:
+    {{ OS_TENANT_NAME }}
+OS_USERNAME:
+    {{ OS_USERNAME }}
+OS_PASSWORD:
+    d2NjX2NyeXB0ATQxNDU1MzVGNDM0MjQzOzM1MzIzMDM1NDEzMTMwMzAzMjMyMzY0MzQ0Mzg0MTM5MzY0MTQzMzEzMTQ1NDEzMzM5MzIzODM5MzczMTQyMzk7OzM1MzAzMDMwMzA7RThBQUM0MDlENzZDM0UxMjE4RDk2QTNEQ0YzMDMyRUE7NEY3QTAyMzc0M0ZFNjE0RTs
+OS_AUTH_URL:
+    {{ OS_AUTH_URL }}
+cna_ssh_key:
+    {{ cna_ssh_key }}
+cna_passwd:
+    {{ cna_passwd }}
+ #   encrypt_cna_passwd
+white_list:
+    - 172.0.0.1

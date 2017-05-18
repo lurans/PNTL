@@ -1,0 +1,43 @@
+---
+########################
+# Section for Initialize
+########################
+
+######## OpsNetworkChkFlow Server ########
+# OpsNetworkChkFlow server IP
+server_ip: 172.31.12.21
+
+# OpsNetworkChkFlow host user
+user_name: oncf
+user_passwd: 'dmk_vault{{Huawei12#$}}'
+
+######## NTP Server IP of OM Zone ########
+ntp_ip: 172.30.16.38
+#format must be "GTM+x" or "GTM-x"
+timezone: GMT+8
+
+########################################################
+# Section for Install/Upgrade/Operate/Rollback/Uninstall
+########################################################
+
+######## Environment variables ########
+cascading_ip: "192.144.71.3"
+OS_USERNAME: cloud_admin
+OS_TENANT_NAME: admin
+OS_AUTH_URL: "https://identity.Region.dc1.domainname.com:443"
+
+######## Login Authentication ########
+# true or false
+enable_sso: "false"
+sso_ip_port: "192.144.151.110:19443"
+
+######## JDK && Tomcat ########
+# /pkg_repo/3rd/jdk/8u72/jdk-8u72-security-linux-x64.tar.gz
+pkg_jdk_version: 8u72
+# /pkg_repo/3rd/tomcat/1.2.10/SecAs-1.2.10-Release.tar.gz
+pkg_tomcat_version: 1.2.10
+
+
+
+
+

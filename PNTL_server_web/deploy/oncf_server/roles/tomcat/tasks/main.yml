@@ -1,0 +1,73 @@
+---
+- name: download files
+  copy: src={{ pkg_tomcat_path }} dest={{ workspace }}
+
+- name: delete symlink of tomcat
+  file: state=absent path={{ tomcat_home }}
+
+- name: delete tomcat home
+  file: state=absent path={{install_path}}/{{ pkg_tomcat_unpack }} force=true
+  sudo: yes
+
+- name: install tomcat
+  unarchive: copy=no src={{ workspace }}/{{ pkg_tomcat_file }} dest={{ install_path }}/
+
+- name: symlink tomcat home
+  file: src={{ install_path }}/{{ pkg_tomcat_unpack }} path={{ tomcat_home }} state=link
+
+- name: set mode of tomcat bin scripts
+  shell: chmod 0755 {{ tomcat_home }}
+
+- name: change tomcat logs 
+  file: path={{ tomcat_home }}/logs force=true mode=0755 owner={{user_name}} group={{group_name}} recurse=true
+  sudo: yes
+
+- name: change tomcat temp 
+  file: path={{ tomcat_home }}/temp force=true mode=0755 owner={{user_name}} group={{group_name}} recurse=true
+  sudo: yes
+
+- name: config tomcat server using https
+  template: src=server.xml dest={{ tomcat_home }}/conf/
+
+- name: config web.xml enable DELETE PUT method
+  template: src=web.xml dest={{ tomcat_home }}/conf/
+
+- name: copy default.keystore
+  copy: src=default.keystore dest={{ tomcat_home }}/conf/keystore/default.keystore
+
+- name: change keystore file
+  shell: chmod 600 {{ tomcat_home }}/conf/keystore/*
+  sudo: yes
+
+- name: pre-make directory for /var/log/tomcat
+  file: state=directory path=/var/log/tomcat  mode=0750 owner={{user_name}} group={{group_name}}
+  sudo: yes
+
+- name: pre-make directory for oncf-console webapp
+  file: state=directory path={{ tomcat_home }}/webapps/{{ console_app_name }}
+
+- name: set mode of tomcat bin scripts
+  shell: chmod +x {{tomcat_home}}/bin/*.sh
+
+- name: check if tomcat is running
+  shell: ps -efww | grep {{ tomcat_home }} | grep -v grep
+  register: ps
+  sudo: yes
+  ignore_errors: true
+
+- name: shutdown tomcat when running
+  shell: ps -ef| grep {{ tomcat_home }} | grep -v grep | awk '{print $2}' | xargs kill -9
+  ignore_errors: true
+  sudo: yes
+  when: ps.rc == 0
+
+- name: restart tomcat
+  shell: source {{ user_bashrc }}; nohup su {{user_name}} -c 'sh {{ tomcat_home }}/bin/startup.sh'
+  sudo: yes
+
+- name: wait for tomcat to start
+  wait_for: port={{ service_port }} host={{ ansible_ssh_host }}
+  
+- name: set tomcat home env
+  sudo: yes
+  lineinfile: dest={{ user_bashrc }} regexp='^TOMCAT_HOME=' line='TOMCAT_HOME={{ tomcat_home }}' state=present

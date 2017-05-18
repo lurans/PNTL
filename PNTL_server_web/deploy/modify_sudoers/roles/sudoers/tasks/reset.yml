@@ -1,0 +1,10 @@
+---
+- name: check wether backup file exist
+  shell: ls {{ install_path }}/sudoers
+
+- name: copy original sudoers
+  shell: cp -f {{ install_path }}/sudoers /etc
+
+
+
+

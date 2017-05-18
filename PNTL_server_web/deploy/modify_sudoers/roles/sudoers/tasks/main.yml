@@ -1,0 +1,17 @@
+---
+- name: copy ONCF_sudoers_modify.sh
+  copy: src=ONCF_sudoers_modify.sh dest={{ install_path }}/
+
+- name:  modify sudoers
+  shell: cd {{ install_path }} && dos2unix ONCF_sudoers_modify.sh && sh ONCF_sudoers_modify.sh
+
+- name: mkdir of oncf
+  file: state=directory path=/home/oncf mode=500 owner=root group=root
+
+- name: copy tcpdump
+  copy: src=tcpdump dest=/home/oncf
+
+- name: change tcpdump
+  shell: chmod 500 /home/oncf/tcpdump
+
+

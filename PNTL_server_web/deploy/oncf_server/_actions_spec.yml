@@ -1,0 +1,53 @@
+-
+  name:
+    "en_US": "Initialize"
+    "zh_CN": "初始化"
+  description:
+    "en_US": "Initialize the environment"
+    "zh_CN": "初始化环境"
+  commands:
+    - "sh init.sh"
+
+-
+  name:
+    "en_US": "Install"
+    "zh_CN": "安装(包括环境)"
+  description:
+    "en_US": "Install ops network chkflow include jdk tomcat"
+    "zh_CN": "安装ops network chkflow,包括JDK和tomcat"
+  commands:
+    - "sh install.sh 'setup'"
+
+-
+  name:
+    "en_US": "Upgrade"
+    "zh_CN": "升级"
+  description:
+    "en_US": "upgrade, include backup and deploy"
+    "zh_CN": "先备份，再安装(推荐)"
+  commands:
+    - "sh upgrade.sh "
+
+-
+  name:
+    "en_US": "Rollback"
+    "zh_CN": "回滚"
+  description:
+    "en_US": "rollback"
+    "zh_CN": "先备份，再安装(推荐)"
+  commands:
+    - "sh rollback.sh "
+
+-
+  name:
+    "en_US": "Uninstall"
+    "zh_CN": "卸载"
+  description:
+    "en_US": "Uninstall ops network chkflow include jdk tomcat"
+    "zh_CN": "卸载ops network chkflow,包括jdk和tomcat"
+  commands:
+    - "sh clean.sh"
+
+
+
+

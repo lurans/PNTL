@@ -1,0 +1,88 @@
+<configuration>
+   <!-- 日志主目录 -->    
+   <property name="LOG_HOME" value="/var/log/blackhole-network" /> 
+    
+   <!-- 日志输出格式 -->  
+   <property name="ENCODER_PATTERN"  
+       value="[%date{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%-5level] [%class %method %line] - %msg%n" />
+   
+     
+   	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<Pattern>${ENCODER_PATTERN}</Pattern>
+		</encoder>
+	</appender>
+	
+   <!-- 定义appender -->
+   <!-- CONSOLE -->
+   <appender name="CONSOLE" class="ch.qos.logback.core.rolling.RollingFileAppender">   
+    <file>${LOG_HOME}/tomcat.log</file>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">   
+      <fileNamePattern>${LOG_HOME}/tomcat.%d{yyyy-MM-dd}.%i.log</fileNamePattern>   
+      <maxHistory>15</maxHistory>
+      <timeBasedFileNamingAndTriggeringPolicy
+            class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>800MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>     
+    </rollingPolicy>   
+    <encoder>   
+      <Pattern>${ENCODER_PATTERN}</Pattern>      
+    </encoder>   
+   </appender>  
+   
+    
+   <appender name="blackhole-network" class="ch.qos.logback.core.rolling.RollingFileAppender">   
+    <file>${LOG_HOME}/blackhole-network.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">   
+      <fileNamePattern>${LOG_HOME}/autobackup.%d{yyyy-MM-dd}.%i.log</fileNamePattern>   
+      <maxHistory>15</maxHistory>
+      <timeBasedFileNamingAndTriggeringPolicy
+            class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <maxFileSize>800MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>     
+    </rollingPolicy>   
+    <encoder>   
+      <Pattern>${ENCODER_PATTERN}</Pattern>      
+    </encoder>   
+   </appender>
+   
+   
+   
+	<appender name="SPRING"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/SPRING.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/SPRING.%d{yyyy-MM-dd}.%i.log
+			</fileNamePattern>
+			<maxHistory>15</maxHistory>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>20MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<encoder>
+			<Pattern>${ENCODER_PATTERN}</Pattern>
+		</encoder>
+	</appender>
+
+
+   <!-- 定义logger -->
+   <!-- 根日志 -->
+   <root level="ERROR">             
+    <appender-ref ref="STDOUT" />  
+   </root>
+   
+   <logger name="org.springframework" level="off">
+		<appender-ref ref="SPRING" />
+	</logger>  
+
+   <!-- com.huawei.hwclouds.autoscaling:包的全路径 -->   
+   <logger name="com.huawei.blackhole.network" level="INFO" additivity="true">  
+     <appender-ref ref="blackhole-network"/>  
+   </logger> 
+</configuration>

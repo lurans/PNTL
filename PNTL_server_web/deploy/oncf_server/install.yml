@@ -1,0 +1,15 @@
+---
+- hosts: oncf
+  remote_user: "{{user_name}}"
+  vars_files:
+    - vars/main.yml
+  roles:
+    - { role: common, tags: ['setup', 'deploy'] }
+    - { role: jdk, tags: ['setup'] }
+    - { role: tomcat, tags: ['setup'] }
+    - { role: oncf, tags: ['setup', 'deploy'] }
+  tasks:
+    - name: remove tomporary workspace
+      file: state=absent path={{ workspace }}
+      tags:
+        - always

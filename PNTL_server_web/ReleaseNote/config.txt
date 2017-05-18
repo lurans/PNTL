@@ -1,0 +1,32 @@
+[basic_infomation]
+projectName=OpsNetworkChkFlow
+releaseVersion=3.8.18
+releaseStatus=RELEASED/NOT_RELEASED/RELEASED_WITH_RESTRICTIONS
+emailAddress=oncfdev@huawei.com
+  
+  
+[importantnotes]
+  
+  
+[resctrictions]
+Environment Requirement=JDK: sun-java-1.8;Tomcat: apache-tomcat-8.0
+Env=ansible: 233
+  
+  
+[components]
+OpsNetworkChkFlow=OpsNetworkChkFlow-3.8.18
+playbook_package_name=OpsNetworkChkFlow-playbook
+  
+  
+  
+[new_features]
+
+  
+[fixed_issues]
+
+  
+  
+[testing_results]
+  
+  
+[interface_list]

@@ -1,0 +1,55 @@
+<div class="outWrap">
+    <div class="bodyContainer clearfix" style="width: 1200px">
+        <div class="leftContainer framework-scrolling" id="vpcLeftMenu" >
+            <ul class="menu-list">
+                <li ng-click="go('blackhole.manager.eipFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.eipFlow')
+                     || $stateParams.state === 'blackhole.manager.eipFlow'}" class="default_tab">
+                    <div class="tab_title">{{i18n.follow_term_eip}}</div>
+                </li>
+                <li ng-click="go('blackhole.manager.vpnFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.vpnFlow')
+                     || $stateParams.state === 'blackhole.manager.vpnFlow'}" class="default_tab">
+                    <div class="tab_title2">{{i18n.follow_term_vpn}}</div>
+                </li>
+                <li ng-click="go('blackhole.manager.ewFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.ewFlow')
+                     || $stateParams.state === 'blackhole.manager.ewFlow'}" class="default_tab">
+                    <div class="tab_title3">{{i18n.follow_term_ew}}</div>
+                </li>
+                <li>
+                    <div id="config" class="configIcon">
+                        <a ng-href="/#/blackhole/config">
+                            {{i18n.follow_term_sc}}
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="rightContainer">
+            <div ui-view></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function resetOverflow() {
+        var leftContainer = $(".leftContainer");
+        var lastLi = $(".leftContainer li").last();
+        var highEnough = $(window).height() >= lastLi.offset().top + lastLi.outerHeight();
+        if(window.configData && window.configData.company === "DT"){
+            var bannerHeight = $(window).scrollTop() > 80 ? 0 : 80;
+            highEnough = $(window).height() >= lastLi.offset().top + lastLi.outerHeight() + bannerHeight;
+            var menuHeight = $(window).height() - bannerHeight - 60;
+            leftContainer.css("height", highEnough ? "100%" : menuHeight);
+        }
+        leftContainer.css("overflow-y", highEnough ? "visible" : "auto");
+        leftContainer.css("overflow-x", highEnough ? "visible" : "hidden");
+    }
+    $(document).ready(resetOverflow);
+    $(window).resize(resetOverflow);
+    $(window).scroll(resetOverflow);
+</script>
+

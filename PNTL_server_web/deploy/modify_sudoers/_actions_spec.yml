@@ -1,0 +1,19 @@
+-
+  name:
+    "en_US": "Modify"
+    "zh_CN": "修改"
+  description:
+    "en_US": "modify sudoers"
+    "zh_CN": "修改sudoers文件"
+  commands:
+    - "sh modify.sh"
+
+-
+  name:
+    "en_US": "Reset"
+    "zh_CN": "重置"
+  description:
+    "en_US": "rollback to original sudoers"
+    "zh_CN": "恢复原始的sudoers"
+  commands:
+    - "sh reset.sh"

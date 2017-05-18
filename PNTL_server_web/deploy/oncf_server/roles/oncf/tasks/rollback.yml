@@ -1,0 +1,41 @@
+---
+- name: check wether backup file exist
+  shell: ls {{ install_path }}/backup_oncf
+  
+- name: create upgrade flag file
+  file: path={{ install_path }}/upgrade_rollback_stop_api_flag state=touch
+
+- name: stop chkflow
+  shell: sh {{ install_path }}/{{ service_name }}/{{ tool_name }}.sh stop
+  ignore_errors: true
+  
+- name: remove new webapps 
+  shell: rm -rf {{ tomcat_home }}/webapps
+  
+- name: copy old webapps 
+  shell: cp -r {{ install_path }}/backup_oncf/webapps {{ tomcat_home }}
+  
+- name: remove new chkflow
+  shell: rm -rf {{ install_path }}/{{ service_name }}
+  
+- name: copy old chkflow 
+  shell: cp -r {{ install_path }}/backup_oncf/{{ service_name }} {{ install_path }}
+
+- name: remove old pid file
+  shell: rm -rf {{ install_path }}/{{ service_name }}/*.pid
+  
+- name: chmod chkflow.sh previlige
+  shell: chmod +x {{ install_path }}/{{ service_name }}/*.sh
+  
+- name: start chkflow
+  shell: su {{user_name}} -c "sh {{ install_path }}/{{ service_name }}/{{ tool_name }}.sh start"
+  sudo: yes
+
+- name: wait for tomcat to start
+  wait_for: port={{ service_port }} host={{ ansible_ssh_host }}
+  
+- name: change files previlige in log dir 
+  shell: chmod 640 /var/log/{{install_name}}/*
+  
+- name: remove upgrade flag file
+  file: path={{ install_path }}/upgrade_rollback_stop_api_flag state=absent

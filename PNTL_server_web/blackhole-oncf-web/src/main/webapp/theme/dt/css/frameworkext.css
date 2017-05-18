@@ -1,0 +1,331 @@
+@font-face{
+	font-family:'TeleGroteskNormal';
+	src:url("../fonts/telegrotesk-webfont.eot");
+	src:url("../fonts/telegrotesk-webfont.eot") format("embedded-opentype"),
+		url("../fonts/telegrotesk-webfont.woff") format("woff"),
+		url("../fonts/telegrotesk-webfont.ttf") format("truetype"),
+		url("../fonts/telegrotesk-webfont.svg") format("svg");
+	font-weight:normal;
+	font-style:normal
+}
+
+button{font-family: "TeleGroteskNormal","sans-serif","Arial","Roboto","Tiresias";}
+
+.html-font-family-de-de {
+    font-family: 'TeleGroteskNormal','sans-serif', 'Arial', 'Roboto', 'Tiresias';
+}
+
+.html-font-family-de-de body, td, th, p, div, a, form, pre {
+    font-family: 'TeleGroteskNormal','sans-serif', 'Arial', 'Roboto', 'Tiresias';
+}
+
+.html-font-family-en-us {
+    font-family: 'TeleGroteskNormal','sans-serif', 'Arial', 'Roboto', 'Tiresias';
+}
+
+.html-font-family-en-us body, td, th, p, div, a, form, pre {
+    font-family: 'TeleGroteskNormal','sans-serif', 'Arial', 'Roboto', 'Tiresias';
+}
+
+
+.console-nav-logo {
+    display: block;
+    background: url("../images/brand-logo.png") no-repeat left center;
+    width: 255px;
+    height: 80px;
+    background-size: 80px;
+}
+
+.console-nav-logo-right {
+    display: block;
+    background: url("../images/brand-logo-desc.png") no-repeat left center;
+    width: 160px;
+    height: 80px;
+    background-size: 160px;
+}
+
+.console-menu-logo {
+    display: block;
+    background: url("../images/logo.png") no-repeat left center;
+    height: 60px;
+    width: 170px;
+    margin-right: 10px;
+}
+
+.console-footer-logo {
+    display: inline-block;
+    vertical-align: middle;
+    height: 32px;
+    width: 50px;
+    background: url("../images/logo_footer.png") no-repeat left center;
+}
+
+.frame-dropdown-tinyTip {
+    background-color: #f4f4f4;
+    color: #333333;
+}
+
+.frame-normal-font-size {
+    font-size: 18px;
+}
+
+.frame-small-font-size {
+    font-size: 18px;
+}
+
+.frame-big-font-size {
+    font-size: 18px;
+}
+
+.menu-hwsicon-frame-service-favorite {
+    font-size: 15px;
+    color: #e20074;
+}
+.menu-hwsicon-frame-service-favorite:hover {
+    color: #e20074;
+}
+
+.console-menu-nav-list .console-menu-nav-item ul li:hover .menu-hwsicon-frame-service-favorite {
+    color: #e20074;
+}
+
+.console-menu-nav-list .console-menu-nav-item ul li:hover {
+    background-color: #CECDCD;
+}
+
+.console-menu-nav-list .console-menu-nav-item ul li:hover a {
+    color: #e20074;
+}
+
+.console-topbar-btn-oldConsole {
+    display: none;
+}
+
+.menu-top-line {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    border-bottom: 3px solid #e20074;
+    display: block;
+}
+
+.menu-top-content {
+    height: 80px;
+    background-color: #e20074;
+    display: block;
+}
+
+.menu-top-content .menu {
+    min-width: 1200px;
+    max-width: 1360px;
+    padding-left: calc(40px + (100vw - 100%));
+    padding-right: 40px;
+    height: 60px;
+    clear: both;
+    margin: auto;
+    font-weight: 400;
+    font-style: normal;
+    color: #FFF;
+}
+
+.console-topbar-btn {
+    color: #333;
+}
+
+.console-topbar-btn-click {
+    background-color: #EEE;
+}
+
+a.console-topbar-btn-click:focus {
+    text-decoration: none;
+    color: #333;
+}
+
+a.console-topbar-btn-click:visited {
+    text-decoration: none;
+    color: #333;
+}
+
+a.console-topbar-btn-click:hover {
+    text-decoration: none;
+    color: #333;
+}
+
+a.console-topbar-btn:focus {
+    text-decoration: none;
+    color: #333;
+}
+
+a.console-topbar-btn:visited {
+    text-decoration: none;
+    color: #333;
+}
+
+a.console-topbar-btn:hover {
+    background-color: #EEE;
+    text-decoration: none;
+    color: #333;
+}
+
+.service-list-item-tr .div-tr {
+    border-bottom: 1px solid #CECDCD;
+}
+
+.console-topbar-region {
+    background: none;
+    border: none;
+}
+
+.nav-menu-dropdown {
+    height: 60px;
+    line-height: 60px;
+}
+
+.nav-menu-dropdown a {
+    color: #4d4d4d;
+}
+
+.nav-menu-dropdown .dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #b2b2b2;
+    border-radius: 3px;
+    margin-top: 10px;
+}
+
+.nav-menu-dropdown .dropdown-menu > li > a {
+    color: #4d4d4d;
+}
+
+.nav-menu-dropdown .dropdown-menu > li > a:hover, .nav-menu-dropdown .dropdown-menu > li > a:focus {
+    color: #e20074;
+    background-color: #ffffff;
+    text-decoration: none;
+}
+
+.dropdown-menu > li >ul >li > a {
+    color: #4d4d4d;
+}
+
+.dropdown-menu > li >ul >li > a:hover {
+    color: #e20074;
+}
+
+.dropdown-menu-list-text {
+    color: #333;
+}
+
+.dropdown-menu-list-text:hover {
+    color: #e20074;
+}
+
+.nav-menu-dropdown a:focus, .nav-menu-dropdown a:visited, .nav-menu-dropdown a:hover {
+    text-decoration: none;
+}
+
+.nav-menu-dropdown .hwsicon-frame-email {
+    font-size: 14px;
+}
+
+.hwsicon-frame-email, .hwsicon-frame-userhead {
+    margin-right: 1px;
+}
+
+.console-topbar-btn-right {
+    display: none;
+}
+
+.nav-separate-line {
+    margin: 23px 15px;
+    border-right: 1px solid #666;
+    height: 15px;
+    line-height: 60px;
+}
+
+.nav-menu-dropdown .dropdown-menu:before,.nav-menu-dropdown .dropdown-menu:after{
+    content: "";
+    position: absolute;
+    border-style:dashed dashed solid dashed;
+    line-height: 1;
+    display: inline-block;
+}
+.nav-menu-dropdown .dropdown-menu:after{
+    right: 6px;
+    border-color: transparent transparent #b2b2b2;
+    border-width: 7px;
+    top: -14px;
+    z-index:1080
+}
+.nav-menu-dropdown .dropdown-menu:before{
+    right: 7px;
+    border-color: transparent transparent #FFF;
+    border-width: 6px;
+    top:-12px;
+    z-index:1081
+}
+
+.dropdown-menu {
+    background-color: #EEEEEE;
+}
+
+.dropdown-menu > li > a {
+    color: #333;
+}
+
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+    color: #e20074;
+    text-decoration: none;
+    background: none;
+}
+
+.dropdown-menu > li > ul > li:hover {
+    background: none;
+}
+
+.console-topbar-nav-item-title {
+    color: #333;
+    border-bottom-color: #CECDCD;
+}
+
+.console-top-menu {
+    background-color: #FFF;
+    border-bottom: 1px solid #E6E3E3;
+    height: 60px;
+}
+
+.hwsicon-frame-image-user-head {
+    margin-right: 1px;
+}
+
+#service-content {
+    padding-top: 140px;
+}
+
+.frame-cloud-messages-out {
+    top:140px;
+}
+
+.user-dropdown-menu .frame-order-list, .user-dropdown-menu .frame-user-application,
+.user-dropdown-menu .frame-seller-center, .user-dropdown-menu .frame-submit-workorder,
+.user-dropdown-menu .frame-icp-licence{
+    display: none;
+}
+
+.service-list .service-detail-de-de {
+    min-width: 210px;
+    min-height: 20px;
+    margin-left: 20px;
+    position: relative;
+    vertical-align: top;
+    display: inline-block;
+}
+
+.nav-menu-dropdown .menu-hwsicon-frame-user-head {
+    top: -5px;
+}
+
+.console-menu-nav-tips {
+    color: #333;
+}
+.menu-hwsicon-frame-service-favorite-tip {
+    color: #333;
+}

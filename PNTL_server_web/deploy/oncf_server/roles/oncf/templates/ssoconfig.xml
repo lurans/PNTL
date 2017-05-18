@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssoconfig>
+	<!-- Optional configuration to configure the current client's system number
+	 based on which a corresponding login page can be configured in the server 
+	 side. -->
+	<!-- when the client is login portal,the systemId is requested-->
+	<!-- <sso.client.systemId>1003</sso.client.systemId> -->
+	<!-- when the client is login portal,the password should be configed and encoded by AES128-->
+	<!--<sso.server.password>***********</sso.server.password>-->
+    
+	<!-- Indicates whether the client is Active or not -->
+	<sso.client.isActive>true</sso.client.isActive>
+	
+	<!-- Time interval in milliseconds by which the client will check the server's status periodically -->
+	<sso.client.retry.interval>6000</sso.client.retry.interval>
+	
+	<!-- The SSO filters -->
+	<sso.client.filters>
+		com.huawei.blackhole.network.hec.SingleSignOutFilter,
+		com.huawei.blackhole.network.hec.AuthenticationFilter,
+		com.huawei.blackhole.network.hec.Cas20ProxyReceivingTicketValidationFilter
+    </sso.client.filters>
+
+    <!-- No need to filter the url (relative path, pay attention to add "/") -->
+    <sso.client.actionExcludes>
+       /index.jsp 
+    </sso.client.actionExcludes>
+ 
+	<!-- SSO Server's publishing address -->
+	<sso.ssoserver.url>https://{{ sso_ip_port }}/sso</sso.ssoserver.url>
+	
+	<!-- Sets a specified timeout to be used when opening a communications link to the resource referenced by the URLConnection.
+				     The unit is in milliseconds. The default value is 10000 milliseconds (10 seconds). -->
+	<sso.connection.connect.timeout>10000</sso.connection.connect.timeout>
+	<!-- Sets a specified timeout to be used when reading from Input stream when a connection is established to a resource. 
+					 The unit is in milliseconds. The default value is 5000 milliseconds (5 seconds). -->
+	<sso.connection.read.timeout>5000</sso.connection.read.timeout>
+	
+	<!-- The SSO Server's publishing address (within the network in sso server between servers within the network access)-->
+	<sso.ssoserver.privateUrl>https://{{ sso_ip_port }}/sso</sso.ssoserver.privateUrl>
+
+	<!-- The IPAddress on which the SSO client should bind, incase of multiple network adapters --> 
+	<sso.client.bindIp>{{ ansible_ssh_host }}:{{ service_port }}</sso.client.bindIp>
+ 
+	<!-- The customized implementation class of SessionInitService -->
+
+	<sso.client.sessionInitServiceImpl>com.huawei.blackhole.network.api.SessionInitServiceImpl</sso.client.sessionInitServiceImpl>
+	
+		<!-- Enable/Disable multi-sso -->
+	<sso.multi.enable>false</sso.multi.enable>
+	
+	<!--  Enable/Disable Alarm service -->
+	<sso.alarm.enable>false</sso.alarm.enable>
+	
+	
+	
+</ssoconfig>

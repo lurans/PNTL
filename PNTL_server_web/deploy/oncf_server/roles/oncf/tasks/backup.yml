@@ -1,0 +1,12 @@
+---
+- name: create backup dir
+  file: state=directory path={{ install_path }}/backup_oncf
+  
+- name: clean the old backup dir
+  shell: rm -rf {{ install_path }}/backup_oncf/*
+  
+- name: backup oncf in webapps
+  shell: cp -r {{ tomcat_home }}/webapps {{ install_path }}/backup_oncf/
+  
+- name: backup chkflow.sh 
+  shell: cp -r {{ install_path }}/{{ service_name }}  {{ install_path }}/backup_oncf/ 

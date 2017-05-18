@@ -1,0 +1,9 @@
+---
+- hosts: allhost
+  become: yes
+  become_method: su
+  remote_user: "{{user_name}}"
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - include: roles/sudoers/tasks/reset.yml

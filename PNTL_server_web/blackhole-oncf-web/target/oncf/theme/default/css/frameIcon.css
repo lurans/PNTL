@@ -1,0 +1,194 @@
+@font-face {
+    font-family: 'icomoon';
+    src:url('../fonts/frameIcomoon.eot');
+    src:url('../fonts/frameIcomoon.eot') format('embedded-opentype'),
+    url('../fonts/frameIcomoon.woff') format('woff'),
+    url('../fonts/frameIcomoon.ttf') format('truetype'),
+    url('../fonts/frameIcomoon.svg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+[class^="hwsicon-frame-service"], [class*=" hwsicon-frame-service"] {
+    font-family: 'icomoon';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+[class^="hwsicon-frame-image"], [class*=" hwsicon-frame-image"] {
+    font-family: 'icomoon';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.hwsicon-frame-service-ecm:before {
+    content: "\e62a";
+}
+.hwsicon-frame-service-dcc:before {
+    content: "\e643";
+}
+.hwsicon-frame-service-ess:before {
+    content: "\e61b";
+}
+.hwsicon-frame-service-ims:before {
+    content: "\e622";
+}
+
+.hwsicon-frame-service-dbs:before {
+    content: "\e61e";
+}
+.hwsicon-frame-service-vbs:before {
+    content: "\e623";
+}
+.hwsicon-frame-service-obs:before {
+    content: "\e61c";
+}
+
+.hwsicon-frame-service-vpc:before {
+    content: "\e626";
+}
+.hwsicon-frame-service-elb:before {
+    content: "\e61f";
+}
+
+.hwsicon-frame-service-webscan:before {
+    content: "\e618";
+}
+.hwsicon-frame-service-waf:before {
+    content: "\e619";
+}
+.hwsicon-frame-service-antiddos:before {
+    content: "\e624";
+}
+
+.hwsicon-frame-service-ces:before {
+    content: "\e629";
+}
+.hwsicon-frame-service-iam:before {
+    content: "\e615";
+}
+
+.hwsicon-frame-service-rds:before {
+    content: "\e621";
+}
+
+.hwsicon-frame-service-bigdata:before {
+    content: "\e61a";
+}
+
+.hwsicon-frame-service-eae:before {
+    content: "\e628";
+}
+.hwsicon-frame-service-devcloud:before {
+    content: "\e627";
+}
+
+.hwsicon-frame-service-dec:before {
+    content: "\e625";
+}
+.hwsicon-frame-service-cloudformation:before {
+    content: "\e641";
+}
+.hwsicon-frame-service-cms:before {
+    content: "\e642";
+}
+
+
+.hwsicon-frame-image-home:before {
+    content: "\e62b";
+}
+.hwsicon-frame-image-service:before {
+    content: "\e62c";
+}
+.hwsicon-frame-image-email:before {
+    content: "\e62d";
+}
+.hwsicon-frame-image-user-head:before {
+    content: "\e62e";
+}
+.hwsicon-frame-image-userCenter:before {
+    content: "\e62f";
+}
+.hwsicon-frame-image-order:before {
+    content: "\e630";
+}
+.hwsicon-frame-image-application:before {
+    content: "\e631";
+}
+.hwsicon-frame-image-iam:before {
+    content: "\e632";
+}
+.hwsicon-frame-image-marketplace:before {
+    content: "\e62c";
+}
+
+.hwsicon-frame-image-menu-authCenter:before {
+    content: "\e632";
+}
+.hwsicon-frame-image-menu-marketplace:before {
+    content: "\e62c";
+}
+.hwsicon-frame-image-menu-userCenter:before {
+    content: "\e615";
+}
+
+.hwsicon-frame-image-changeRole:before {
+    content: "\e633";
+}
+.hwsicon-frame-image-logout:before {
+    content: "\e634";
+}
+.hwsicon-frame-image-favorite-true:before {
+    content: "\e63a";
+}
+.hwsicon-frame-image-favorite-false:before {
+    content: "\e639";
+}
+.hwsicon-frame-image-caret:before {
+    content: "\e63d";
+}
+.hwsicon-frame-image-caret-up:before {
+    content: "\e63c";
+}
+
+.hwsicon-frame-image-detail:before {
+    content: "\e635";
+}
+.hwsicon-frame-image-home-order:before {
+    content: "\e636";
+}
+.hwsicon-frame-image-businessOrder:before {
+    content: "\e637";
+}
+.hwsicon-frame-image-buy:before {
+    content: "\e638";
+}
+.hwsicon-frame-image-active:before {
+    content: "\e63b";
+}
+
+.hwsicon-frame-image-help:before {
+    content: "\e640";
+}
+.hwsicon-frame-image-icpLicence:before {
+    content: "\e63f";
+}
+
+.hwsicon-frame-image-footer-earth:before {
+    content: "\e64d";
+}

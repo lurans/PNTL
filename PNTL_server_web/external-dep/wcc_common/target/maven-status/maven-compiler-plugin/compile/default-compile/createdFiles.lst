@@ -1,0 +1,4 @@
+org\wcc\framework\AppException.class
+org\wcc\framework\AppContext.class
+org\wcc\framework\AppRuntimeException.class
+org\wcc\framework\AppProperties.class

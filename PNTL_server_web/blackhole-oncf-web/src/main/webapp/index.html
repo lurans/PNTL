@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html ng-controller="serviceCtrl">
+<head>
+    <title ng-bind="i18n.console_term_title_label"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <link type="image/x-icon" href="./theme/default/images/favicon.ico" rel="icon">
+
+    <!--framework-css-start-->
+    <!--css-default-start-->
+    <link rel="stylesheet" type="text/css" href="theme/default/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/tiny.min.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/tinyext.min.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/framework.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/frameIcon.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/common.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/frame.common.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/icomoon.css"/>
+    <link rel="stylesheet" type="text/css" href="theme/default/css/theme.css"/>
+    <!--css-default-end-->
+    <script type="text/javascript">
+        (function () {
+            var locationHref = window.location.href;
+            if(!window.location.hash) {
+                if(locationHref.indexOf('?hws_route_url=') !== -1) {
+                    locationHref = locationHref.replace('?hws_route_url=', '#/');
+                } else if(locationHref.indexOf('&hws_route_url=') !== -1) {
+                    locationHref = locationHref.replace('&hws_route_url=', '#/');
+                }
+                var hrefs = locationHref.split('#/');
+                if(hrefs.length === 2) {
+                    if(hrefs[1].indexOf('&') !== -1) {
+                        hrefs[1] = hrefs[1].replace('&', '?');
+                    }
+                    window.location.href = hrefs[0] + '#/' + hrefs[1];
+                }
+            }
+        })(window);
+    </script>
+    <!--urlDeal-->
+    <script type="text/javascript" src="./urlDeal.js"></script>
+
+    <!--browser check-->
+    <script type="text/javascript" src="./browserChecker.js"></script>
+    </head>
+    <body ng-click="closeMenusFavoriteError()" ng-class="'html-font-family-' + language">
+
+        <div id="service-menus" ng-include="menus.url" class="container-fluid"></div>
+
+        <div id="service-content">
+            <div ui-view ng-animate="{enter:'fade-enter'}"></div>
+            <div class="messages"></div>
+            <div class="frame-cloud-messages-out framework-scrolling">
+                <div class="frame-cloud-messages-in frame-small-font-size">
+                    <div id="frame-cloud-messages-tips">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="service-footer" ng-include="footer.url" class="container-fluid"></div>
+        <script type="text/javascript" src="./lib/require.js"></script>
+        <script type="text/javascript" src="lib/tiny/tiny.min.js"></script>
+        <script type="text/javascript" src="main.js"></script>
+    </body>
+</html>

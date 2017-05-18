@@ -1,0 +1,21 @@
+---
+- name: check chkflow.sh exists
+  stat: path={{ install_path }}/{{ service_name }}/chkflow.sh
+  register: st
+
+- cron: name="chkflow service cron"  minute="*"  user={{user_name}} job="/bin/sh {{ install_path }}/{{ service_name }}/checkService.sh" state="absent"
+  sudo: yes
+
+- name: stop chkflow
+  shell: su {{user_name}} -c "sh {{ install_path }}/{{ service_name }}/chkflow.sh stop"
+  when: st.stat.exists
+  sudo: yes
+  ignore_errors: true
+
+- name: remove chkflow from tomcat webapps
+  file: state=absent path={{ tomcat_home }}/webapps/{{ console_app_name }}
+  sudo: yes
+  
+- name: remove previous deploy files
+  file: state=absent path={{ install_path }}/{{ service_name }}/
+  sudo: yes

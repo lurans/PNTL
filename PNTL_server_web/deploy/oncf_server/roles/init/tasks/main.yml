@@ -1,0 +1,91 @@
+---
+##createuser
+
+- name: delete workspace if exists
+  file: state=absent path={{ temp_workspace }}
+
+- name: mkdir temporary workspace
+  file: state=directory path={{ temp_workspace }}
+
+- name: template createUser script
+  template: src=createUser.sh dest={{ temp_workspace }}
+
+- name: create user
+  shell: cd {{ temp_workspace }} && dos2unix createUser.sh &&  sh createUser.sh {{ user_passwd }}
+
+- name: template modify script
+  template: src=modify.sh dest={{ temp_workspace }}
+
+- name: modify umask
+  shell: cd {{ temp_workspace }} && dos2unix modify.sh && sh modify.sh
+
+##timezone
+- name: delete localtime
+  shell: cd /etc && rm -rf localtime
+  ignore_errors: true
+
+- name: GMT- or GMT+
+  shell: echo {{ timezone }} | cut -c 1-4
+  register: gmt
+
+- name: zone
+  shell: echo {{ timezone }} | cut -c 5-
+  register: num
+
+- name: set timezone
+  shell: cd /etc && ln -s /usr/share/zoneinfo/Etc/GMT-{{num.stdout}} localtime
+  when: gmt.stdout=="GMT+"
+
+- name: set timezone
+  shell: cd /etc && ln -s /usr/share/zoneinfo/Etc/GMT+{{num.stdout}} localtime
+  when: gmt.stdout=="GMT-"
+
+##ntp
+- name: grep ntp server
+  shell: grep -q "server {{ ntp_ip }}" /etc/ntp.conf
+  register: mt
+  ignore_errors: true
+
+- name: modify ntp.conf
+  shell: echo -e "server {{ ntp_ip }}" >> /etc/ntp.conf
+  when: mt.rc!=0
+
+- name: os version
+  shell: cat /proc/version | grep -q "EulerOS"
+  register: os
+  ignore_errors: true
+
+- name: restart ntp
+  shell: systemctl restart ntpd
+  when: os.rc==0
+
+- name: restart ntp
+  shell: /sbin/service ntp restart
+  when: os.rc!=0
+
+##root login
+- name: forbid root login
+  shell: sed -i "s/^PermitRootLogin.*/PermitRootLogin no/" /etc/ssh/sshd_config
+
+- name: forbid root login
+  shell: sed -i "s/^#PermitRootLogin.*/PermitRootLogin no/" /etc/ssh/sshd_config
+
+- name: modify listen address
+  shell: sed -i "s/^ListenAddress 0.0.0.0.*/ListenAddress {{server_ip}}/" /etc/ssh/sshd_config
+
+- name: modify listen address
+  shell: sed -i "s/^#ListenAddress 0.0.0.0.*/ListenAddress {{server_ip}}/" /etc/ssh/sshd_config
+
+- name: os version
+  shell: cat /proc/version | grep -q "EulerOS"
+  register: os
+  ignore_errors: true
+
+- name: restart sshd
+  shell: systemctl restart sshd
+  when: os.rc==0
+
+- name: restart sshd
+  shell: /sbin/service sshd restart
+  when: os.rc!=0
+

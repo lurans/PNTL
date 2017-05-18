@@ -1,0 +1,43 @@
+---
+#######################
+# config section
+#######################
+cna_ssh_key: "id_rsa"
+cna_passwd: ''
+
+group_name: ops
+service_port: 7443
+service_name: oncf
+tool_name: chkflow
+user_home: /home/{{ user_name }}
+temp_workspace: /tmp/workspace
+
+user_bashrc: "{{ user_home }}/.bashrc"
+workspace: "{{ user_home }}/workspace"
+install_name: ops_network_chkflow
+install_path: "/opt/{{ install_name }}"
+console_app_name: "oncf"
+
+#######################
+# pacakge files section
+#######################
+## jdk
+java_home: "{{ install_path }}/jdk1.8"
+pkg_jdk_file: jdk-{{ pkg_jdk_version }}-security-linux-x64.tar.gz
+pkg_jdk_unpack: jdk1.8.0_72
+pkg_jdk_path: /pkg_repo/3rd/jdk/{{ pkg_jdk_version }}/{{ pkg_jdk_file }}
+
+## tomcat
+tomcat_home: "{{ install_path }}/tomcat"
+tomcat_port: "{{ service_port }}"
+pkg_tomcat_file: SecAs-{{pkg_tomcat_version}}-Release.tar.gz
+pkg_tomcat_unpack: SecAs-{{pkg_tomcat_version}}
+pkg_tomcat_path: /pkg_repo/3rd/tomcat/{{ pkg_tomcat_version }}/{{ pkg_tomcat_file }}
+
+## pkg
+pkg_app_version: 3.8.15
+pkg_app_name: OpsNetworkChkFlow
+pkg_app_file: "{{pkg_app_name}}-{{pkg_app_version}}.tar.gz"
+pkg_app_unpack: "{{pkg_app_name}}-{{ pkg_app_version  }}"
+pkg_app_path: "/pkg_repo/service/{{pkg_app_name}}/{{ pkg_app_version }}/{{ pkg_app_file }}"
+

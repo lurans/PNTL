@@ -1,0 +1,24 @@
+
+# Make rules/targets for handling libraries
+
+.SECONDARY:: ${BOBJS}
+
+BOBJS_FAST = ${BOBJS}
+
+LIBSUFFIX=a
+
+targetlib = ${LIBDIR}/${lib}.${LIBSUFFIX}
+
+all:: ${BLDDIR}/.tree ${targetlib}
+	@echo building ${targetlib}
+
+$(targetlib): ${BOBJS_FAST}
+	@$(ECHO) Building library $(notdir $@)
+	$Q$(RM) $@; cd $(dir $(word 1,${BOBJS}));$(AR) ${ARFLAGS} $@ $(sort $(notdir ${BOBJS}))
+
+clean::
+	@$(ECHO) Cleaning objects for ${LOCALDIR} and ${lib}
+	$Q$(RM) ${BOBJS}
+	$Q$(RM) ${targetlib}
+
+distclean:: clean

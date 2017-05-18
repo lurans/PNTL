@@ -1,0 +1,275 @@
+
+#include <stdlib.h>
+#include <errno.h>
+#include <pthread.h>
+
+using namespace std;
+#include "Log.h"
+#include "GetLocalCfg.h"
+#include "ServerAntAgentCfg.h"
+#include "MessagePlatform.h"
+#include "MessagePlatformServer.h"
+#include "FlowManager.h"
+
+void * MainTestTask(void * p)
+{
+    INT32 iRet = AGENT_OK;
+    FlowManager_C * pcFlowManager = (FlowManager_C *)p;
+    
+    ServerFlowKey_S stNewServerFlowKey;  
+    sal_memset(&stNewServerFlowKey, 0, sizeof(ServerFlowKey_S));
+
+    stNewServerFlowKey.eProtocol = AGENT_DETECT_PROTOCOL_UDP;
+    stNewServerFlowKey.uiSrcIP  = sal_inet_aton("172.25.3.15");
+    stNewServerFlowKey.uiDestIP = sal_inet_aton("172.25.3.16");
+    stNewServerFlowKey.uiSrcPortMin = 32769;
+    stNewServerFlowKey.uiSrcPortMax = 32868;
+    stNewServerFlowKey.uiSrcPortRange = 16;
+    stNewServerFlowKey.uiDscp = 10;
+    stNewServerFlowKey.uiUrgentFlow = AGENT_TRUE;
+    
+    stNewServerFlowKey.stServerTopo.uiLevel = 1;
+    stNewServerFlowKey.stServerTopo.uiSvid = 9;
+    stNewServerFlowKey.stServerTopo.uiDvid = 11;
+
+    
+    
+    do
+    {
+        // 模拟Server下发紧急探测流
+        #if 0
+        iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
+        if (iRet)        
+            INIT_ERROR("FlowManager.ServerWorkingFlowTableAdd failed [%d]", iRet);
+        #endif
+
+        // 模拟向ServerAntServer请求Server
+        #if 0
+        iRet = RequestProbeListFromServer(pcFlowManager);
+        if (iRet)        
+            INIT_ERROR("RequestProbeListFromServer failed [%d]", iRet);
+        #endif
+        sal_sleep(120);
+        
+    } while(1);
+}
+
+// 启动ServerAntAgent业务
+INT32 ServerAntAgent()
+{  
+    INT32 iRet = 0;
+    FlowManager_C * pcFlowManager = NULL;
+
+    INIT_INFO("-------- Starting ServerAntAgent Now --------");
+
+    // 创建ServerAntAgentCfg对象, 用于保存agent配置信息
+    ServerAntAgentCfg_C * pcCfg = new ServerAntAgentCfg_C;
+
+    // 获取本地配置信息
+    //INIT_INFO("-------- GetLocalCfg --------");
+    iRet = GetLocalCfg(pcCfg);
+    if (iRet)
+    {
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("GetLocalCfg failed [%d]", iRet);
+        return iRet;
+    }
+
+    // 向Server注册Agent
+    //INIT_INFO("-------- ReportToServer --------");
+    iRet = ReportToServer(pcCfg);
+    if (iRet)
+    {
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("ReportToServer failed [%d]", iRet);
+        return iRet;
+    }
+
+    // 获取Server端配置信息
+    //INIT_INFO("-------- GetCfgFromServer --------");
+    iRet = GetCfgFromServer(pcCfg);
+    if (iRet)
+    {
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("GetCfgFromServer failed [%d]", iRet);
+        return iRet;
+    }
+
+    // 启动FlowManager对象
+    INIT_INFO("-------- Start FlowManager --------");
+    pcFlowManager = new FlowManager_C;
+    iRet = pcFlowManager->Init(pcCfg);
+    if (iRet)
+    {
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("FlowManager.init failed [%d]", iRet);
+        return iRet;
+    }
+
+    // 启动MessagePlatformServer端服务, 用于响应外部推送消息.
+    // INIT_INFO("-------- Start MessagePlatformServer --------");
+    UINT32 uiPort = 0;
+    iRet = pcCfg->GetAgentAddress(NULL, &uiPort);
+    if (iRet)
+    {
+        if (pcFlowManager)
+            delete pcFlowManager;
+        pcFlowManager = NULL;
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("GetAgentAddress  failed [%d]", iRet);
+        return iRet;
+    }
+    MessagePlatformServer_C * pcMsgServer = new MessagePlatformServer_C;
+    iRet = pcMsgServer->Init(uiPort, pcFlowManager);
+    if (iRet)
+    {
+        if (pcFlowManager)
+            delete pcFlowManager;
+        pcFlowManager = NULL;
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
+    }
+
+    // 待所有对象的附属任务启动完成, 日志更有条理
+    //sal_usleep(50000);
+    
+    // 所有对象已经启动完成, 开始工作.
+    INIT_INFO("-------- Starting ServerAntAgent Complete --------");
+
+#if 0
+    pthread_t thread;
+    INT32 error;
+    error = pthread_create(&thread, NULL, MainTestTask, pcFlowManager);
+    if(error)
+    {
+          INIT_ERROR("Create Thread failed[%d]: %s [%d]", iRet, strerror(errno), errno); 
+    }
+    sal_sleep(2);
+#endif
+    
+    while(1)
+    {
+        sal_sleep(10);
+        // 未来考虑诊断命令行.
+    }
+
+    INIT_INFO("-------- Stopping ServerAntAgent Now --------");
+
+    if (pcMsgServer)
+        delete pcMsgServer;
+    pcMsgServer = NULL;
+    if (pcFlowManager)
+        delete pcFlowManager;
+    pcFlowManager = NULL;
+    if (pcCfg)
+        delete pcCfg;
+    pcCfg = NULL;
+    INIT_INFO("-------- ServerAntAgent Exit Now --------");
+
+    return AGENT_OK;
+}
+
+// 程序入口, 默认直接启动. 
+// 不带参数时直接启动
+// -d 作为守护进程启动
+INT32 main (INT32 argc, char **argv)
+{
+    INT32 iRet = AGENT_OK;
+    // 软件启动模式
+    INT32 iStartAsDaemon = AGENT_FALSE;
+    
+    pid_t pid;
+
+    SetNewLogMode(AGENT_LOG_MODE_NORMAL);
+
+    // 参数解析
+    if ( 2 <= argc)
+    {
+        INT32 iIndex = 0;
+        string strTemp ;
+        for (iIndex = 1; iIndex < argc; iIndex++ )
+        {
+            strTemp = argv[iIndex];
+            if ( "-d" == strTemp )
+            {
+                iStartAsDaemon = AGENT_TRUE;
+            }
+            else
+            {
+                INIT_ERROR("-------- Unknown arg[%s] --------", strTemp.c_str());
+                exit(-1);
+            }
+        }
+    }
+    
+    if (iStartAsDaemon)
+    {
+        // 以守护进程的形式启动
+        SetNewLogMode(AGENT_LOG_MODE_DAEMON);
+        INIT_INFO("-------- StartAsDaemon --------");
+
+        // 1. 创建子进程
+        pid = fork();
+        if (0 > pid)
+        {
+            INIT_ERROR("-------- fork error --------");
+            exit(-1);
+        }
+        else if (0 < pid)
+        {
+            // 父进程处理, 直接退出
+            exit(0);
+        }
+        else
+        {
+            // 子进程处理
+
+            // 2. 子进程创建新会话, 不再受父进程会话影响.
+            setsid();
+            
+            // 3. 改变子进程工作目录为指定目录
+            // chdir("/");
+
+            // 4. 重设文件权限掩码(创建文件时的默认权限).
+            //umask(0);
+
+            //5. 休眠2s, 等启动脚本配置cgroup等信息.
+            sleep(2);
+            
+            // 6. 启动守护业务.
+            iRet = ServerAntAgent();
+
+            // 7. 业务处理完成,准备退出.
+           
+        }
+    }
+    else
+    {
+        // 直接启动
+        iRet = ServerAntAgent();
+    }
+    
+    if(iRet)
+        exit(-1);
+    else
+        exit(0);
+}
+

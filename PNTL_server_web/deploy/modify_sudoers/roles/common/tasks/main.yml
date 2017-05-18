@@ -1,0 +1,13 @@
+---
+- name: make directory
+  shell: mkdir -p {{ install_path }}
+
+- name: check wether sudoers backup file exist
+  shell: ls {{ install_path }}/sudoers
+  register: ls
+  ignore_errors: true
+
+- name: backup sudoers
+  shell: cp -r /etc/sudoers  {{ install_path }}
+  when: ls.rc != 0
+

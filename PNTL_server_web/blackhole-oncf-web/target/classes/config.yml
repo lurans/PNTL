@@ -1,0 +1,19 @@
+#Cascading layer 
+cascading_ip:
+
+OS_TENANT_NAME:
+
+OS_USERNAME:
+
+OS_PASSWORD:
+
+OS_AUTH_URL:
+
+#CNA info
+cna_ssh_key:
+
+cna_passwd:
+
+#white list
+white_list:
+    - 127.0.0.1

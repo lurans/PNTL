@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/blackhole-oncf.iml" filepath="$PROJECT_DIR$/blackhole-oncf.iml" />
+      <module fileurl="file://$PROJECT_DIR$/blackhole-oncf-api/blackhole-oncf-api.iml" filepath="$PROJECT_DIR$/blackhole-oncf-api/blackhole-oncf-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/blackhole-oncf-wcccrypter/blackhole-oncf-wcccrypter.iml" filepath="$PROJECT_DIR$/blackhole-oncf-wcccrypter/blackhole-oncf-wcccrypter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/blackhole-oncf-web/blackhole-oncf-web.iml" filepath="$PROJECT_DIR$/blackhole-oncf-web/blackhole-oncf-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/external-dep/external-dep.iml" filepath="$PROJECT_DIR$/external-dep/external-dep.iml" />
+      <module fileurl="file://$PROJECT_DIR$/external-dep/wcc_common/wcc_common.iml" filepath="$PROJECT_DIR$/external-dep/wcc_common/wcc_common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/external-dep/wcc_crypt/wcc_crypt.iml" filepath="$PROJECT_DIR$/external-dep/wcc_crypt/wcc_crypt.iml" />
+    </modules>
+  </component>
+</project>

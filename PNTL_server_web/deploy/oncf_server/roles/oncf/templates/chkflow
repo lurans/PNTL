@@ -1,0 +1,17 @@
+#! /bin/sh
+
+case "$1" in
+    start)
+        su {{ user_name }} -c "sh {{ install_path }}/{{ service_name }}/{{tool_name}}.sh start"
+        ;;
+    stop)
+        su {{ user_name }} -c "sh {{ install_path }}/{{ service_name }}/{{tool_name}}.sh stop"
+        ;;
+    restart)
+        su {{ user_name }} -c "sh {{ install_path }}/{{ service_name }}/{{tool_name}}.sh stop"
+        su {{ user_name }} -c "sh {{ install_path }}/{{ service_name }}/{{tool_name}}.sh start"
+        ;;
+    status)
+        su {{ user_name }} -c "sh {{ install_path }}/{{ service_name }}/{{tool_name}}.sh status"
+        ;;
+esac

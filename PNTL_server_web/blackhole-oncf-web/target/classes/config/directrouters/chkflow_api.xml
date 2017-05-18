@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<apis>
+    <properties>
+        <property name="version" value="v2.0"/>
+        <property name="timeout" value="30"/>
+        <property name="service" value="chkFlow"/>
+        <property name="host" value="192.168.0.0:7443"/>
+        <property name="protocol" value="https"/>
+    </properties>
+    <!-- search south and north flow info-->
+    <api>
+        <uri>/rest/chkflow/vm</uri>
+        <protocol>https</protocol>
+        <destinations>
+            <destination>
+                <method>POST</method>
+                <uri>/chkflow-server/chkflow/vm</uri>
+            </destination>
+        </destinations>
+    </api>
+    <api>
+        <uri>/rest/chkflow/{id}</uri>
+        <protocol>https</protocol>
+        <destinations>
+            <destination>
+                <method>GET</method>
+                <uri>/chkflow-server/chkflow/{id}</uri>
+            </destination>
+        </destinations>
+    </api>
+    <api>
+        <uri>/rest/chkflow/fip</uri>
+        <protocol>https</protocol>
+        <destinations>
+            <destination>
+                <method>POST</method>
+                <uri>/chkflow-server/chkflow/fip</uri>
+            </destination>
+        </destinations>
+    </api>
+</apis>
+

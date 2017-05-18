@@ -1,0 +1,122 @@
+---
+- name: create upgrade flag file
+  file: path={{ install_path }}/upgrade_rollback_stop_api_flag state=touch
+
+- name: check if tomcat is running
+  shell: ps -efww | grep {{ tomcat_home }} | grep -v grep
+  register: ps
+  sudo: yes
+  ignore_errors: true
+
+- name: shutdown tomcat when running
+  shell: ps -ef| grep {{ tomcat_home }} | grep -v grep | awk '{print $2}' | xargs kill
+  ignore_errors: true
+  sudo: yes
+  when: ps.rc == 0
+  
+- name: remove oncf from tomcat webapps
+  shell: rm -rf {{ tomcat_home }}/webapps/*
+  sudo: yes
+  
+- name: remove previous deploy files
+  file: state=absent path={{ install_path }}/{{ service_name }}
+
+- name: mkdir of console_app path
+  file: state=directory path={{ tomcat_home }}/webapps/{{ console_app_name }} mode=0750 owner={{user_name}} group={{group_name}}
+  sudo: yes
+
+- name: unpack chkflow-console to tomcat webapps
+  shell: unzip -oq {{ workspace }}/{{ pkg_app_unpack }}/{{ console_app_name }}.war -d {{ tomcat_home }}/webapps/{{ console_app_name}}
+
+- name: change oncf-chkflow webapps owner and privilege 
+  file: path={{ tomcat_home }}/webapps force=true mode=0750 owner={{user_name}} group={{group_name}} recurse=true
+
+- name: copy id_rsa
+  copy: src=id_rsa dest={{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes
+
+- name: template config.yml
+  template: src=config.yml dest={{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes
+
+- name: template chkflow_api.xml
+  template: src=chkflow_api.xml dest={{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/config/directrouters
+
+- name: template console web.xml
+  template: src=web.xml dest={{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/web.xml
+  when: enable_sso  == "false"
+
+- name: template console web.xml
+  template: src=web_sso.xml dest={{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/web.xml
+  when: enable_sso  == "true"
+
+- name: change oncf-server lib/* mod 550
+  shell: chmod 550 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/lib/*
+  sudo: yes
+
+- name: change oncf-server class/*.xml mod 640
+  shell: chmod 640 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/*.xml
+  sudo: yes
+
+- name: change oncf-server class/*.yml mod 640
+  shell: chmod 640 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/*.yml
+  sudo: yes
+
+- name: change oncf-server class/*.properties mod 640
+  shell: chmod 640 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/*.properties
+  sudo: yes
+
+- name: change config 700
+  shell: chmod 700 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/config
+  sudo: yes
+
+- name: change config/* 600
+  shell: chmod 600 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/config/*
+  sudo: yes
+
+- name: change config/directrouters 700
+  shell: chmod 700 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/config/directrouters
+  sudo: yes
+
+- name: change config/* 600
+  shell: chmod 600 {{ tomcat_home }}/webapps/{{ console_app_name }}/WEB-INF/classes/config/directrouters/*
+  sudo: yes
+ 
+- name: create app script install path
+  file: state=directory path={{ install_path }}/{{ service_name }}
+
+- name: template chkflow.sh file
+  template: src=chkflow.sh dest={{ install_path }}/{{ service_name }}
+
+- name: template checkService.sh
+  template: src=checkService.sh dest={{ install_path }}/{{ service_name }}  
+  
+- name: chmod chkflow.sh previlige
+  shell: chmod 550 {{ install_path }}/{{ service_name }}/*.sh
+  
+- name: change  chkflow script install path owner and privilege 
+  file: path={{ install_path }}/{{ service_name }} force=true mode=0750 owner={{user_name}} group={{group_name}}
+  sudo: yes
+
+- name: create log dir
+  file: state=directory path=/var/log/{{ install_name }} mode=0750 owner={{user_name}} group={{group_name}} 
+  sudo: yes
+
+- name: create apigateway log dir
+  file: state=directory path=/var/log/apigateway mode=0750 owner={{user_name}} group={{group_name}}
+  sudo: yes 
+ 
+- name: template chkflow script to workspace
+  template: src=chkflow dest={{ workspace }}
+
+- name: remove upgrade flag file
+  file: path={{ install_path }}/upgrade_rollback_stop_api_flag state=absent
+
+- cron: name="chkflow service check"  minute="*"  user={{user_name}} job="/bin/sh {{ install_path }}/{{ service_name }}/checkService.sh"
+  sudo: yes
+
+- name: wait for tomcat to start
+  wait_for: port={{ service_port }} host={{ ansible_ssh_host }}
+
+#- cron: name="modify oncf log permissions" minute="5" hour="0" user={{user_name}} job="chmod 640 /var/log/{{ install_name }}/*" state=absent
+#  sudo: yes
+  
+

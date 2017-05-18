@@ -1,0 +1,13 @@
+#######################################
+# operated by root user or created user
+#######################################
+## For the first installation, ansible_ssh_user must be "root". Then, ansible_ssh_user must be created user
+[init]
+oncf_host    ansible_ssh_host={{server_ip}}    ansible_ssh_user=XXXXXX
+
+##########################
+# operated by created user
+##########################
+[oncf]
+oncf_host    ansible_ssh_host={{server_ip}}
+

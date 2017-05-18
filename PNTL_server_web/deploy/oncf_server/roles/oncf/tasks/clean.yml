@@ -1,0 +1,3 @@
+---
+- name: clean oncf dir
+  shell: rm -rf {{ install_path }}/{{ service_name }}
