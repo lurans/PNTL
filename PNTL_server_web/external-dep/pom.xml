@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.huawei.blackhole</groupId>
         <artifactId>blackhole-oncf</artifactId>
-        <version>3.8.18</version>
+        <version>0.0.1</version>
     </parent>
 
     <artifactId>external-dep</artifactId>
