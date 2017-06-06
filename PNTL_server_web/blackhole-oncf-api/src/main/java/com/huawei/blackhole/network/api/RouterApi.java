@@ -1,11 +1,6 @@
 package com.huawei.blackhole.network.api;
 
-import com.huawei.blackhole.network.api.bean.FIPRouterTaskRequest;
-import com.huawei.blackhole.network.api.bean.OncfConfig;
-import com.huawei.blackhole.network.api.bean.RouterInfoResponse;
-import com.huawei.blackhole.network.api.bean.RouterTaskRequest;
-import com.huawei.blackhole.network.api.bean.RouterTaskResponse;
-import com.huawei.blackhole.network.api.bean.VPNRouterTaskRequest;
+import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.api.resource.ResultPool;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
@@ -19,7 +14,9 @@ import com.huawei.blackhole.network.common.utils.ResponseUtil;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.core.service.EIPRouterService;
 import com.huawei.blackhole.network.core.service.EwRouterService;
+import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.core.service.VPNRouterService;
+import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
@@ -80,6 +77,9 @@ public class RouterApi {
 
     @Resource(name = "chkflowServiceStartup")
     private ChkflowServiceStartup chkflowServiceStartup;
+
+    @Resource(name = "pntlService")
+    private PntlService pntlService;
 
     /**
      * 获取当前配置 config.ymal <br />
@@ -275,7 +275,8 @@ public class RouterApi {
         LOGGER.info("User[" + AuthUtil.getUser(request) + "] [submit vpn task]");
         LOGGER.info("TASK-START:" + taskId);
         RouterTaskResponse routerResponse = new RouterTaskResponse();
-        Result<String> result = vpnRouterService.submitVpnTask(req, taskId);
+        Result<String> result;
+        result = vpnRouterService.submitVpnTask(req, taskId);
 
         if (!result.isSuccess()) {
             JSONObject json = new JSONObject();
@@ -317,4 +318,40 @@ public class RouterApi {
         return valid;
     }
 
+    @Path("/pntlInit")
+    @POST
+    public Response pntlInit(){
+        LOGGER.info("User[" + AuthUtil.getUser(request) + "] [pntl init configuration]");
+        Result<String> result = new Result<String>();
+
+        result = pntlService.startPntl();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+
+    }
+
+    @Path("/pingList")
+    @POST
+    public Response getPingList(PntlConfig config){
+        LOGGER.info("User[" + AuthUtil.getUser(request) + "] [receive from agent for ping list]");
+        Result<String> result = new Result<String>();
+
+        result = pntlService.sendPingListToAgent(config);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/reportData")
+    @POST
+    public Response getReportData(ReportData data){
+        LOGGER.info("User[" + AuthUtil.getUser(request) + "] [receive from agent for report data]");
+        Result<String> result = new Result<String>();
+        LOGGER.info("sip"+data.getFlows().get(0).getSip());
+        ///TODO
+        return ResponseUtil.succ();
+    }
 }

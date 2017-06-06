@@ -113,6 +113,23 @@
                     <skipTests>true</skipTests>
                 </configuration>
             </plugin>
+
+            <!-- Maven Tomcat Plugin -->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <!--Deploy to server-->
+                    <server>Tomcat7</server>
+                 <!--   <url>http://localhost:8080</url>
+
+                    <username>admin</username>
+                    <password>admin</password>-->
+                    <path>/</path>
+                    <port>8080</port>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

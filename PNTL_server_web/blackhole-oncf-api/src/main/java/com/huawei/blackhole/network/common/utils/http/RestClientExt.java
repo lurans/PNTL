@@ -7,6 +7,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -16,7 +17,9 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -132,7 +135,6 @@ public class RestClientExt {
                 request.addHeader(entry.getKey(), entry.getValue());
             }
         }
-
         // common header
         request.addHeader("Accept", "application/json;charset=UTF-8");
         request.addHeader("Content-type", "application/json;charset=UTF-8");
@@ -203,8 +205,25 @@ public class RestClientExt {
         try {
             // 指定url,和http方式
             HttpPost httpPost = new HttpPost(buildUrl(url, parameters));
-
             configHttpEntityRequest(httpPost, body, customizedHeaders);
+
+            RestResp response = send(httpPost);
+            if (response.getStatusCode().isError()) {
+                throw createHttpError(response);
+            }
+            return response;
+        } catch (IOException | GeneralSecurityException e) {
+            throw new ClientException(ExceptionType.SERVER_ERR, e.getLocalizedMessage());
+        }
+    }
+
+    private static RestResp pntlPost(String url, Parameter parameters, List<NameValuePair> body,
+                                 Map<String, String> customizedHeaders) throws ClientException {
+        try {
+            // 指定url,和http方式
+            HttpPost httpPost = new HttpPost(buildUrl(url, parameters));
+            HttpEntity entity = new UrlEncodedFormEntity(body, "UTF-8");
+            httpPost.setEntity(entity);
 
             RestResp response = send(httpPost);
             if (response.getStatusCode().isError()) {
@@ -243,6 +262,12 @@ public class RestClientExt {
         }
         String strResponse = getRespBodyAsString(response);
         return convertString2Object(strResponse, responseType);
+    }
+
+    public static RestResp post(String url, Parameter para, List<NameValuePair> reqBody,
+                                Map<String, String> header) throws ClientException{
+
+        return pntlPost(url, para, reqBody, header);
     }
 
     public static RestResp post(String url, Parameter para, Object reqBody, Map<String, String> header)

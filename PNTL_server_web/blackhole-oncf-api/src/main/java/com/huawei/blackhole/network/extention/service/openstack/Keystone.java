@@ -18,9 +18,12 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.huawei.blackhole.network.api.bean.PntlConfig;
+import com.huawei.blackhole.network.common.constants.*;
 import com.huawei.blackhole.network.common.exception.CommonException;
 import com.huawei.blackhole.network.common.utils.MapUtils;
 import com.huawei.blackhole.network.common.utils.WccCrypter;
+import com.huawei.blackhole.network.extention.bean.openstack.keystone.PntlTokenResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.http.Header;
@@ -29,11 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.huawei.blackhole.network.api.bean.OncfConfig;
-import com.huawei.blackhole.network.common.constants.Config;
-import com.huawei.blackhole.network.common.constants.Constants;
-import com.huawei.blackhole.network.common.constants.ExceptionType;
-import com.huawei.blackhole.network.common.constants.FspServiceName;
-import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.exception.ConfigLostException;
@@ -70,6 +68,11 @@ public class Keystone {
     private static final String SERVICE_NAME = FspServiceName.KEYSTONE;
 
     private static final Object LOCK = new Object();
+
+    private static final String BASIC_TOKEN = "basic SFlvYjhaZllQQXFiajBHTGtHR3hiNHJraVFj" +
+            "YTpnR0hueGtsNWJoZ1dqRl8zTVlqMkhjREZlT0lh";
+
+    private static final String GRANT_TYPE = "grant_type";
 
     /**
      * 判断fsp的账户信息是否是可用的。<br \>
@@ -139,6 +142,26 @@ public class Keystone {
         LOG.info("get fsp token url={}", url);
 
         return getToken(url, getDefaultAuth());
+    }
+
+    /**
+     * get auth token from AUTH SERVICE
+     * @return
+     */
+    public String getPntlAccessToken() throws ClientException{
+        Map<String, String> header = new HashMap<>();
+
+        header.put(PntlInfo.AUTH, BASIC_TOKEN);
+        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
+
+        Map<String, String> reqBody = new HashMap<>();
+        reqBody.put(GRANT_TYPE, "client_credentials");
+
+        PntlTokenResponse tokenResponse = RestClientExt.post(PntlInfo.URL_IP+"/token", null, reqBody, PntlTokenResponse.class, header);
+        if (tokenResponse == null){
+            throw new ClientException(ExceptionType.ENV_ERR, "can not get access token");
+        }
+        return tokenResponse.getAccessToken();
     }
 
     /**
