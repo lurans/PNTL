@@ -31,6 +31,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -217,14 +218,29 @@ public class RestClientExt {
         }
     }
 
+    private static void configPntlHttpBaseRequest(HttpRequestBase request, Map<String, String> customizedHeaders)
+            throws UnsupportedEncodingException {
+        // 设置请求和传输超时时间
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(SocketTimeout)
+                .setConnectTimeout(ConnectTimeout).build();
+        request.setConfig(requestConfig);
+
+        // custom header
+        if (customizedHeaders != null) {
+            for (Entry<String, String> entry : customizedHeaders.entrySet()) {
+                request.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+    }
     private static RestResp pntlPost(String url, Parameter parameters, List<NameValuePair> body,
                                  Map<String, String> customizedHeaders) throws ClientException {
         try {
             // 指定url,和http方式
             HttpPost httpPost = new HttpPost(buildUrl(url, parameters));
-            HttpEntity entity = new UrlEncodedFormEntity(body, "UTF-8");
-            httpPost.setEntity(entity);
-
+            if (body != null) {
+                httpPost.setEntity(new UrlEncodedFormEntity(body, "UTF-8"));
+            }
+            configPntlHttpBaseRequest(httpPost, customizedHeaders);
             RestResp response = send(httpPost);
             if (response.getStatusCode().isError()) {
                 throw createHttpError(response);

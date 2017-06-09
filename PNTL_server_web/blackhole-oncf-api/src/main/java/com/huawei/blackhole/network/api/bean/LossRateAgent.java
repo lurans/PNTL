@@ -7,17 +7,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * Created by y00214328 on 2017/6/6.
- */
-public class ReportData implements Serializable {
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class LossRateAgent implements Serializable {
     private static final long serialVersionUID = -6384635186269797829L;
 
     @JsonProperty("orgnizationSignature")
     private String orgnizationSignature;
 
-    @JsonProperty("flows")
-    private List<Flows> flows;
+    @JsonProperty("flow")
+    private List<Flow> flow;
 
     public String getOrgnizationSignature() {
         return orgnizationSignature;
@@ -27,17 +26,17 @@ public class ReportData implements Serializable {
         this.orgnizationSignature = orgnizationSignature;
     }
 
-    public List<Flows> getFlows() {
-        return flows;
+    public List<Flow> getFlow() {
+        return flow;
     }
 
-    public void setFlows(List<Flows> flows) {
-        this.flows = flows;
+    public void setFlow(List<Flow> flow) {
+        this.flow = flow;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static final class Flows implements Serializable{
+    public static final class Flow implements Serializable{
         private static final long serialVersionUID = 1086864843898328813L;
 
         @JsonProperty("sip")

@@ -12,21 +12,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.blackhole.network.api.bean.PntlConfig;
 import com.huawei.blackhole.network.common.constants.*;
 import com.huawei.blackhole.network.common.exception.CommonException;
 import com.huawei.blackhole.network.common.utils.MapUtils;
 import com.huawei.blackhole.network.common.utils.WccCrypter;
+import com.huawei.blackhole.network.common.utils.http.Parameter;
 import com.huawei.blackhole.network.extention.bean.openstack.keystone.PntlTokenResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -69,8 +72,8 @@ public class Keystone {
 
     private static final Object LOCK = new Object();
 
-    private static final String BASIC_TOKEN = "basic SFlvYjhaZllQQXFiajBHTGtHR3hiNHJraVFj" +
-            "YTpnR0hueGtsNWJoZ1dqRl8zTVlqMkhjREZlT0lh";
+    private static final String BASIC_TOKEN = "basic bXkwWVlFWTBPcHhTUENfNlk2MDJpRF" +
+            "lGdFJBYTpyeWxlWkhQdDdNdHBLNTV4REoyUU04V1BLRVFh";
 
     private static final String GRANT_TYPE = "grant_type";
 
@@ -154,14 +157,16 @@ public class Keystone {
         header.put(PntlInfo.AUTH, BASIC_TOKEN);
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
 
-        Map<String, String> reqBody = new HashMap<>();
-        reqBody.put(GRANT_TYPE, "client_credentials");
+        List<NameValuePair> reqBody = new ArrayList<NameValuePair>();
+        reqBody.add(new BasicNameValuePair(PntlInfo.GRANT_TYPE, "client_credentials"));
 
-        PntlTokenResponse tokenResponse = RestClientExt.post(PntlInfo.URL_IP+"/token", null, reqBody, PntlTokenResponse.class, header);
-        if (tokenResponse == null){
-            throw new ClientException(ExceptionType.ENV_ERR, "can not get access token");
+        String url = PntlInfo.URL_IP+PntlInfo.TOKEN_URL_SUFFIX;
+        RestResp rsp = RestClientExt.post(url, null, reqBody, header);
+        if (rsp == null){
+        //    throw new ClientException(ExceptionType.ENV_ERR, "can not get access token");
         }
-        return tokenResponse.getAccessToken();
+        //return tokenResponse.getAccessToken();
+        return rsp.getRespBody().getString("access_token");
     }
 
     /**

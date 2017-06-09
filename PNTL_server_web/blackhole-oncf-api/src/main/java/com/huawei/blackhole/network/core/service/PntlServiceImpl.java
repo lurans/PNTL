@@ -9,8 +9,9 @@ import com.huawei.blackhole.network.common.exception.ConfigLostException;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.extention.bean.pntl.AgentJson;
+import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
 import com.huawei.blackhole.network.extention.bean.pntl.HostInfo;
+import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.bean.pntl.PntlNetworkMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.*;
 
-/**
- * Created by y00214328 on 2017/5/19.
- */
 @Service("pntlService")
 public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private static final Logger LOG = LoggerFactory.getLogger(PntlServiceImpl.class);
@@ -33,7 +31,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @return
      */
     public Result<String> startPntl() {
-        Result<String> result = null;
+        Result<String> result = new Result<>();
         String errMsg = null;
 
         /* 获取主机列表 */
@@ -60,13 +58,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     public Result<String> sendPingListToAgent(PntlConfig config){
         Result<String> result = new Result<>();
 
-        /*testing begin*/
-        hostList = new ArrayList<PntlHostContext>();
-        PntlHostContext tmpHost = new PntlHostContext();
-        tmpHost.setIp(config.getContent().getAgentIp());
-        hostList.add(tmpHost);
-        hostList.add(tmpHost);
-        /*testing end*/
+        try {
+            hostList = genProbeHostList();
+        } catch (ApplicationException | ClientException e){
+            LOG.error("get host list failed " + e.getMessage());
+            result.addError("", e.getMessage());
+            return result;
+        }
 
         if (hostList == null){
             result.addError("", "No host info");
@@ -74,12 +72,12 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
 
         /* 发送网络探测表到agent */
-        AgentJson agentJson = null;
+        AgentFlowsJson agentFlowsJson = null;
         Iterator<PntlHostContext> iter = hostList.iterator();
         while (iter.hasNext()){
             try{
-                agentJson = generateAgentJson(iter.next());
-                RestResp response = pntlRequest.sendProbeList(config.getContent().getAgentIp(), agentJson);
+                agentFlowsJson = generateAgentJson(iter.next());
+                RestResp response = pntlRequest.sendProbeList(config.getContent().getAgentIp(), agentFlowsJson);
                 if (response.getStatusCode().isError()){
                     result.addError("", "send probe list response failed");
                 }
@@ -101,32 +99,30 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @param hostList
      * @return
      */
-    private AgentJson generateAgentJson(PntlHostContext hostList){
-        AgentJson agentJson = new AgentJson();
+    private AgentFlowsJson generateAgentJson(PntlHostContext hostList){
+        AgentFlowsJson agentFlowsJson = new AgentFlowsJson();
 
-        List<AgentJson.FlowList> flowList = new ArrayList<>();
-       // for (PntlHostContext host : hostList){
-            AgentJson.FlowList flow = new AgentJson.FlowList();
-            flow.setUrgent("true");
-            flow.setSip(hostList.getIp());
-            ///TODO 生成目标ip
-            //flow.setDip("100.109.253.152");
-            flow.setDip(hostList.getIp());
-            flow.setIp_protocol("udp");
-            flow.setSport_min(32769);
-            flow.setSport_max(32868);
-            flow.setSport_range(100);
-            flow.setDscp(0);
+        List<AgentFlowsJson.FlowList> flowList = new ArrayList<>();
+        AgentFlowsJson.FlowList flow = new AgentFlowsJson.FlowList();
+        flow.setUrgent("true");
+        flow.setSip(hostList.getIp());
+        ///TODO 生成目标ip
+        //flow.setDip("100.109.253.152");
+        flow.setDip(hostList.getIp());
+        flow.setIp_protocol("udp");
+        flow.setSport_min(32769);
+        flow.setSport_max(32868);
+        flow.setSport_range(100);
+        flow.setDscp(0);
 
-            AgentJson.FlowList.TopologyTag topologyTag = new AgentJson.FlowList.TopologyTag();
-            topologyTag.setSrcId(0);
-            topologyTag.setDstId(0);
-            topologyTag.setLevel(1);
-            flow.setTopologyTag(topologyTag);
-            flowList.add(flow);
-        //}
-        agentJson.setList(flowList);
-        return agentJson;
+        AgentFlowsJson.FlowList.TopologyTag topologyTag = new AgentFlowsJson.FlowList.TopologyTag();
+        topologyTag.setSrcId(0);
+        topologyTag.setDstId(0);
+        topologyTag.setLevel(1);
+        flow.setTopologyTag(topologyTag);
+        flowList.add(flow);
+        agentFlowsJson.setList(flowList);
+        return agentFlowsJson;
     }
 
     /**
@@ -143,7 +139,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             @Override
             public void run() {
                 try {
-                    pntlRequest.sendFilesToAgents(hostList);
+                    String token = identityWrapperService.getPntlAccessToken();
+                    pntlRequest.sendFilesToAgents(hostList, token);
                 } catch (ClientException e){
                     LOG.error("Send files to agents failed, " + e.getMessage());
                     String msg = e.toString();
@@ -152,6 +149,11 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
         };
 
+        try{
+            installAgent(hostList);
+        } catch(ClientException e){
+
+        }
         /*发送主机ip列表到agent，进行traceroute学习*/
         try{
             pntlRequest.sendIpListToAgents(hostList);
@@ -175,7 +177,28 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
         };
 
+        resultService.execute(scriptSendTask);
+       // resultService.execute(getNetworkMapTask);
         return  result;
+    }
+
+    /**
+     * 解压、安装agent包
+     * @param pntlHostList
+     * @return
+     * @throws ClientException
+     */
+    public Result<String> installAgent(List<PntlHostContext> pntlHostList) throws ClientException{
+        Result<String> result = new Result<>();
+        try{
+            pntlRequest.installAgent(hostList);
+        } catch (ClientException e){
+            LOG.error("Send ip list to agents failed, " + e.getMessage());
+            String msg = e.toString();
+            result.addError("", msg);
+        }
+
+        return result;
     }
 
     /**
@@ -224,7 +247,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private List<PntlHostContext> getHostsInfo() throws ApplicationException, ClientException {
         List<PntlHostContext> hostsList = new ArrayList<PntlHostContext>();
         String accessToken = identityWrapperService.getPntlAccessToken();
-        //PntlHostContext context = new PntlHostContext();
+
         HostInfo hostInfo = null;
         try{
             hostInfo = pntlRequest.getHostsList(accessToken);
@@ -260,6 +283,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @return
      */
     private List<PntlHostContext> genProbeHostList() throws ApplicationException, ClientException {
+        /*
         String errMsg = null;
 
         List<PntlHostContext> pntlHostList = getHostsInfo();
@@ -268,7 +292,51 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             LOG.error(errMsg);
             throw new ApplicationException(ExceptionType.SERVER_ERR, errMsg);
         }
-
         return pntlHostList;
+        */
+        hostList = new ArrayList<PntlHostContext>();
+        PntlHostContext tmpHost = new PntlHostContext();
+        tmpHost.setIp("192.168.1.1");
+        hostList.add(tmpHost);
+
+        PntlHostContext tmpHost2 = new PntlHostContext();
+        tmpHost2.setIp("192.168.1.2");
+        hostList.add(tmpHost2);
+
+        return hostList;
     }
+
+    /**
+     * 获取ip列表
+     * @param azId
+     * @param podId
+     * @return
+     */
+    public Result<IpListJson> getIpListinfo(String azId, String podId){
+        Result<IpListJson> result = new Result<>();
+
+        IpListJson ipListInfo = new IpListJson();
+        ipListInfo.setAzId(azId);
+        ipListInfo.setPodId(podId);
+
+        try{
+            hostList = genProbeHostList();
+        } catch (ApplicationException | ClientException e){
+            LOG.error(e.getMessage());
+            result.setErrorMessage("get host list failed " + e.getMessage());
+        }
+
+        List<IpListJson.IpList> ipList = new ArrayList<>();
+        for (PntlHostContext host : hostList){
+            IpListJson.IpList ip = new IpListJson.IpList();
+            ip.setIp(host.getIp());
+            ipList.add(ip);
+        }
+
+        ipListInfo.setList(ipList);
+        result.setModel(ipListInfo);
+
+        return result;
+    }
+
 }

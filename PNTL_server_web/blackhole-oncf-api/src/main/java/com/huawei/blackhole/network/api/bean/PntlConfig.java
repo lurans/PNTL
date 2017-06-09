@@ -6,9 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
-/**
- * Created by y00214328 on 2017/5/20.
- */
 public class PntlConfig implements Serializable{
     private static final long serialVersionUID = 3876713150129808504L;
 

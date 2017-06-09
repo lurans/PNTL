@@ -16,10 +16,11 @@ import com.huawei.blackhole.network.core.service.EIPRouterService;
 import com.huawei.blackhole.network.core.service.EwRouterService;
 import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.core.service.VPNRouterService;
-import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
+import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
+import com.huawei.blackhole.network.extention.service.pntl.PntlInfoService;
 import com.huawei.blackhole.network.extention.service.sso.SsoConfiger;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
@@ -80,6 +81,9 @@ public class RouterApi {
 
     @Resource(name = "pntlService")
     private PntlService pntlService;
+
+    @Resource(name = "pntlInfoService")
+    private PntlInfoService pntlInfoService;
 
     /**
      * 获取当前配置 config.ymal <br />
@@ -335,7 +339,7 @@ public class RouterApi {
     @Path("/pingList")
     @POST
     public Response getPingList(PntlConfig config){
-        LOGGER.info("User[" + AuthUtil.getUser(request) + "] [receive from agent for ping list]");
+        LOGGER.info("receive ping list from agent");
         Result<String> result = new Result<String>();
 
         result = pntlService.sendPingListToAgent(config);
@@ -345,13 +349,75 @@ public class RouterApi {
         return ResponseUtil.succ();
     }
 
-    @Path("/reportData")
+    @Path("/lossRate")
     @POST
-    public Response getReportData(ReportData data){
-        LOGGER.info("User[" + AuthUtil.getUser(request) + "] [receive from agent for report data]");
+    public Response recvLossRate(LossRateAgent data){
+        LOGGER.info("receive lossRate from agent");
         Result<String> result = new Result<String>();
-        LOGGER.info("sip"+data.getFlows().get(0).getSip());
-        ///TODO
+
+        result = pntlInfoService.saveLossRateData(data);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
         return ResponseUtil.succ();
+    }
+
+    @Path("/delayInfo")
+    @POST
+    public Response recvDelayInfo(DelayInfoAgent data){
+        LOGGER.info("receive delayInfo from agent");
+        Result<String> result = new Result<String>();
+
+        result = pntlInfoService.saveDelayInfoData(data);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ();
+    }
+
+    @Path("/lossRate")
+    @GET
+    public Response getLossRate(){
+        LOGGER.info("send loss rate to UI");
+
+        Result<Object> result = pntlInfoService.getLossRate();
+        return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/delayInfo")
+    @GET
+    public Response getDelayInfo(){
+        LOGGER.info("send delay info to UI");
+
+        Result<Object> result = pntlInfoService.getDelayInfo();
+        return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/pntlConfig")
+    @POST
+    public Response setPntlConfig(){
+        return ResponseUtil.succ();
+    }
+
+    @Path("/pntlConfig")
+    @GET
+    public Response getPntlConfig(){
+        return ResponseUtil.succ();
+    }
+
+    @Path("/ipList")
+    @POST
+    public Response getIpList(IpListRequest req){
+        String azId = req.getAzId();
+        String podId = req.getPodId();
+
+        Result<IpListJson> result = pntlService.getIpListinfo(azId, podId);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ(result.getModel());
     }
 }
