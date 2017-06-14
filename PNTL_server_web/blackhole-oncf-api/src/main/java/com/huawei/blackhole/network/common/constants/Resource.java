@@ -1,5 +1,8 @@
 package com.huawei.blackhole.network.common.constants;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Resource file or path should be here.
  */
@@ -53,9 +56,4 @@ public class Resource {
 
     public static final String NAME_CONF = "config.yml";
     public static final String ROLE_CONF = "role.yml";
-
-    /*******************************PNTL**************************************/
-    public static final String PNTL_PATH = "~/";
-    public static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
-    public static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
 }

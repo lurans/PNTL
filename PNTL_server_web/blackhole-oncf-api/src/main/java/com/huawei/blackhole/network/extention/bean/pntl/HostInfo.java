@@ -53,15 +53,13 @@ public class HostInfo implements Iterable<HostInfo.HostListInfo>, Serializable {
 
         @JsonProperty("id")
         private String id;
-
+        @JsonProperty("hostName")
+        private String hostName;
         @JsonProperty("hostInstanceSN")
         private String hostInstanceSN;
 
         @JsonProperty("poolId")
         private String poolId;
-
-        @JsonProperty("hostName")
-        private String hostName;
 
         @JsonProperty("ip")
         private String ip;
@@ -80,15 +78,48 @@ public class HostInfo implements Iterable<HostInfo.HostListInfo>, Serializable {
 
         @JsonProperty("agentSN")
         private String agentSN;
-
         @JsonProperty("agentStatus")
         private String agentStatus;
-
         @JsonProperty("hostType")
         private String hostType;
-
         @JsonProperty("hostClass")
         private String hostClass;
+        @JsonProperty("lastUpdateTime")
+        private String lastUpdateTime;
+        @JsonProperty("description")
+        private String description;
+        @JsonProperty("environmentName")
+        private String environmentName;
+        @JsonProperty("regionName")
+        private String regionName;
+        @JsonProperty("zoneName")
+        private String zoneName;
+        @JsonProperty("podName")
+        private String podName;
+        @JsonProperty("clusterName")
+        private String clusterName;
+        @JsonProperty("serviceName")
+        private String serviceName;
+        @JsonProperty("domainName")
+        private String domainName;
+        @JsonProperty("environmentId")
+        private String environmentId;
+        @JsonProperty("regionId")
+        private String regionId;
+        @JsonProperty("zoneId")
+        private String zoneId;
+        @JsonProperty("podId")
+        private String podId;
+        @JsonProperty("clusterId")
+        private String clusterId;
+        @JsonProperty("serviceId")
+        private String serviceId;
+        @JsonProperty("hostTags")
+        private String hostTags;
+        @JsonProperty("hostInstanceId")
+        private String hostInstanceId;
+        @JsonProperty("belongComponents")
+        private String belongComponents;
 
         public String getId() {
             return id;
@@ -192,6 +223,150 @@ public class HostInfo implements Iterable<HostInfo.HostListInfo>, Serializable {
 
         public void setHostClass(String hostClass) {
             this.hostClass = hostClass;
+        }
+
+        public String getLastUpdateTime() {
+            return lastUpdateTime;
+        }
+
+        public void setLastUpdateTime(String lastUpdateTime) {
+            this.lastUpdateTime = lastUpdateTime;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getEnvironmentName() {
+            return environmentName;
+        }
+
+        public void setEnvironmentName(String environmentName) {
+            this.environmentName = environmentName;
+        }
+
+        public String getRegionName() {
+            return regionName;
+        }
+
+        public void setRegionName(String regionName) {
+            this.regionName = regionName;
+        }
+
+        public String getZoneName() {
+            return zoneName;
+        }
+
+        public void setZoneName(String zoneName) {
+            this.zoneName = zoneName;
+        }
+
+        public String getPodName() {
+            return podName;
+        }
+
+        public void setPodName(String podName) {
+            this.podName = podName;
+        }
+
+        public String getClusterName() {
+            return clusterName;
+        }
+
+        public void setClusterName(String clusterName) {
+            this.clusterName = clusterName;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public String getDomainName() {
+            return domainName;
+        }
+
+        public void setDomainName(String domainName) {
+            this.domainName = domainName;
+        }
+
+        public String getEnvironmentId() {
+            return environmentId;
+        }
+
+        public void setEnvironmentId(String environmentId) {
+            this.environmentId = environmentId;
+        }
+
+        public String getRegionId() {
+            return regionId;
+        }
+
+        public void setRegionId(String regionId) {
+            this.regionId = regionId;
+        }
+
+        public String getZoneId() {
+            return zoneId;
+        }
+
+        public void setZoneId(String zoneId) {
+            this.zoneId = zoneId;
+        }
+
+        public String getPodId() {
+            return podId;
+        }
+
+        public void setPodId(String podId) {
+            this.podId = podId;
+        }
+
+        public String getClusterId() {
+            return clusterId;
+        }
+
+        public void setClusterId(String clusterId) {
+            this.clusterId = clusterId;
+        }
+
+        public String getServiceId() {
+            return serviceId;
+        }
+
+        public void setServiceId(String serviceId) {
+            this.serviceId = serviceId;
+        }
+
+        public String getHostTags() {
+            return hostTags;
+        }
+
+        public void setHostTags(String hostTags) {
+            this.hostTags = hostTags;
+        }
+
+        public String getHostInstanceId() {
+            return hostInstanceId;
+        }
+
+        public void setHostInstanceId(String hostInstanceId) {
+            this.hostInstanceId = hostInstanceId;
+        }
+
+        public String getBelongComponents() {
+            return belongComponents;
+        }
+
+        public void setBelongComponents(String belongComponents) {
+            this.belongComponents = belongComponents;
         }
     }
 }

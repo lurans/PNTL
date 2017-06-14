@@ -93,10 +93,10 @@ public class DelayInfo implements Serializable {
     public static void saveInfo(DelayInfoAgent.Flow flow){
         String srcIp = flow.getSip();
         String dstIp = flow.getDip();
-        int t1 = Integer.valueOf(flow.getTime().getT1());
-        int t2 = Integer.valueOf(flow.getTime().getT2());
-        int t3 = Integer.valueOf(flow.getTime().getT3());
-        int t4 = Integer.valueOf(flow.getTime().getT4());
+        Long t1 = Long.valueOf(flow.getTime().getT1());
+        Long t2 = Long.valueOf(flow.getTime().getT2());
+        Long t3 = Long.valueOf(flow.getTime().getT3());
+        Long t4 = Long.valueOf(flow.getTime().getT4());
         boolean hasData = false;
 
         DelayInfoResult newData = new DelayInfoResult();

@@ -2,6 +2,7 @@ package com.huawei.blackhole.network.extention.service.pntl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.exception.ConfigLostException;
@@ -33,13 +34,32 @@ public class Pntl {
     private static final String AGENTSTATUS = "agentStatus";
     private static final String HOSTCLASS = "hostClass";
     private static final String PAGESIZE = "pageSize";
-    private static final String PORT = "8888";
+    private static final String PAGEINDEX = "pageIndex";
+    private static final String PORT = "8080";
     private static final String USERNAME = "user_name";
     private static final String SERVICENAME = "service_name";
     private static final String BEARER = "Bearer";
-    private static final String APIGATWAYURL = "http://8.15.4.22/";
+    //private static final String REPOURL = "http://8.15.4.22/";//beta
+    private static final String REPOURL = "http://192.168.212.16/";//alpha
     private static final String OS_SUSE = "SUSE";
-    private static final String CMD_SET = "sh -x install_pntl.sh";
+    private static final String OS_EULER = "EULER";
+    private static final String COMMAND = "cd ~/ & sh -x install_pntl.sh";
+    private static final String PNTL_PATH = "~/";
+    private static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
+    private static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
+    private static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
+    private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
+        put(OS_SUSE, AGENT_SUSE);
+        put(OS_EULER, AGENT_EULER);
+    }};
+    private static final Map<String, String> SCRIPT_FILENAME= new HashMap<String, String>(){{
+        put(OS_SUSE, AGENT_INSTALL_FILENAME);
+        put(OS_EULER, AGENT_INSTALL_FILENAME);
+    }};
+    private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){{
+        put("AGENT", AGENT_FILENAME);
+        put("SCRIPT", SCRIPT_FILENAME);
+    }};
 
     /**
      * 从CMDB查询主机列表
@@ -50,28 +70,44 @@ public class Pntl {
      */
     public HostInfo getHostsList(String token) throws ClientException, ConfigLostException {
         String url = PntlInfo.URL_IP + PntlInfo.CMDB_URL_SUFFIX;
+        final int PAGE_SIZE = 10;
+        final String AGENT_STATUS = "running";
+        final String HOST_CLASS = "PM";
+
         LOG.info("get cmdb Url={}", url);
 
         Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.AUTH, token);
+        header.put(PntlInfo.AUTH, BEARER + " " +token);
 
         Parameter param = new Parameter();
-        param.put(AGENTSTATUS, "running");
-        param.put(HOSTCLASS, "PM");
-        param.put(PAGESIZE, "0");
+        param.put(AGENTSTATUS, AGENT_STATUS);
+        param.put(HOSTCLASS, HOST_CLASS);
+        param.put(PAGESIZE, String.valueOf(PAGE_SIZE));
+        param.put(PAGEINDEX, "1");
 
-        /*test begin*/
         HostInfo hostInfo = new HostInfo();
-        List<HostInfo.HostListInfo> list = new ArrayList<>();
-        HostInfo.HostListInfo host = new HostInfo.HostListInfo();
-        host.setAgentSN("4c3a8a5d-0bec-4715-aa0f-4d2f411819fd");
-        host.setIp("8.15.1.103");
-        list.add(host);
-        hostInfo.setHostsInfoList(list);
-        return hostInfo;
-        /*test end*/
 
-        //return RestClientExt.get(url, param, HostInfo.class, header);
+        int total = 0;
+        try {
+            hostInfo = RestClientExt.get(url, param, HostInfo.class, header);
+            total = hostInfo.getTotal();
+            if (total > PAGE_SIZE){
+                for (int pageIndex = 2; pageIndex <= total/PAGE_SIZE+1; pageIndex++){
+                    param.put(PAGEINDEX, String.valueOf(pageIndex));
+                    try {
+                        HostInfo rsp_hostInfo = new HostInfo();
+                        rsp_hostInfo = RestClientExt.get(url, param, HostInfo.class, header);
+                        hostInfo.getHostsInfoList().addAll(rsp_hostInfo.getHostsInfoList());
+                    } catch (ClientException e){
+                        throw new ClientException(ExceptionType.SERVER_ERR, e.getMessage());
+                    }
+                }
+            }
+        } catch (ClientException e){
+            throw new ClientException(ExceptionType.SERVER_ERR, e.getMessage());
+        }
+
+        return hostInfo;
     }
 
     /**
@@ -134,42 +170,50 @@ public class Pntl {
         String url = PntlInfo.URL_IP + PntlInfo.SCRIPT_SEND_URL_SUFFIX;
         Map<String, String> header = new HashMap<>();
         header.put(USERNAME, "y00214328");
-        header.put(SERVICENAME, "ops_agent");
+        header.put(SERVICENAME, "pntl");
         header.put(PntlInfo.AUTH, BEARER + " " + token);
 
-        List<String> suseAgentSnList = new ArrayList<>();
-        List<String> eulerAgentSnList = new ArrayList<>();
+        Map<String, List<String>> agentSnList= new HashMap<String, List<String>>(){{
+            put(OS_SUSE, new ArrayList<>());
+            put(OS_EULER, new ArrayList<>());
+        }};
 
-        ScriptSendJson suseBody = new ScriptSendJson();
-        ScriptSendJson eulerBody = new ScriptSendJson();
-        /*两种os，agent不同*/
-        for (PntlHostContext host : pntlHostList) {
-            if (host.getOs().equals(OS_SUSE)){
-                suseBody.setFilename(Resource.AGENT_SUSE);
-                suseBody.setRepoUrl(APIGATWAYURL+Resource.AGENT_SUSE);
-                suseBody.setPath(Resource.PNTL_PATH);
-                suseAgentSnList.add(host.getAgentSN());
-            } else{
-                eulerBody.setFilename(Resource.AGENT_EULER);
-                eulerBody.setRepoUrl(APIGATWAYURL+Resource.AGENT_EULER);
-                eulerBody.setPath(Resource.PNTL_PATH);
-                eulerAgentSnList.add(host.getAgentSN());
+        Map<String, ScriptSendJson> body = new HashMap<String, ScriptSendJson>(){{
+            put(OS_SUSE, new ScriptSendJson());
+            put(OS_EULER, new ScriptSendJson());
+        }};
+
+        /*两类文件：agent、安装脚本*/
+        for (String fileType : FILENAME.keySet()){
+            Map<String, String> file = FILENAME.get(fileType);
+             /*两种os，agent不同*/
+            for (PntlHostContext host : pntlHostList) {
+                String key = host.getOs().toUpperCase();
+                if (!key.equals(OS_SUSE) && !key.equals(OS_EULER)){
+                    continue;
+                }
+
+                body.get(key).setFilename(file.get((key)));
+                body.get(key).setRepoUrl(REPOURL + file.get(key));
+
+                body.get(key).setPath(PNTL_PATH);
+                body.get(key).setMode("644");
+                agentSnList.get(key).add(host.getAgentSN());
+            }
+
+            for (String key : body.keySet()){
+                body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
+                try {
+                    resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
+                    if (resp.getRespBody() != null && resp.getRespBody().get("result") != null){
+                        LOG.info(resp.getRespBody().get("result").toString());
+                    }
+                } catch (ClientException e){
+                    LOG.error("Send script to suse os agent failed");
+                }
             }
         }
-        suseBody.setAgentSNList(suseAgentSnList);
-        eulerBody.setAgentSNList(eulerAgentSnList);
 
-        try {
-            resp = RestClientExt.post(url, null, suseBody, header);
-        } catch (ClientException e){
-            LOG.error("Send script to suse os agent failed");
-        }
-
-        try {
-            resp = RestClientExt.post(url, null, eulerBody, header);
-        } catch (ClientException e){
-            LOG.error("Send script to euler os agent failed");
-        }
 
         return resp;
     }
@@ -227,7 +271,7 @@ public class Pntl {
      * @return
      * @throws ClientException
      */
-    public RestResp installAgent(List<PntlHostContext> pntlHostList) throws ClientException{
+    public RestResp installAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
         RestResp resp = null;
         CmdSetJson reqBody = new CmdSetJson();
         String url = PntlInfo.URL_IP + PntlInfo.CMD_SET_URL_SUFFIX;
@@ -235,7 +279,7 @@ public class Pntl {
 
         reqBody.setCmdType("sync");
         reqBody.setUserName("gandalf");
-        reqBody.setCmdSet(CMD_SET);
+        reqBody.setCmdSet(COMMAND);
         reqBody.setTimeout("5000");
 
         List<String> snList = new ArrayList<>();
@@ -246,6 +290,7 @@ public class Pntl {
 
         header.put(SERVICENAME, "ops_agent");
         header.put(USERNAME, "y00214328");
+        header.put(PntlInfo.AUTH, BEARER + " " + token);
         resp = RestClientExt.post(url, null, reqBody, header);
         if (resp.getStatusCode().isError()){
             LOG.info("install agent failed");

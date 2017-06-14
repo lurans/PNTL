@@ -17,6 +17,7 @@ import com.huawei.blackhole.network.core.service.EwRouterService;
 import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.core.service.VPNRouterService;
 import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
+import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
 import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
@@ -325,7 +326,7 @@ public class RouterApi {
     @Path("/pntlInit")
     @POST
     public Response pntlInit(){
-        LOGGER.info("User[" + AuthUtil.getUser(request) + "] [pntl init configuration]");
+        LOGGER.info("pntl init configuration");
         Result<String> result = new Result<String>();
 
         result = pntlService.startPntl();
@@ -339,14 +340,14 @@ public class RouterApi {
     @Path("/pingList")
     @POST
     public Response getPingList(PntlConfig config){
-        LOGGER.info("receive ping list from agent");
-        Result<String> result = new Result<String>();
+        LOGGER.info("receive ping list from agent[" + config.getContent().getAgentIp() + "]");
+        Result<AgentFlowsJson> result = new Result<AgentFlowsJson>();
 
-        result = pntlService.sendPingListToAgent(config);
+        result = pntlService.getPingList(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
-        return ResponseUtil.succ();
+        return ResponseUtil.succ(result.getModel());
     }
 
     @Path("/lossRate")

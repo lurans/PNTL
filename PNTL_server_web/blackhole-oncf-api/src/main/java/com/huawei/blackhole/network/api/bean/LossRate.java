@@ -3,6 +3,7 @@ package com.huawei.blackhole.network.api.bean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.core.bean.Result;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -18,6 +19,9 @@ public class LossRate implements Serializable{
     @JsonProperty("result")
     private static List<LossRateResult> result = new ArrayList<LossRateResult>();
 
+    public LossRate(){
+        this.result = getResult();
+    }
     public static List<LossRateResult> getResult() {
         return result;
     }
@@ -113,7 +117,7 @@ public class LossRate implements Serializable{
         newData.setRecvLossRate("0");///TODO:暂时设为0
         newData.setRecvPkgs(flow.getSt().getPacketDrops());
 
-        List<LossRateResult> resultList = getResult();
+        List<LossRateResult> resultList = LossRate.result;
         for (LossRateResult result : resultList){
             if (result.getSrcIp().equals(srcIp) && result.getDstIp().equals(dstIp)){
                 resultList.set(resultList.indexOf(result), newData);
@@ -125,5 +129,15 @@ public class LossRate implements Serializable{
         if (!hasData){
             resultList.add(newData);
         }
+    }
+
+    public static Result<LossRate> getLossRateInfo(){
+        Result<LossRate> r = new Result<>();
+        LossRate lossRate = new LossRate();
+        List<LossRateResult> resultList = getResult();
+        lossRate.setResult(resultList);
+
+        r.setModel(lossRate);
+        return r;
     }
 }

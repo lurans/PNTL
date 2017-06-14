@@ -25,7 +25,7 @@ public class AgentFlowsJson implements Serializable {
     @JsonProperty("content")
     private String content;
 */
-    @JsonProperty("flows")
+    @JsonProperty("flow")
     private List<FlowList> list;
 /*
     public String getOrgnizationSignature() {
@@ -68,11 +68,10 @@ public class AgentFlowsJson implements Serializable {
         this.list = list;
     }
 
-    @JsonRootName("flows")
+    @JsonRootName("flow")
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static final class FlowList implements Serializable {
-
         private static final long serialVersionUID = 4709870765271194078L;
 
         @JsonProperty("urgent")
@@ -175,7 +174,6 @@ public class AgentFlowsJson implements Serializable {
         }
 
         public static final class TopologyTag implements Serializable {
-
             private static final long serialVersionUID = 6030718351544239955L;
             @JsonProperty("level")
             private int level;

@@ -15,40 +15,20 @@ import java.util.List;
 @Service("pntlInfoService")
 public class PntlInfoService {
 
-    private LossRate lossRate;
+    //private LossRate lossRate;
 
-    private DelayInfo delayInfo;
+   // private DelayInfo delayInfo;
 
     public Result<Object> getLossRate() {
         Result<Object> result = new Result<>();
-        result.setModel(lossRate.getResult());
+        //result = LossRate.getLossRateInfo();
+        result.setModel(LossRate.getResult());
         return result;
-    }
-
-    public void setLossRate(LossRate lossRate) {
-        this.lossRate = lossRate;
     }
 
     public Result<Object> getDelayInfo() {
         Result<Object> result = new Result<>();
         result.setModel(DelayInfo.getResult());
-        return result;
-    }
-
-    public void setDelayInfo(DelayInfo delayInfo) {
-        this.delayInfo = delayInfo;
-    }
-
-    public Result<Object> getLossRateInfo() {
-        Result<Object> result = new Result<Object>();
-
-        try{
-            //lossRate = getLossRateFromDb();
-        } catch(Exception e){
-
-        }
-        result.setModel(lossRate);
-
         return result;
     }
 
@@ -61,7 +41,7 @@ public class PntlInfoService {
         Result<String> result = new Result<>();
 
         List<LossRateAgent.Flow> flows = data.getFlow();
-        if (flows.size() == 0){
+        if (flows == null || flows.size() == 0){
             result.setErrorMessage("lossRate flows is null");
             return result;
         }
@@ -85,7 +65,7 @@ public class PntlInfoService {
         Result<String> result = new Result<>();
         List<DelayInfoAgent.Flow> flows = data.getFlow();
 
-        if (flows.size() == 0){
+        if (flows == null || flows.size() == 0){
             result.setErrorMessage("delayInfo flows is null");
             return result;
         }
