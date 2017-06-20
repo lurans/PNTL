@@ -3,10 +3,11 @@ define([], function () {
 
     var common = {
         "follow_term_title": "断流诊断系统",
-        "follow_term_eip": "EIP",
-        "follow_term_vpn": "VPN",
-        "follow_term_ew": "VM-to-VM",
-        "follow_term_sc":"系统配置"
+        "follow_term_eip": "物理网络",
+        "follow_term_vpn": "物理定界",
+        "follow_term_ew": "网络时延",
+        "follow_term_title4":"网络丢包",
+        "follow_term_sc":"在线参数设置"
     };
     return common;
 });
