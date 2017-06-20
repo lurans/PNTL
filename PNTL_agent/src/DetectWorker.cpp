@@ -6,6 +6,19 @@
 
 #include <sys/time.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+#define UDP_TEST_PORT       6000
+#define UDP_SERVER_IP       "127.0.0.1"
 
 using namespace std;
 
@@ -28,38 +41,40 @@ using namespace std;
         if (WorkerSocketLock) \
             sal_mutex_give(WorkerSocketLock)
 
-//  Ä¬ÈÏ1sÏìÓ¦ÖÜÆÚ, Ó°ÏìCPUÕ¼ÓÃÂÊ.
+//  é»˜è®¤1så“åº”å‘¨æœŸ, å½±å“CPUå ç”¨ç‡.
 #define HANDELER_DEFAULT_INTERVAL (1000000)
 
-// Ì½²â±¨ÎÄÖ÷»úĞò×ªÍøÂçĞò
-void  PacketHtoN(PacketInfo_S * pBuffer)
+// æ¢æµ‹æŠ¥æ–‡ä¸»æœºåºè½¬ç½‘ç»œåº
+void  PacketHtoN(PacketInfo_S * pstSendMsg)
 {
-    pBuffer->uiSequenceNumber   = htonl(pBuffer->uiSequenceNumber);
-    pBuffer->stT1.uiSec         = htonl(pBuffer->stT1.uiSec);
-    pBuffer->stT1.uiUsec        = htonl(pBuffer->stT1.uiUsec);
-    pBuffer->stT2.uiSec         = htonl(pBuffer->stT2.uiSec);
-    pBuffer->stT2.uiUsec        = htonl(pBuffer->stT2.uiUsec);
-    pBuffer->stT3.uiSec         = htonl(pBuffer->stT3.uiSec);
-    pBuffer->stT3.uiUsec        = htonl(pBuffer->stT3.uiUsec);
-    pBuffer->stT4.uiSec         = htonl(pBuffer->stT4.uiSec);
-    pBuffer->stT4.uiUsec        = htonl(pBuffer->stT4.uiUsec);
+    pstSendMsg->uiSequenceNumber   = htonl(pstSendMsg->uiSequenceNumber);
+    pstSendMsg->uiRole   = htonl(pstSendMsg->uiRole);
+    pstSendMsg->stT1.uiSec         = htonl(pstSendMsg->stT1.uiSec);
+    pstSendMsg->stT1.uiUsec        = htonl(pstSendMsg->stT1.uiUsec);
+    pstSendMsg->stT2.uiSec         = htonl(pstSendMsg->stT2.uiSec);
+    pstSendMsg->stT2.uiUsec        = htonl(pstSendMsg->stT2.uiUsec);
+    pstSendMsg->stT3.uiSec         = htonl(pstSendMsg->stT3.uiSec);
+    pstSendMsg->stT3.uiUsec        = htonl(pstSendMsg->stT3.uiUsec);
+    pstSendMsg->stT4.uiSec         = htonl(pstSendMsg->stT4.uiSec);
+    pstSendMsg->stT4.uiUsec        = htonl(pstSendMsg->stT4.uiUsec);
 }
 
-// Ì½²â±¨ÎÄÍøÂçĞò×ªÖ÷»úĞò
-void  PacketNtoH(PacketInfo_S * pBuffer)
+// æ¢æµ‹æŠ¥æ–‡ç½‘ç»œåºè½¬ä¸»æœºåº
+void  PacketNtoH(PacketInfo_S * pstSendMsg)
 {
-    pBuffer->uiSequenceNumber   = ntohl(pBuffer->uiSequenceNumber);
-    pBuffer->stT1.uiSec         = ntohl(pBuffer->stT1.uiSec);
-    pBuffer->stT1.uiUsec        = ntohl(pBuffer->stT1.uiUsec);
-    pBuffer->stT2.uiSec         = ntohl(pBuffer->stT2.uiSec);
-    pBuffer->stT2.uiUsec        = ntohl(pBuffer->stT2.uiUsec);
-    pBuffer->stT3.uiSec         = ntohl(pBuffer->stT3.uiSec);
-    pBuffer->stT3.uiUsec        = ntohl(pBuffer->stT3.uiUsec);
-    pBuffer->stT4.uiSec         = ntohl(pBuffer->stT4.uiSec);
-    pBuffer->stT4.uiUsec        = ntohl(pBuffer->stT4.uiUsec);
+    pstSendMsg->uiSequenceNumber   = ntohl(pstSendMsg->uiSequenceNumber);
+    pstSendMsg->uiRole   = ntohl(pstSendMsg->uiRole);
+    pstSendMsg->stT1.uiSec         = ntohl(pstSendMsg->stT1.uiSec);
+    pstSendMsg->stT1.uiUsec        = ntohl(pstSendMsg->stT1.uiUsec);
+    pstSendMsg->stT2.uiSec         = ntohl(pstSendMsg->stT2.uiSec);
+    pstSendMsg->stT2.uiUsec        = ntohl(pstSendMsg->stT2.uiUsec);
+    pstSendMsg->stT3.uiSec         = ntohl(pstSendMsg->stT3.uiSec);
+    pstSendMsg->stT3.uiUsec        = ntohl(pstSendMsg->stT3.uiUsec);
+    pstSendMsg->stT4.uiSec         = ntohl(pstSendMsg->stT4.uiSec);
+    pstSendMsg->stT4.uiUsec        = ntohl(pstSendMsg->stT4.uiUsec);
 }
 
-// ¹¹Ôìº¯Êı, ËùÓĞ³ÉÔ±³õÊ¼»¯Ä¬ÈÏÖµ.
+// æ„é€ å‡½æ•°, æ‰€æœ‰æˆå‘˜åˆå§‹åŒ–é»˜è®¤å€¼.
 DetectWorker_C::DetectWorker_C()
 {
     struct timespec ts;
@@ -68,16 +83,16 @@ DetectWorker_C::DetectWorker_C()
 
     sal_memset(&stCfg, 0, sizeof(stCfg));
     stCfg.eProtocol = AGENT_DETECT_PROTOCOL_NULL;
-    stCfg.uiRole = WORKER_ROLE_SENDER; // Ä¬ÈÏÎªsender
+    stCfg.uiRole = WORKER_ROLE_CLIENT; // é»˜è®¤ä¸ºsender
 
     WorkerSocket = 0;
 
     clock_gettime(CLOCK_REALTIME, &ts);
-    srandom(ts.tv_nsec + ts.tv_sec); //ÓÃÊ±¼ä×öËæ»úÊıÖÖ×Ó
-    // Ëæ»úÊı·µ»ØÖµ½éÓÚ0 - RAND_MAX
+    srandom(ts.tv_nsec + ts.tv_sec); //ç”¨æ—¶é—´åšéšæœºæ•°ç§å­
+    // éšæœºæ•°è¿”å›å€¼ä»‹äº0 - RAND_MAX
     uiSequenceNumber = random() % ((UINT32)(-1));
 
-    uiHandlerDefaultInterval = HANDELER_DEFAULT_INTERVAL; //Ä¬ÈÏ1sÏìÓ¦ÖÜÆÚ, ½µµÍCPUÕ¼ÓÃÂÊ.
+    uiHandlerDefaultInterval = HANDELER_DEFAULT_INTERVAL; //é»˜è®¤1så“åº”å‘¨æœŸ, é™ä½CPUå ç”¨ç‡.
 
     SessionList.clear();
     
@@ -85,23 +100,23 @@ DetectWorker_C::DetectWorker_C()
     WorkerSocketLock = NULL;
 }
 
-// Îö¹¹º¯Êı,ÊÍ·Å×ÊÔ´
+// ææ„å‡½æ•°,é‡Šæ”¾èµ„æº
 DetectWorker_C::~DetectWorker_C()
 {
     DETECT_WORKER_INFO("Destroy Old Worker,uiProtocol[%d], uiSrcIP[%s], uiSrcPort[%d], uiRole[%d]", 
                 stCfg.eProtocol, sal_inet_ntoa(stCfg.uiSrcIP), stCfg.uiSrcPort, stCfg.uiRole);
     
     SESSION_LOCK();
-    SessionList.clear(); //Çå¿Õ»á»°Á´±í.
+    SessionList.clear(); //æ¸…ç©ºä¼šè¯é“¾è¡¨.
     SESSION_UNLOCK();
     
-    // Í£Ö¹ÈÎÎñ 
+    // åœæ­¢ä»»åŠ¡ 
     StopThread();
     
-    // ÊÍ·Åsocket.
+    // é‡Šæ”¾socket.
     ReleaseSocket();    
     
-    // ÊÍ·Å»¥³âËø.
+    // é‡Šæ”¾äº’æ–¥é”.
     if(WorkerSessionLock)  
         sal_mutex_destroy(WorkerSessionLock);    
     WorkerSessionLock = NULL;
@@ -111,79 +126,71 @@ DetectWorker_C::~DetectWorker_C()
     WorkerSocketLock = NULL;
 }
 
-// Thread»Øµ÷º¯Êı.
-// PreStopHandler()Ö´ĞĞºó, ThreadHandler()ĞèÒªÔÚGetCurrentInterval() usÄÚÖ÷¶¯ÍË³ö.
+// Threadå›è°ƒå‡½æ•°.
+// PreStopHandler()æ‰§è¡Œå, ThreadHandler()éœ€è¦åœ¨GetCurrentInterval() uså†…ä¸»åŠ¨é€€å‡º.
 INT32 DetectWorker_C::ThreadHandler()
 {
-    INT32             iSockFd = 0;    // ±¾ÈÎÎñÊ¹ÓÃµÄsocketÃèÊö·û
+    INT32             iSockFd = 0;    // æœ¬ä»»åŠ¡ä½¿ç”¨çš„socketæè¿°ç¬¦
     
-    INT32 iTos = 1;   // ±£´æ½ÓÊÕµÄ±¨ÎÄµÄtosÖµ. ³õÊ¼Ğ´³É1ÊÇÒòÎªºóĞøÒªÅäÖÃsocket»Ø´«tosĞÅÏ¢
+    INT32 iTos = 1;   // ä¿å­˜æ¥æ”¶çš„æŠ¥æ–‡çš„toså€¼. åˆå§‹å†™æˆ1æ˜¯å› ä¸ºåç»­è¦é…ç½®socketå›ä¼ tosä¿¡æ¯
     INT32 iRet = 0;
     
-    struct timeval tm;      // »º´æµ±Ç°Ê±¼ä.    
-    struct sockaddr_in stPrtnerAddr;    // ¶Ô¶ËsocketµØÖ·ĞÅÏ¢
-    char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// ±£´æ±¨ÎÄËùÓĞ¸½¼ÓĞÅÏ¢µÄbuffer, µ±Ç°Ö»Ô¤ÁôÁËtosÖµ¿Õ¼ä.
-    PacketInfo_S * pPacketBuffer = NULL;    // ±£´æ±¨ÎÄpayloadĞÅÏ¢µÄbuffer, µ±Ç°Ö»»º´æÒ»¸ö±¨ÎÄ.
+    struct timeval tm;      // ç¼“å­˜å½“å‰æ—¶é—´.    
+    struct sockaddr_in stPrtnerAddr;    // å¯¹ç«¯socketåœ°å€ä¿¡æ¯
+    char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// ä¿å­˜æŠ¥æ–‡æ‰€æœ‰é™„åŠ ä¿¡æ¯çš„buffer, å½“å‰åªé¢„ç•™äº†toså€¼ç©ºé—´.
+    PacketInfo_S stSendMsg;    // ä¿å­˜æŠ¥æ–‡payloadä¿¡æ¯çš„buffer, å½“å‰åªç¼“å­˜ä¸€ä¸ªæŠ¥æ–‡.
 
-    struct msghdr msg;      // ÃèÊö±¨ÎÄĞÅÏ¢, socketÊÕ·¢°üÊ¹ÓÃ.
-    struct cmsghdr *cmsg;   // ÓÃÓÚ±éÀú msg.msg_controlÖĞËùÓĞ±¨ÎÄ¸½¼ÓĞÅÏ¢, Ä¿Ç°ÊÇtosÖµ.
-    struct iovec iov[1];    // ÓÃÓÚ±£´æ±¨ÎÄpayload bufferµÄ½á¹¹Ìå.²Î¼ûmsg.msg_iov. µ±Ç°Ö»Ê¹ÓÃÒ»¸ö»º³åÇø.
+    struct msghdr msg;      // æè¿°æŠ¥æ–‡ä¿¡æ¯, socketæ”¶å‘åŒ…ä½¿ç”¨.
+    struct cmsghdr *cmsg;   // ç”¨äºéå† msg.msg_controlä¸­æ‰€æœ‰æŠ¥æ–‡é™„åŠ ä¿¡æ¯, ç›®å‰æ˜¯toså€¼.
+    struct iovec iov[1];    // ç”¨äºä¿å­˜æŠ¥æ–‡payload bufferçš„ç»“æ„ä½“.å‚è§msg.msg_iov. å½“å‰åªä½¿ç”¨ä¸€ä¸ªç¼“å†²åŒº.
     
 
-    // ¼ì²é¶ÔÏóµÄsocketÊÇ·ñÒÑ¾­³õÊ¼»¯³É¹¦.
+    // æ£€æŸ¥å¯¹è±¡çš„socketæ˜¯å¦å·²ç»åˆå§‹åŒ–æˆåŠŸ.
     while ((!GetSocket()) && GetCurrentInterval())
     {
-        sal_usleep(GetCurrentInterval()); //ĞİÃßÒ»¸ö¼ä¸ôºóÔÙ¼ì²é
+        sal_usleep(GetCurrentInterval()); //ä¼‘çœ ä¸€ä¸ªé—´éš”åå†æ£€æŸ¥
     }
     
     if(GetCurrentInterval())
     {
-        /*  socketÒÑ¾­ready, ´ËÊ±socketºÍProtocolµÈ³ÉÔ±Ó¦¸ÃÒÑ¾­Íê³É³õÊ¼»¯. */
+        /*  socketå·²ç»ready, æ­¤æ—¶socketå’ŒProtocolç­‰æˆå‘˜åº”è¯¥å·²ç»å®Œæˆåˆå§‹åŒ–. */
         iSockFd = GetSocket();        
 
         sal_memset(&tm, 0, sizeof(tm));
         tm.tv_sec  = GetCurrentInterval() / SECOND_USEC;  //us -> s
         tm.tv_usec = GetCurrentInterval() % SECOND_USEC; // us -> us
-        iRet = setsockopt(iSockFd, SOL_SOCKET, SO_RCVTIMEO, &tm, sizeof(tm)); //ÉèÖÃsocket ¶ÁÈ¡³¬Ê±Ê±¼ä
+        iRet = setsockopt(iSockFd, SOL_SOCKET, SO_RCVTIMEO, &tm, sizeof(tm)); //è®¾ç½®socket è¯»å–è¶…æ—¶æ—¶é—´
         if( 0 > iRet )
         {
             DETECT_WORKER_ERROR("RX: Setsockopt SO_RCVTIMEO failed[%d]: %s [%d]", iRet, strerror(errno), errno);
             return AGENT_E_HANDLER;
         }
 
-        pPacketBuffer = new PacketInfo_S;
-        if (NULL == pPacketBuffer)
-        {
-            DETECT_WORKER_ERROR("RX: No Enough Memory");
-            return AGENT_E_HANDLER;
-        }
-
-        // Ìî³ä msg
-        sal_memset(&msg, 0, sizeof(msg));
+        // å¡«å…… msg
+        sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
         
-        // ¶Ô¶ËsocketµØÖ·
+        // å¯¹ç«¯socketåœ°å€
         msg.msg_name = &stPrtnerAddr;
         msg.msg_namelen = sizeof(stPrtnerAddr);
 
-        // ±¨ÎÄpayload½ÓÊÕbuffer
-        iov[0].iov_base = pPacketBuffer;
+        // æŠ¥æ–‡payloadæ¥æ”¶buffer
+        iov[0].iov_base =  &stSendMsg;
         iov[0].iov_len  = sizeof(PacketInfo_S);
         msg.msg_iov = iov;
         msg.msg_iovlen = 1;
         
-        // ±¨ÎÄ¸½¼ÓĞÅÏ¢buffer
+        // æŠ¥æ–‡é™„åŠ ä¿¡æ¯buffer
         msg.msg_control = acCmsgBuf;
         msg.msg_controllen = sizeof(acCmsgBuf);
         
-        // Çå¿Õflag
+        // æ¸…ç©ºflag
         msg.msg_flags = 0;
 
-        // Í¨Öªsocket½ÓÊÕ±¨ÎÄÊ±»Ø´«±¨ÎÄtosĞÅÏ¢.
+        // é€šçŸ¥socketæ¥æ”¶æŠ¥æ–‡æ—¶å›ä¼ æŠ¥æ–‡tosä¿¡æ¯.
         iRet = setsockopt(iSockFd, SOL_IP, IP_RECVTOS, &iTos, sizeof(iTos)); 
         if( 0 > iRet )
         {
             DETECT_WORKER_ERROR("RX: Setsockopt IP_RECVTOS failed[%d]: %s [%d]", iRet, strerror(errno), errno);
-            delete pPacketBuffer;
             return AGENT_E_HANDLER;
         }
 
@@ -195,28 +202,28 @@ INT32 DetectWorker_C::ThreadHandler()
             switch (stCfg.eProtocol)
             {
                 case AGENT_DETECT_PROTOCOL_UDP:
-                    // Çå¿Õ¶Ô¶ËµØÖ·, payload buffer.
+                    // æ¸…ç©ºå¯¹ç«¯åœ°å€, payload buffer.
                     sal_memset(&stPrtnerAddr, 0, sizeof(stPrtnerAddr));
-                    sal_memset(pPacketBuffer, 0, sizeof(PacketInfo_S));
-                    sal_memset(acCmsgBuf, 0, sizeof(acCmsgBuf));                    
+                    sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
+                    sal_memset(acCmsgBuf, 0, sizeof(acCmsgBuf));
                     iTos = 0;
 
                     /* 
-                       ÀÏ°æ±¾µÄLinux kernel, sendmsgÊ±²»Ö§³ÖÉè¶¨tos, recvmsgÖ§³Ö»ñÈ¡tos.
-                       ÎªÁË¼æÈİÀÏ°æ±¾, sendmsgÊ±È¥³ımsg_controlĞÅÏ¢, recvmsgÊ±Ìí¼Ómsg_controlĞÅÏ¢.
+                       è€ç‰ˆæœ¬çš„Linux kernel, sendmsgæ—¶ä¸æ”¯æŒè®¾å®štos, recvmsgæ”¯æŒè·å–tos.
+                       ä¸ºäº†å…¼å®¹è€ç‰ˆæœ¬, sendmsgæ—¶å»é™¤msg_controlä¿¡æ¯, recvmsgæ—¶æ·»åŠ msg_controlä¿¡æ¯.
                     */
-                    // ±¨ÎÄ¸½¼ÓĞÅÏ¢buffer
+                    // æŠ¥æ–‡é™„åŠ ä¿¡æ¯buffer
                     msg.msg_control = acCmsgBuf;
                     msg.msg_controllen = sizeof(acCmsgBuf);
 
-                    // ½ÓÊÕ±¨ÎÄ
+                    // æ¥æ”¶æŠ¥æ–‡
                     iRet = recvmsg(iSockFd, &msg, 0);
                     if (iRet == sizeof(PacketInfo_S))                    
                     {
                         sal_memset(&tm, 0, sizeof(tm));
-                        gettimeofday(&tm,NULL); //»ñÈ¡µ±Ç°Ê±¼ä                        
+                        gettimeofday(&tm,NULL); //è·å–å½“å‰æ—¶é—´                        
 
-                        // »ñÈ¡±¨ÎÄÖĞ¸½´øµÄtosĞÅÏ¢.
+                        // è·å–æŠ¥æ–‡ä¸­é™„å¸¦çš„tosä¿¡æ¯.
                         cmsg = CMSG_FIRSTHDR(&msg);
                         if (cmsg == NULL) 
                         {
@@ -232,35 +239,35 @@ INT32 DetectWorker_C::ThreadHandler()
                         }
                         iTos = ((INT32 *) CMSG_DATA(cmsg))[0];
                         
-                        PacketNtoH(pPacketBuffer); // ±¨ÎÄpayloadÍøÂçĞò×ªÖ÷»úĞò
+                        PacketNtoH(&stSendMsg); // æŠ¥æ–‡payloadç½‘ç»œåºè½¬ä¸»æœºåº
 
-                        if(WORKER_ROLE_SENDER == stCfg.uiRole)
+                        if(WORKER_ROLE_SERVER == stSendMsg.uiRole)
                         {
                             /*
                             DETECT_WORKER_INFO("RX: Get reply packet from socket[%d], Len[%d], TOS[%d]",
                                     iSockFd, iRet, iTos);
                             */
                                                         
-                            pPacketBuffer->stT4.uiSec = tm.tv_sec;
-                            pPacketBuffer->stT4.uiUsec = tm.tv_usec;
-                            iRet = RxUpdateSession(pPacketBuffer); //Ë¢ĞÂsenderµÄ»á»°ÁĞ±í
-                            // ÈôÓ¦´ğ±¨ÎÄ·µ»ØµÄÌ«Íí(Timeout), Sender»á»°ÁĞ±íÒÑ¾­É¾³ı»á»°, »á·µ»ØÕÒ²»µ½.
+                            stSendMsg.stT4.uiSec = tm.tv_sec;
+                            stSendMsg.stT4.uiUsec = tm.tv_usec;
+                            iRet = RxUpdateSession(&stSendMsg); //åˆ·æ–°senderçš„ä¼šè¯åˆ—è¡¨
+                            // è‹¥åº”ç­”æŠ¥æ–‡è¿”å›çš„å¤ªæ™š(Timeout), Senderä¼šè¯åˆ—è¡¨å·²ç»åˆ é™¤ä¼šè¯, ä¼šè¿”å›æ‰¾ä¸åˆ°.
                             if ((AGENT_OK!= iRet) && (AGENT_E_NOT_FOUND != iRet))
                                 DETECT_WORKER_WARNING("RX: Update Session failed. iRet:[%d]", iRet);
                         }
-                        else if(WORKER_ROLE_TARGET == stCfg.uiRole)
+                        else if(WORKER_ROLE_CLIENT == stSendMsg.uiRole)
                         {
-                            pPacketBuffer->stT2.uiSec = tm.tv_sec;
-                            pPacketBuffer->stT2.uiUsec = tm.tv_usec;
+                            stSendMsg.stT2.uiSec = tm.tv_sec;
+                            stSendMsg.stT2.uiUsec = tm.tv_usec;
 
                             /* 
-                               ÀÏ°æ±¾µÄLinux kernel, sendmsgÊ±²»Ö§³ÖÉè¶¨tos, recvmsgÖ§³Ö»ñÈ¡tos.
-                               ÎªÁË¼æÈİÀÏ°æ±¾, sendmsgÊ±È¥³ımsg_controlĞÅÏ¢, recvmsgÊ±Ìí¼Ómsg_controlĞÅÏ¢.
+                               è€ç‰ˆæœ¬çš„Linux kernel, sendmsgæ—¶ä¸æ”¯æŒè®¾å®štos, recvmsgæ”¯æŒè·å–tos.
+                               ä¸ºäº†å…¼å®¹è€ç‰ˆæœ¬, sendmsgæ—¶å»é™¤msg_controlä¿¡æ¯, recvmsgæ—¶æ·»åŠ msg_controlä¿¡æ¯.
                             */
                             msg.msg_control = NULL;
                             msg.msg_controllen = 0;
                             
-                            // IP_TOS¶ÔÓÚstream(TCP)socket²»»áĞŞ¸ÄECN bit, ÆäËûÇé¿öÏÂ»á¸²¸ÇipÍ·ÖĞÕû¸ötos×Ö¶Î
+                            // IP_TOSå¯¹äºstream(TCP)socketä¸ä¼šä¿®æ”¹ECN bit, å…¶ä»–æƒ…å†µä¸‹ä¼šè¦†ç›–ipå¤´ä¸­æ•´ä¸ªtoså­—æ®µ
                             iRet = setsockopt(iSockFd, SOL_IP, IP_TOS, &iTos, sizeof(iTos));
                             if( 0 > iRet)
                             {
@@ -268,24 +275,26 @@ INT32 DetectWorker_C::ThreadHandler()
                                 continue;
                             }
 
-                            // ´òÓ¡ÈÕÖ¾»áÕ¼ÓÃ½Ï´óÊ±¼ä.
+                            // æ‰“å°æ—¥å¿—ä¼šå ç”¨è¾ƒå¤§æ—¶é—´.
                             /*
                             DETECT_WORKER_INFO("RX: Send reply packet through socket[%d], Len[%d], TOS[%d], SequenceNumber[%u].", 
                                     iSockFd, iRet, iTos, pPacketBuffer->uiSequenceNumber);
                             */
                             
                             sal_memset(&tm, 0, sizeof(tm));
-                            gettimeofday(&tm,NULL); //»ñÈ¡µ±Ç°Ê±¼ä
-                            pPacketBuffer->stT3.uiSec = tm.tv_sec;
-                            pPacketBuffer->stT3.uiUsec = tm.tv_usec;
+                            gettimeofday(&tm,NULL); //è·å–å½“å‰æ—¶é—´
+                            stSendMsg.stT3.uiSec = tm.tv_sec;
+                            stSendMsg.stT3.uiUsec = tm.tv_usec;
+							stSendMsg.uiRole = WORKER_ROLE_SERVER;
                             
-                            PacketHtoN(pPacketBuffer); // ±¨ÎÄpayloadÖ÷»úĞò×ªÍøÂçĞò
+                            PacketHtoN(&stSendMsg); // æŠ¥æ–‡payloadä¸»æœºåºè½¬ç½‘ç»œåº
                             
                             iRet = sendmsg(iSockFd, &msg, 0);
                             if (iRet != sizeof(PacketInfo_S)) // send failed
                             {   
                                 DETECT_WORKER_WARNING("RX: Send reply packet failed[%d]: %s [%d]", iRet, strerror(errno), errno);
                             }
+							sleep(0);
                         }
                     }
                     else
@@ -294,21 +303,19 @@ INT32 DetectWorker_C::ThreadHandler()
                     }                    
                     break;
                     
-                default :   //²»Ö§³ÖµÄĞ­ÒéÀàĞÍ, Ö±½ÓÍË³ö
+                default :   //ä¸æ”¯æŒçš„åè®®ç±»å‹, ç›´æ¥é€€å‡º
                     DETECT_WORKER_ERROR("RX: Unsupported Protocol[%d]", stCfg.eProtocol);
-                    delete pPacketBuffer;
                     return AGENT_E_HANDLER;
                     break;
             }
         }
-        delete pPacketBuffer;
     }
 
     DETECT_WORKER_INFO("RX: Task Exiting, Socket[%d], RxInterval[%d]", GetSocket(), GetCurrentInterval());
     return AGENT_OK;
 }
 
-// Thread¼´½«Æô¶¯, Í¨ÖªThreadHandler×öºÃ×¼±¸.
+// Threadå³å°†å¯åŠ¨, é€šçŸ¥ThreadHandleråšå¥½å‡†å¤‡.
 INT32 DetectWorker_C::PreStartHandler()
 {
     
@@ -316,7 +323,7 @@ INT32 DetectWorker_C::PreStartHandler()
     return AGENT_OK;
 }
 
-// Thread¼´½«Í£Ö¹, Í¨ÖªThreadHandlerÖ÷¶¯ÍË³ö.
+// Threadå³å°†åœæ­¢, é€šçŸ¥ThreadHandlerä¸»åŠ¨é€€å‡º.
 INT32 DetectWorker_C::PreStopHandler()
 {
     SetNewInterval(0);
@@ -329,12 +336,12 @@ INT32 DetectWorker_C::InitCfg(WorkerCfg_S stNewWorker)
     switch (stNewWorker.eProtocol)
     {
         case AGENT_DETECT_PROTOCOL_UDP:
-            if (0 == stNewWorker.uiSrcPort) // socketÒª°ó¶¨Ô´¶Ë¿Ú, ¶Ë¿ÚºÅ²»ÄÜÎª0.
+            if (0 == stNewWorker.uiSrcPort) // socketè¦ç»‘å®šæºç«¯å£, ç«¯å£å·ä¸èƒ½ä¸º0.
             {
                 DETECT_WORKER_ERROR("SrcPort is 0");
                 return AGENT_E_PARA;
             }
-            if (INADDR_NONE == stNewWorker.uiSrcIP) // socketÒª°ó¶¨Ô´¶Ë¿Ú, ¶Ë¿ÚºÅ²»ÄÜÎª0.
+            if (INADDR_NONE == stNewWorker.uiSrcIP) // socketè¦ç»‘å®šæºç«¯å£, ç«¯å£å·ä¸èƒ½ä¸º0.
             {
                 DETECT_WORKER_ERROR("Invalid SrcIP");
                 return AGENT_E_PARA;
@@ -361,21 +368,23 @@ INT32 DetectWorker_C::InitCfg(WorkerCfg_S stNewWorker)
     return AGENT_OK;
 }
 
-INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker)
+INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAgentCfg)
 {
     INT32 iRet = AGENT_OK;
 
-    if (WorkerSessionLock)  //²»Ö§³ÖÖØ¸´³õÊ¼»¯Worker, ¼ò»¯cfg»¥³â±£»¤.
+    if (WorkerSessionLock)  //ä¸æ”¯æŒé‡å¤åˆå§‹åŒ–Worker, ç®€åŒ–cfgäº’æ–¥ä¿æŠ¤.
     {
         DETECT_WORKER_ERROR("Do not reinit this worker");
         return AGENT_E_ERROR;
     }
+	
+	pcAgentCfg = pcNewAgentCfg;
     
-    // ¸ù¾İworker½ÇÉ«²»Í¬, ³õÊ¼»¯stCfg, Í¬Ê±½øĞĞÈë²Î¼ì²é
+    // æ ¹æ®workerè§’è‰²ä¸åŒ, åˆå§‹åŒ–stCfg, åŒæ—¶è¿›è¡Œå…¥å‚æ£€æŸ¥
     switch (stNewWorker.uiRole)
     {
-        case WORKER_ROLE_SENDER:  //ÔİÊ±ÎŞĞèÇø·Ö½ÇÉ«,
-        case WORKER_ROLE_TARGET:
+        case WORKER_ROLE_CLIENT:  //æš‚æ—¶æ— éœ€åŒºåˆ†è§’è‰²,
+        case WORKER_ROLE_SERVER:
             iRet = InitCfg(stNewWorker);
             if(iRet)
             {
@@ -388,7 +397,7 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker)
             return AGENT_E_PARA;
     }
     
-    // ÉêÇë»¥³âËø×ÊÔ´
+    // ç”³è¯·äº’æ–¥é”èµ„æº
     WorkerSessionLock = sal_mutex_create("DetectWorker_SESSION");
     if( NULL == WorkerSessionLock )
     {
@@ -404,16 +413,16 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker)
     }
 
     
-    StopThread(); // ĞŞ¸ÄsocketÖ®Ç°,ĞèÏÈÍ£Ö¹rxÈÎÎñ
+    StopThread(); // ä¿®æ”¹socketä¹‹å‰,éœ€å…ˆåœæ­¢rxä»»åŠ¡
     
-    iRet = InitSocket(); // ³õÊ¼»¯socket
-    if (iRet && (AGENT_E_SOCKET != iRet)) // °ó¶¨socket³ö´íÊ±²»ÍË³ö.
+    iRet = InitSocket(); // åˆå§‹åŒ–socket
+    if (iRet && (AGENT_E_SOCKET != iRet)) // ç»‘å®šsocketå‡ºé”™æ—¶ä¸é€€å‡º.
     {
         DETECT_WORKER_ERROR("InitSocket failed[%d]", iRet);
         return iRet;
     }
     
-    iRet = StartThread(); // Æô¶¯rxÈÎÎñ
+    iRet = StartThread(); // å¯åŠ¨rxä»»åŠ¡
     if(iRet)
     {
         DETECT_WORKER_ERROR("StartRxThread failed[%d]", iRet);
@@ -422,7 +431,7 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker)
     return iRet;
 }
 
-// ÊÍ·Åsocket×ÊÔ´
+// é‡Šæ”¾socketèµ„æº
 INT32 DetectWorker_C::ReleaseSocket()
 {
     if(WorkerSocket)
@@ -437,16 +446,27 @@ INT32 DetectWorker_C::ReleaseSocket()
     return AGENT_OK;
 }
 
-// ¸ù¾İstCfgĞÅÏ¢ÉêÇësocket×ÊÔ´.
+// æ ¹æ®stCfgä¿¡æ¯ç”³è¯·socketèµ„æº.
 INT32 DetectWorker_C::InitSocket()  
 {
     INT32 SocketTmp = 0;
     struct sockaddr_in servaddr;
+    INT32 iRet;
+    UINT32 uiSrcPortMin = 0, uiSrcPortMax=0, uiDestPort=0;
 
-    // ÏÈÊÍ·Åsocket×ÊÔ´
+
+    iRet = pcAgentCfg ->GetProtocolUDP(&uiSrcPortMin, &uiSrcPortMax, &uiDestPort);
+    if (iRet)
+    {
+        FLOW_MANAGER_ERROR("Get Protocol UDP cfg failed[%d]", iRet);
+        return AGENT_E_PARA;
+    }
+        FLOW_MANAGER_INFO("InitSocket~~~~~~~~~~~~~~~~~~~~~~~~[%d]", uiDestPort);
+
+    // ÃÃˆÃŠÃÂ·Ã…socketÃ—ÃŠÃ”Â´
     ReleaseSocket();
     
-    // ¸ù¾İĞ­ÒéÀàĞÍ, ´´½¨¶ÔÓ¦socket.
+    // æ ¹æ®åè®®ç±»å‹, åˆ›å»ºå¯¹åº”socket.
     switch (stCfg.eProtocol)
     {
         case AGENT_DETECT_PROTOCOL_UDP:
@@ -458,9 +478,10 @@ INT32 DetectWorker_C::InitSocket()
             }
             sal_memset(&servaddr, 0, sizeof(servaddr));
             servaddr.sin_family = AF_INET;
-            servaddr.sin_addr.s_addr = htonl(stCfg.uiSrcIP);
-            servaddr.sin_port = htons(stCfg.uiSrcPort);
-            
+            //servaddr.sin_addr.s_addr = htonl(stCfg.uiSrcIP);
+            servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+            servaddr.sin_port = htons(uiDestPort);
+
             if( bind(SocketTmp, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
             {
                 DETECT_WORKER_WARNING("Bind socket failed, SrcIP[%s],SrcPort[%d]: %s [%d]", 
@@ -481,13 +502,14 @@ INT32 DetectWorker_C::InitSocket()
     SOCKET_LOCK();
     WorkerSocket = SocketTmp;
     SOCKET_UNLOCK();
-    
-    //DETECT_WORKER_INFO("Init a new socket [%d]", WorkerSocket);
+
+    DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", WorkerSocket,uiDestPort,servaddr.sin_addr.s_addr);
+
     return AGENT_OK;
 }
 
 
-// »ñÈ¡µ±Ç°socket, »¥³âËø±£»¤
+// è·å–å½“å‰socket, äº’æ–¥é”ä¿æŠ¤
 INT32 DetectWorker_C::GetSocket()
 {
     INT32 SocketTmp;
@@ -499,7 +521,7 @@ INT32 DetectWorker_C::GetSocket()
     return SocketTmp;
 }
 
-// RxÈÎÎñÊÕµ½Ó¦´ğ±¨ÎÄºó, Í¨ÖªworkerË¢ĞÂ»á»°ÁĞ±í, senderµÄRxÈÎÎñÊ¹ÓÃ.
+// Rxä»»åŠ¡æ”¶åˆ°åº”ç­”æŠ¥æ–‡å, é€šçŸ¥workeråˆ·æ–°ä¼šè¯åˆ—è¡¨, senderçš„Rxä»»åŠ¡ä½¿ç”¨.
 INT32 DetectWorker_C::RxUpdateSession
         (PacketInfo_S * pstPakcet)
 {
@@ -512,6 +534,8 @@ INT32 DetectWorker_C::RxUpdateSession
         if ( ( pstPakcet->uiSequenceNumber == pSession ->uiSequenceNumber )
             && (SESSION_STATE_WAITING_REPLY == pSession->uiSessionState) )
         {
+                 DETECT_WORKER_INFO("RX: RxUpdateSession st2[%u], st3[%u]",
+                                    pstPakcet->stT2.uiSec, pstPakcet->stT3.uiSec);
             pSession->stT2 = pstPakcet->stT2;
             pSession->stT3 = pstPakcet->stT3;
             pSession->stT4 = pstPakcet->stT4;
@@ -524,7 +548,7 @@ INT32 DetectWorker_C::RxUpdateSession
     return iRet;
 }
 
-// TX·¢ËÍ±¨ÎÄ½áÊøºóË¢ĞÂ»á»°×´Ì¬
+// TXå‘é€æŠ¥æ–‡ç»“æŸååˆ·æ–°ä¼šè¯çŠ¶æ€
 INT32 DetectWorker_C::TxUpdateSession
         (DetectWorkerSession_S* pNewSession)
 {
@@ -546,48 +570,49 @@ INT32 DetectWorker_C::TxUpdateSession
     return iRet;
 }
 
-// Æô¶¯±¨ÎÄ·¢ËÍ.PushSession()Ê±´¥·¢.
+// å¯åŠ¨æŠ¥æ–‡å‘é€.PushSession()æ—¶è§¦å‘.
 INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S* 
                         pNewSession)               
 {
     INT32 iRet = AGENT_OK;
     struct timeval tm;
-    PacketInfo_S * pBuffer = NULL;
+    PacketInfo_S * pstSendMsg = NULL;
     struct sockaddr_in servaddr;
     INT32 tos = 0;
 
     sal_memset(&servaddr, 0, sizeof(servaddr));
 
-    pBuffer = new PacketInfo_S;
-    if (NULL == pBuffer)
+    pstSendMsg = new PacketInfo_S;
+    if (NULL == pstSendMsg)
     {
         DETECT_WORKER_ERROR("No enough memory"); 
         return AGENT_E_MEMORY;
     }
-    sal_memset(pBuffer, 0, sizeof(PacketInfo_S));
-    
-    pBuffer->uiSequenceNumber = pNewSession->uiSequenceNumber;
+    sal_memset(pstSendMsg, 0, sizeof(PacketInfo_S));
+
+    pstSendMsg->uiSequenceNumber = pNewSession->uiSequenceNumber;
     sal_memset(&tm, 0, sizeof(tm));
-    gettimeofday(&tm,NULL); //»ñÈ¡µ±Ç°Ê±¼ä
-    pBuffer->stT1.uiSec = tm.tv_sec;
-    pBuffer->stT1.uiUsec = tm.tv_usec;
+    gettimeofday(&tm,NULL); //è·å–å½“å‰æ—¶é—´
+    pstSendMsg->stT1.uiSec = tm.tv_sec;
+    pstSendMsg->stT1.uiUsec = tm.tv_usec;
+    pstSendMsg->uiRole = WORKER_ROLE_CLIENT;
 
-    pNewSession->stT1 = pBuffer->stT1; //±£´æT1Ê±¼ä 
+    pNewSession->stT1 = pstSendMsg->stT1; //ä¿å­˜T1æ—¶é—´ 
 
-    // ¼ì²ésocketÊÇ·ñÒÑ¾­ready
+    // æ£€æŸ¥socketæ˜¯å¦å·²ç»ready
     if( 0 == GetSocket()) 
     {
-        iRet = InitSocket(); //³¢ÊÔÖØĞÂ°ó¶¨socket
+        iRet = InitSocket(); //å°è¯•é‡æ–°ç»‘å®šsocket
         if(iRet)
         {
             DETECT_WORKER_WARNING("Init Socket failed again[%d]", iRet);
-            delete pBuffer;
-            pBuffer = NULL;
+            delete pstSendMsg;
+            pstSendMsg = NULL;
             return iRet;
         }
     }
 
-    SOCKET_LOCK(); //Í¬Ò»Ê±¼äÖ»ÔÊĞíÒ»¸öÈÎÎñÍ¨¹ı¸Ãsocket·¢°ü. 
+    SOCKET_LOCK(); //åŒä¸€æ—¶é—´åªå…è®¸ä¸€ä¸ªä»»åŠ¡é€šè¿‡è¯¥socketå‘åŒ…. 
 
     switch (pNewSession->stFlowKey.eProtocol)
     {
@@ -596,9 +621,9 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
             servaddr.sin_addr.s_addr = htonl(pNewSession->stFlowKey.uiDestIP);
             servaddr.sin_port = htons(pNewSession->stFlowKey.uiDestPort);
 
-            tos = (pNewSession->stFlowKey.uiDscp)<<2; //dscp×óÒÆ2Î», ±ä³Étos
+            tos = (pNewSession->stFlowKey.uiDscp)<<2; //dscpå·¦ç§»2ä½, å˜æˆtos
             
-            // IP_TOS¶ÔÓÚstream(TCP)socket²»»áĞŞ¸ÄECN bit, ÆäËûÇé¿öÏÂ»á¸²¸ÇipÍ·ÖĞÕû¸ötos×Ö¶Î
+            // IP_TOSå¯¹äºstream(TCP)socketä¸ä¼šä¿®æ”¹ECN bit, å…¶ä»–æƒ…å†µä¸‹ä¼šè¦†ç›–ipå¤´ä¸­æ•´ä¸ªtoså­—æ®µ
             iRet = setsockopt(GetSocket(), SOL_IP, IP_TOS, &tos, sizeof(tos)); 
             if( 0 > iRet )
             {
@@ -607,9 +632,9 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
                 break;
             }
             
-            PacketHtoN(pBuffer);// Ö÷»úĞò×ªÍøÂçĞò            
-            iRet = sendto(GetSocket(), pBuffer, sizeof(PacketInfo_S), 0, (sockaddr *)&servaddr, sizeof(servaddr));            
-            if (sizeof(PacketInfo_S) == iRet) //·¢ËÍ³É¹¦.
+            PacketHtoN(pstSendMsg);// ä¸»æœºåºè½¬ç½‘ç»œåº            
+            iRet = sendto(GetSocket(), pstSendMsg, sizeof(PacketInfo_S), 0, (sockaddr *)&servaddr, sizeof(servaddr));            
+            if (sizeof(PacketInfo_S) == iRet) //å‘é€æˆåŠŸ.
             {
                 pNewSession->uiSessionState = SESSION_STATE_WAITING_REPLY;
                 
@@ -619,7 +644,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
                     DETECT_WORKER_WARNING("TX: Tx Update Session[%d]", iRet);
                 }
             }
-            else //·¢ËÍÊ§°Ü
+            else //å‘é€å¤±è´¥
             {
                 DETECT_WORKER_ERROR("TX: Send Detect Packet failed[%d]: %s [%d]", iRet, strerror(errno), errno);                
                 iRet = AGENT_E_ERROR;
@@ -631,14 +656,14 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
             iRet = AGENT_E_PARA;
     }
     SOCKET_UNLOCK();
-    
-    delete pBuffer;
-    pBuffer = NULL;
-    
+
+    delete pstSendMsg;
+    pstSendMsg = NULL;
+
     return iRet;
 }
 
-// Ìí¼ÓÌ½²âÈÎÎñ, FlowManageÊ¹ÓÃ.
+// æ·»åŠ æ¢æµ‹ä»»åŠ¡, FlowManageä½¿ç”¨.
 INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
 {
     INT32 iRet = AGENT_OK;
@@ -646,27 +671,21 @@ INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
     DetectWorkerSession_S stNewSession;
     sal_memset(&stNewSession, 0, sizeof(stNewSession));
 
-    // Èë²Î¼ì²é,¹«¹²²¿·Ö.
-    if (WORKER_ROLE_TARGET == stCfg.uiRole)     // Target¶Ë²»ÔÊĞíÑ¹ÈëÌ½²â»á»°
+    // å…¥å‚æ£€æŸ¥,å…¬å…±éƒ¨åˆ†.
+    if (WORKER_ROLE_SERVER == stCfg.uiRole)     // Targetç«¯ä¸å…è®¸å‹å…¥æ¢æµ‹ä¼šè¯
     {
         DETECT_WORKER_ERROR("Role target do not support POP session"); 
         return AGENT_E_PARA;
     }
     
-    if (stNewFlow.eProtocol != stCfg.eProtocol)  // ¼ì²éflowµÄĞ­ÒéÊÇ·ñÓëµ±Ç°workerÆ¥Åä
+    if (stNewFlow.eProtocol != stCfg.eProtocol)  // æ£€æŸ¥flowçš„åè®®æ˜¯å¦ä¸å½“å‰workeråŒ¹é…
     {
         DETECT_WORKER_ERROR("New session Protocol do not match this worker"); 
         return AGENT_E_PARA;
     }
-    
-    if (stNewFlow.uiSrcPort!= stCfg.uiSrcPort)     // ¼ì²éflowµÄÔ´¶Ë¿ÚÊÇ·ñÓëµ±Ç°workerÆ¥Åä
-    {
-        DETECT_WORKER_ERROR("New session SrcPort do not match this worker"); 
-        return AGENT_E_PARA;
-    }
-    
+
     if ( SAL_INADDR_ANY !=  stCfg.uiSrcIP
-        && (stNewFlow.uiSrcIP!= stCfg.uiSrcIP))    // ¼ì²éflowµÄÔ´IPÊÇ·ñÓëµ±Ç°workerÆ¥Åä. stProtocol.uiSrcIPÎª0±íÊ¾Æ¥ÅäÈÎÒâIP.
+        && (stNewFlow.uiSrcIP!= stCfg.uiSrcIP))    // æ£€æŸ¥flowçš„æºIPæ˜¯å¦ä¸å½“å‰workeråŒ¹é…. stProtocol.uiSrcIPä¸º0è¡¨ç¤ºåŒ¹é…ä»»æ„IP.
     {
         DETECT_WORKER_ERROR("New session SrcIP do not match this worker. New Session IP:[%s]",
                 sal_inet_ntoa(stNewFlow.uiSrcIP));
@@ -675,14 +694,14 @@ INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
         return AGENT_E_PARA;
     }
 
-    if (stNewFlow.uiDscp > AGENT_MAX_DSCP_VALUE)  // ¼ì²éflowµÄdscpÊÇ·ñºÏ·¨
+    if (stNewFlow.uiDscp > AGENT_MAX_DSCP_VALUE)  // æ£€æŸ¥flowçš„dscpæ˜¯å¦åˆæ³•
     {
         DETECT_WORKER_ERROR("New session dscp[%d] is bigger than the max value[%d]", stNewFlow.uiDscp, AGENT_MAX_DSCP_VALUE); 
         return AGENT_E_PARA;
     }
         
 
-    // Èë²Î¼ì²é,¸ù¾İĞ­ÒéÀàĞÍÇø·Ö¼ì²é.
+    // å…¥å‚æ£€æŸ¥,æ ¹æ®åè®®ç±»å‹åŒºåˆ†æ£€æŸ¥.
     switch (stNewFlow.eProtocol)
     {
         case AGENT_DETECT_PROTOCOL_UDP:
@@ -693,25 +712,25 @@ INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
             return AGENT_E_PARA;
     }
 
-    // ¼ì²éÍ¨¹ı. 
+    // æ£€æŸ¥é€šè¿‡. 
     stNewSession.stFlowKey = stNewFlow;
-    stNewSession.uiSequenceNumber = uiSequenceNumber++; // »ñÈ¡ĞòÁĞºÅ
-    stNewSession.uiSessionState = SESSION_STATE_INITED; // ³õÊ¼»¯×´Ì¬»ú.
+    stNewSession.uiSequenceNumber = uiSequenceNumber++; // è·å–åºåˆ—å·
+    stNewSession.uiSessionState = SESSION_STATE_INITED; // åˆå§‹åŒ–çŠ¶æ€æœº.
 
 
-    // Ñ¹Èë»á»°ÁĞ±í, rxÈÎÎñÊÕµ½Ó¦´ğ±¨ÎÄºó»á¸ù¾İĞòÁĞºÅ²éÕÒ»á»°ÁĞ±í.
+    // å‹å…¥ä¼šè¯åˆ—è¡¨, rxä»»åŠ¡æ”¶åˆ°åº”ç­”æŠ¥æ–‡åä¼šæ ¹æ®åºåˆ—å·æŸ¥æ‰¾ä¼šè¯åˆ—è¡¨.
     SESSION_LOCK();    
     SessionList.push_back(stNewSession);
     SESSION_UNLOCK();
 
-    // Æô¶¯Ì½²â±¨ÎÄ·¢ËÍ
+    // å¯åŠ¨æ¢æµ‹æŠ¥æ–‡å‘é€
     iRet = TxPacket(&stNewSession);
     if (iRet)
     {
         DETECT_WORKER_WARNING("TX: TxPacket failed[%d]", iRet);
         
         stNewSession.uiSessionState = SESSION_STATE_SEND_FAIELD;
-        iRet = TxUpdateSession(&stNewSession); //Ë¢ĞÂ×´Ì¬»ú.
+        iRet = TxUpdateSession(&stNewSession); //åˆ·æ–°çŠ¶æ€æœº.
         if( iRet )
         {
             DETECT_WORKER_WARNING("TX: Tx Update Session[%d]", iRet);
@@ -722,33 +741,28 @@ INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
     return iRet;
 }
 
-// ²éÑ¯Ì½²â½á¹û, FlowManageÊ¹ÓÃ.
+// æŸ¥è¯¢æ¢æµ‹ç»“æœ, FlowManageä½¿ç”¨.
 INT32 DetectWorker_C::PopSession(DetectWorkerSession_S* 
                         pOldSession)
 {
     INT32 iRet = AGENT_E_NOT_FOUND;
 
-    if (WORKER_ROLE_TARGET == stCfg.uiRole)     // Target¶Ë²»ÔÊĞí²éÑ¯Ì½²â½á¹û
-    {
-        DETECT_WORKER_ERROR("Role target do not support POP session"); 
-        return AGENT_E_NOT_FOUND;
-    }
-    
-    SESSION_LOCK();    
-    vector<DetectWorkerSession_S>::iterator pSession;    
+
+    SESSION_LOCK();
+    vector<DetectWorkerSession_S>::iterator pSession;
     for(pSession = SessionList.begin(); pSession != SessionList.end(); pSession++)
     {
         if ( (SESSION_STATE_SEND_FAIELD == pSession->uiSessionState )
            ||(SESSION_STATE_WAITING_REPLY == pSession->uiSessionState )
-           ||(SESSION_STATE_WAITING_CHECK == pSession->uiSessionState ))  // ÒÑ¾­ÊÕµ½±¨ÎÄ»òÕßÕıÔÚµÈ´ıÓ¦´ğ±¨ÎÄ
+           ||(SESSION_STATE_WAITING_CHECK == pSession->uiSessionState ))  // å·²ç»æ”¶åˆ°æŠ¥æ–‡æˆ–è€…æ­£åœ¨ç­‰å¾…åº”ç­”æŠ¥æ–‡
         {
-            if (SESSION_STATE_WAITING_REPLY == pSession->uiSessionState)  // ´ËÊ±ÉĞÎ´ÊÕµ½Ó¦´ğ±¨ÎÄÒâÎ¶×Å³¬Ê±.
+            if (SESSION_STATE_WAITING_REPLY == pSession->uiSessionState)  // æ­¤æ—¶å°šæœªæ”¶åˆ°åº”ç­”æŠ¥æ–‡æ„å‘³ç€è¶…æ—¶.
             {
                 struct timeval tm;
                 pSession->uiSessionState = SESSION_STATE_TIMEOUT;
                 
                 sal_memset(&tm, 0, sizeof(tm));
-                gettimeofday(&tm,NULL); // »ñÈ¡µ±Ç°Ê±¼ä
+                gettimeofday(&tm,NULL); // è·å–å½“å‰æ—¶é—´
                 pSession->stT4.uiSec = tm.tv_sec;
                 pSession->stT4.uiUsec = tm.tv_usec;
             }

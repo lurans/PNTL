@@ -12,7 +12,7 @@ extern INT32 ParserLocalCfg(const CHAR * pcJsonData, ServerAntAgentCfg_C * pcCfg
 extern INT32 ProcessUrgentFlowFromServer(const CHAR * pcJsonData, FlowManager_C* pcFlowManager);
 
 // 解析json格式的字符串, 并下发到FlowManager, 负责处理向Server请求时Server回复的普通探测流.
-extern INT32 ProcessNormalFlowFromServer(const CHAR * pcJsonData, FlowManager_C* pcFlowManager);
+extern INT32 ProcessNormalFlowFromServer(CHAR * pcJsonData, FlowManager_C* pcFlowManager);
 
 // 生成json格式的字符串, 用于发起向Server请求Probe-list时提交的post data.
 extern INT32 CreatProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData);
