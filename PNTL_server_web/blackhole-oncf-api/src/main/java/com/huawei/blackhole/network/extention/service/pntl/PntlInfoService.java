@@ -14,11 +14,6 @@ import java.util.List;
 
 @Service("pntlInfoService")
 public class PntlInfoService {
-
-    //private LossRate lossRate;
-
-   // private DelayInfo delayInfo;
-
     public Result<Object> getLossRate() {
         Result<Object> result = new Result<>();
         //result = LossRate.getLossRateInfo();
@@ -52,6 +47,9 @@ public class PntlInfoService {
                 return result;
             }
             LossRate.saveInfo(flow);
+            if (needTracerouteLossRate(flow)){
+                new Pntl().startTraceroute(flow.getSip(), flow.getDip());
+            }
         }
         return result;
     }
@@ -76,8 +74,34 @@ public class PntlInfoService {
                 return result;
             }
             DelayInfo.saveInfo(flow);
+            if (needTracerouteDelay(flow)){
+                new Pntl().startTraceroute(flow.getSip(), flow.getDip());
+            }
         }
-
         return result;
     }
+
+    private boolean needTracerouteDelay(DelayInfoAgent.Flow flow){
+        Long t1 = Long.valueOf(flow.getTime().getT1());
+        Long t2 = Long.valueOf(flow.getTime().getT2());
+        Long t3 = Long.valueOf(flow.getTime().getT3());
+        Long t4 = Long.valueOf(flow.getTime().getT4());
+
+        if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0){
+            return true;
+        }
+        ///TODO:是否还有其他条件
+        return false;
+    }
+
+    private boolean needTracerouteLossRate(LossRateAgent.Flow flow){
+        float rate = Float.parseFloat(flow.getSt().getPacketDrops()) / Float.parseFloat(flow.getSt().getPacketSent());
+        rate *= 100;
+        if (rate >= 50){///TODO:阈值需要再考虑
+            return true;
+        }
+
+        return false;
+    }
+
 }

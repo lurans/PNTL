@@ -24,6 +24,7 @@ function install_agent()
 	tar -xzf $tar_filename
 	cd $filename
 	chmod 777 *
+	sh -x env.sh
 	sh -x $install_file
 	
 } 
