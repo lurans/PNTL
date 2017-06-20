@@ -1,11 +1,8 @@
 package com.huawei.blackhole.network.common.constants;
 
-/**
- * Created by y00214328 on 2017/5/26.
- */
 public class PntlInfo {
-    //public static final String URL_IP = "https://8.15.4.96:8243";//beta
-    public static final String URL_IP = "https://192.168.211.98:8243";//alpha
+    public static final String URL_IP = "https://8.15.4.96:8243";//beta
+    //public static final String URL_IP = "https://192.168.211.98:8243";//alpha
 
     public static final String CMDB_URL_SUFFIX = "/v1/cloud-cmdb/hosts";
 
@@ -14,6 +11,8 @@ public class PntlInfo {
     public static final String AGENT_LOG_URL_SUFFIX = "/CloudAgent/v1/api/cmdset/logSend";
 
     public static final String CMD_SET_URL_SUFFIX = "/CloudAgent/v1/api/cmdset";
+
+    public static final String AGENT_INFO_BY_IP = "/CloudAgent/v1/api/info/agent/by/ip";
 
     public static final String TOKEN_URL_SUFFIX = "/token";
     //this is beta environment's address

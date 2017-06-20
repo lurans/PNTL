@@ -72,10 +72,10 @@ public class Keystone {
 
     private static final Object LOCK = new Object();
 
-    //private static final String BASIC_TOKEN = "basic bXkwWVlFWTBPcHhTUENfNlk2MDJpRF" +
-    //        "lGdFJBYTpyeWxlWkhQdDdNdHBLNTV4REoyUU04V1BLRVFh";//beta
-    private static final String BASIC_TOKEN = "basic ak5lSlB6MDZweld1cF80SVlmeFRCcmJ" +
-            "MdEJ3YTpDM19wcG5BcXkyWl9WcF9vaDNMdlBFR3lQbklh";//alpha
+    private static final String BASIC_TOKEN = "basic MGpfeG15Y2xNcmZ2U3ptTXJHRmRSYlRMZll" +
+            "JYTpnVFNNZlpXeDVibzN4SUx5NzU0dEl0VHA2TWNh";//beta
+    //private static final String BASIC_TOKEN = "basic ak5lSlB6MDZweld1cF80SVlmeFRCcmJ" +
+     //       "MdEJ3YTpDM19wcG5BcXkyWl9WcF9vaDNMdlBFR3lQbklh";//alpha
 
     private static final String GRANT_TYPE = "grant_type";
 

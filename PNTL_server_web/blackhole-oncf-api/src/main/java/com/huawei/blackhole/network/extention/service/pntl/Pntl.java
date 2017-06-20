@@ -2,6 +2,8 @@ package com.huawei.blackhole.network.extention.service.pntl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huawei.blackhole.network.api.bean.DelayInfoAgent;
+import com.huawei.blackhole.network.api.bean.LossRateAgent;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ClientException;
@@ -10,11 +12,9 @@ import com.huawei.blackhole.network.common.utils.http.Parameter;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
-import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
-import com.huawei.blackhole.network.extention.bean.pntl.CmdSetJson;
-import com.huawei.blackhole.network.extention.bean.pntl.HostInfo;
+import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
-import com.huawei.blackhole.network.extention.bean.pntl.ScriptSendJson;
+import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,11 +40,10 @@ public class Pntl {
     private static final String USERNAME = "user_name";
     private static final String SERVICENAME = "service_name";
     private static final String BEARER = "Bearer";
-    //private static final String REPOURL = "http://8.15.4.22/";//beta
-    private static final String REPOURL = "http://192.168.212.16/";//alpha
+    private static final String REPOURL = "http://8.15.4.22/";//beta
+    //private static final String REPOURL = "http://192.168.212.16/";//alpha
     private static final String OS_SUSE = "SUSE";
     private static final String OS_EULER = "EULER";
-    private static final String COMMAND = "cd ~/ & sh -x install_pntl.sh";
     private static final String PNTL_PATH = "~/";
     private static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
     private static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
@@ -68,7 +68,7 @@ public class Pntl {
      * @throws ClientException
      * @throws ConfigLostException
      */
-    public HostInfo getHostsList(String token) throws ClientException, ConfigLostException {
+    public HostInfo getHostsList(String token) throws ClientException {
         String url = PntlInfo.URL_IP + PntlInfo.CMDB_URL_SUFFIX;
         final int PAGE_SIZE = 10;
         final String AGENT_STATUS = "running";
@@ -169,9 +169,7 @@ public class Pntl {
         RestResp resp = null;
         String url = PntlInfo.URL_IP + PntlInfo.SCRIPT_SEND_URL_SUFFIX;
         Map<String, String> header = new HashMap<>();
-        header.put(USERNAME, "y00214328");
-        header.put(SERVICENAME, "pntl");
-        header.put(PntlInfo.AUTH, BEARER + " " + token);
+        setCommonHeaderForAgent(header, token);
 
         Map<String, List<String>> agentSnList= new HashMap<String, List<String>>(){{
             put(OS_SUSE, new ArrayList<>());
@@ -213,7 +211,6 @@ public class Pntl {
                 }
             }
         }
-
 
         return resp;
     }
@@ -265,6 +262,34 @@ public class Pntl {
         return resp;
     }
 
+    private static void setCommonHeaderForAgent(Map<String, String> header, String token){
+        if (header == null){
+            return;
+        }
+        header.put(SERVICENAME, "pntl");
+        header.put(USERNAME, "y00214328");
+        if (token != null){
+            header.put(PntlInfo.AUTH, BEARER + " " + token);
+        }
+    }
+
+    public RestResp sendCommandToAgents(List<String> snList, String token, String command, String cmdType)
+        throws ClientException{
+        CmdSetJson reqBody = new CmdSetJson();
+        String url = PntlInfo.URL_IP + PntlInfo.CMD_SET_URL_SUFFIX;
+        Map<String, String> header = new HashMap<>();
+
+        reqBody.setCmdType(cmdType);
+        reqBody.setUserName("root");
+        reqBody.setCmdSet(command);
+        reqBody.setTimeout("5000");
+
+
+        reqBody.setAgentSNList(snList);
+
+        setCommonHeaderForAgent(header, token);
+        return RestClientExt.post(url, null, reqBody, header);
+    }
     /**
      * 下发安装命令，执行安装脚本，进行agent安装
      * @param pntlHostList
@@ -272,31 +297,12 @@ public class Pntl {
      * @throws ClientException
      */
     public RestResp installAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
-        RestResp resp = null;
-        CmdSetJson reqBody = new CmdSetJson();
-        String url = PntlInfo.URL_IP + PntlInfo.CMD_SET_URL_SUFFIX;
-        Map<String, String> header = new HashMap<>();
-
-        reqBody.setCmdType("sync");
-        reqBody.setUserName("gandalf");
-        reqBody.setCmdSet(COMMAND);
-        reqBody.setTimeout("5000");
-
         List<String> snList = new ArrayList<>();
         for (PntlHostContext host : pntlHostList){
             snList.add(host.getAgentSN());
         }
-        reqBody.setAgentSNList(snList);
-
-        header.put(SERVICENAME, "ops_agent");
-        header.put(USERNAME, "y00214328");
-        header.put(PntlInfo.AUTH, BEARER + " " + token);
-        resp = RestClientExt.post(url, null, reqBody, header);
-        if (resp.getStatusCode().isError()){
-            LOG.info("install agent failed");
-        }
-
-        return resp;
+        final String command = "cd ~/ & sh -x install_pntl.sh";
+        return sendCommandToAgents(snList, token, command, "sync");
     }
 
     public static final class ProbeFlows{
@@ -312,6 +318,60 @@ public class Pntl {
 
         public ProbeFlows(String str){
             this.ServerAntsAgent = str;
+        }
+    }
+
+    private static String getAgentSnByIp(String ip){
+        String agentSn = null;
+        if (ip == null){
+            return null;
+        }
+
+        Map<String, String> header = new HashMap<>();
+        String token = null;
+        try {
+            token = new Keystone().getPntlAccessToken();
+        }catch (ClientException e){
+            LOG.error("Get token fail " + e.getMessage());
+        }
+        setCommonHeaderForAgent(header, token);
+
+        AgentInfoByIp resp = null;
+        String url = PntlInfo.URL_IP + PntlInfo.AGENT_INFO_BY_IP;
+        Parameter param = new Parameter();
+        param.put("value", ip);
+        try {
+            resp = RestClientExt.get(url, param, AgentInfoByIp.class, header);
+        }catch (ClientException e){
+            LOG.error("get agent info by ip(" + ip + ") failed " + e.getMessage());
+        }
+        agentSn = resp.getData();
+
+        return agentSn;
+    }
+
+    public void startTraceroute(String srcIp, String dstIp){
+        if (srcIp == null || dstIp == null){
+            return;
+        }
+        String srcAgentSn = getAgentSnByIp(srcIp);
+        String dstAgentSn = getAgentSnByIp(srcIp);
+        if (srcAgentSn == null || dstAgentSn == null){
+            return;
+        }
+        List<String> snList = new ArrayList<>();
+        snList.add(srcAgentSn);
+        String token = null;
+        try {
+            token = new Keystone().getPntlAccessToken();
+        }catch (ClientException e){
+            LOG.error("Get token fail " + e.getMessage());
+        }
+        final String command = "cd /opt/huawei/ServerAntAgent & python tracetool.py";
+        try {
+            sendCommandToAgents(snList, token, command, "async");
+        } catch(ClientException e){
+            LOG.error("Execute:" + command + "fail " + e.getMessage());
         }
     }
 
