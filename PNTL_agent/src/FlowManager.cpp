@@ -1275,7 +1275,6 @@ INT32 FlowManager_C::GetDetectResult()
             }
             
         }while( AGENT_E_NOT_FOUND != iRet );
-    }
     AGENT_WORKING_FLOW_TABLE_UNLOCK();
     
     return AGENT_OK;
