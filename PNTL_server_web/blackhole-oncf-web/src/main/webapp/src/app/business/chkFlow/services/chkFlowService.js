@@ -261,7 +261,8 @@ define([], function () {
             vpnFlowInfo.netId = flowInfo.netId;
             vpnFlowInfo.vmIp = flowInfo.vmIp;
             vpnFlowInfo.vpnRemoteIp = flowInfo.vpnRemoteIp;
-        }
+        };
+
     };
 
     var chkFlowModule = angular.module('common.config');

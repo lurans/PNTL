@@ -1,0 +1,30 @@
+<div  id="editVariablesDIV" ng-controller="editVariable.ctrl" ng-cloak>
+    <div>
+        <tiny-button id="editVariableBtn.id"
+                     text="editVariableBtn.text"
+                     disable="editVariableBtn.disable"
+                     minWidth="editVariableBtn.minWidth"
+                     tipWidth="editVariableBtn.tipWidth"></tiny-button>
+        </tiny-button>
+    </div>
+    <div>
+        <tiny-button id="cancelVariableBtn.id"
+                     text="cancelVariableBtn.text"
+                     disable="cancelVariableBtn.disable"
+                     minWidth="cancelVariableBtn.minWidth"
+                     tipWidth="cancelVariableBtn.tipWidth"></tiny-button>
+        </tiny-button>
+    </div>
+
+</div>
+
+<script>
+    require(['app/business/chkFlow/controllers/editVariableCtrl'],
+            function (editVariableCtrl) {
+                angular.element(document).injector().invoke(function ($compile) {
+                    var scope = $("#editVariablesDIV").scope();
+                    $compile($("#editVariablesDIV"))(scope);
+                    scope.$digest();
+                });
+            });
+</script>
