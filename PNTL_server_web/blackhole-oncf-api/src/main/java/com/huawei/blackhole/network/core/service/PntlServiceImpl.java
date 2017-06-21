@@ -247,7 +247,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Result<String> result = new Result<>();
         try{
             String token = identityWrapperService.getPntlAccessToken();
-            pntlRequest.installAgent(hostList, token);
+            RestResp resp = pntlRequest.installAgent(hostList, token);
         } catch (ClientException e){
             LOG.error("Send ip list to agents failed, " + e.getMessage());
             result.addError("", e.toString());
@@ -370,7 +370,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
         List<HostInfo.HostListInfo> hosts = new ArrayList<>();
         int ip = 100;
-        for (int i = 0; i < 100; i++){
+        for (int i = 0; i < 40; i++){
             HostInfo.HostListInfo host = new HostInfo.HostListInfo();
             host.setIp("100.109.253." + String.valueOf(ip));
             hosts.add(host);
@@ -378,7 +378,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         hostList.get(0).setPingMeshList("100.109.253.152", hosts);
         return hostList;
-        */
+*/
     }
 
     /**

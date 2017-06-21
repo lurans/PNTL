@@ -5,6 +5,10 @@ agent_path="/opt/huawei/ServerAntAgent"
 
 function clear_env()
 {
+    if [ -f "/opt/huawei/ServerAntAgent/StopService.sh" ];then
+        cd $agent_path
+        sh -x StopService.sh
+    fi
 	rm -rf $agent_path
 }
 

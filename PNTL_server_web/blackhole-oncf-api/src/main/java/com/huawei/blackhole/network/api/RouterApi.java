@@ -412,7 +412,7 @@ public class RouterApi {
     public Response getIpList(IpListRequest req){
         String azId = req.getAzId();
         String podId = req.getPodId();
-
+        LOGGER.info("Get ip list, azId(" + azId + "), podId(" + podId + ")");
         Result<IpListJson> result = pntlService.getIpListinfo(azId, podId);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
