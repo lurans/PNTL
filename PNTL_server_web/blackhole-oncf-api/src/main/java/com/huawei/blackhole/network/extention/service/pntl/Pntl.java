@@ -44,7 +44,7 @@ public class Pntl {
     //private static final String REPOURL = "http://192.168.212.16/";//alpha
     private static final String OS_SUSE = "SUSE";
     private static final String OS_EULER = "EULER";
-    private static final String PNTL_PATH = "~/";
+    private static final String PNTL_PATH = "/home/GalaX8800";
     private static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
     private static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
     private static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
@@ -301,7 +301,7 @@ public class Pntl {
         for (PntlHostContext host : pntlHostList){
             snList.add(host.getAgentSN());
         }
-        final String command = "cd ~/ & sh -x install_pntl.sh";
+        final String command = "cd /home/GalaX8800;sh -x install_pntl.sh";
         return sendCommandToAgents(snList, token, command, "sync");
     }
 
