@@ -1,6 +1,6 @@
 #!/bin/bash
 
-path="/home/GalaX8800"
+path="/root"
 agent_path="/opt/huawei/ServerAntAgent"
 
 function clear_env()
@@ -15,6 +15,7 @@ function clear_env()
 
 function install_agent()
 {
+    cd $path
 	local tar_filename=$(ls ServerAntAgentFor*.tar.gz)
 	local filename="ServerAntAgentSetup"
 	local install_file="InstallService.sh"
