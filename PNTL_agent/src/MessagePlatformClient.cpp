@@ -70,10 +70,13 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
 
 	}
 
-    (*pssResponce) << pStr;
-
+	char* newPStr = new char[size * nmemb + 1];
+	sal_strncpy(newPStr, pStr, size * nmemb);
+	newPStr[size * nmemb] = '\0';
+    (*pssResponce) << newPStr;
     MSG_CLIENT_WARNING("ReceiveResponce..................strlen[%d].........................data:'%s'         nmemb:%d",
-					strlen(pStr), pStr, nmemb);
+					strlen(newPStr), newPStr, nmemb);
+	delete newPStr;
     return size*nmemb;
 }
 
