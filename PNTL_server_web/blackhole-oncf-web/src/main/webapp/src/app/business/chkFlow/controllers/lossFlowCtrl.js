@@ -55,8 +55,14 @@ define(["language/chkFlow",
                             });
                             lossLink.forEach(function(link,i)
                             {
-                                lossMatrix[ipSeq[link['src_ip']]][ipSeq[link['dst_ip']]].z=
+                                var srcIp = link['src_ip'];
+                                var dstIp = link['dst_ip'];
+                                if(srcIp in ipSeq && dstIp in ipSeq)
+                                {
+                                    lossMatrix[ipSeq[srcIp]][ipSeq[dstIp]].z=
                                     d3.max([parseFloat(link['send_loss_rate']),parseFloat(link['recv_loss_rate'])]);
+                                }
+
                             });
 
                             var xEvent,yEvent,sEvent;
