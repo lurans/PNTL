@@ -22,5 +22,6 @@ public class PntlInfo {
     public static final String X_FORM_URLENCODED = "application/x-www-form-urlencoded";
     public static final String AUTH = "Authorization";
     public static final String GRANT_TYPE = "grant_type";
+    public static final int    MONITOR_INTERVAL_TIME = 5*60;//second
 
 }

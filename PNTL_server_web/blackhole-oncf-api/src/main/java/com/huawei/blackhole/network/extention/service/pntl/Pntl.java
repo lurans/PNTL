@@ -17,6 +17,7 @@ import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,8 +45,7 @@ public class Pntl {
     //private static final String REPOURL = "http://192.168.212.16/";//alpha
     private static final String OS_SUSE = "SUSE";
     private static final String OS_EULER = "EULER";
-    private static final String COMMAND = "cd /home/GalaX8800 & sh -x install_pntl.sh";
-    private static final String PNTL_PATH = "/home/GalaX8800";
+    private static final String PNTL_PATH = "/root";
     private static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
     private static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
     private static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
@@ -187,6 +187,9 @@ public class Pntl {
             Map<String, String> file = FILENAME.get(fileType);
              /*两种os，agent不同*/
             for (PntlHostContext host : pntlHostList) {
+                if (host.getOs() == null){
+                    continue;
+                }
                 String key = host.getOs().toUpperCase();
                 if (!key.equals(OS_SUSE) && !key.equals(OS_EULER)){
                     continue;
@@ -207,7 +210,7 @@ public class Pntl {
                     if (resp.getRespBody() != null && resp.getRespBody().get("result") != null){
                         LOG.info(resp.getRespBody().get("result").toString());
                     }
-                } catch (ClientException e){
+                } catch (ClientException | JSONException e){
                     LOG.error("Send script to suse os agent failed");
                 }
             }
@@ -303,10 +306,8 @@ public class Pntl {
         for (PntlHostContext host : pntlHostList){
             snList.add(host.getAgentSN());
         }
-
-       // final String command = "cd /home/GalaX8800 & sh -x install_pntl.sh";
-        LOG.info("Install agent, cmd=" + COMMAND);
-        return sendCommandToAgents(snList, token, COMMAND, "sync");
+        final String command = "cd" + " " + PNTL_PATH + ";sh -x install_pntl.sh";
+        return sendCommandToAgents(snList, token, command, "sync");
     }
 
     public static final class ProbeFlows{
@@ -325,7 +326,7 @@ public class Pntl {
         }
     }
 
-    private static String getAgentSnByIp(String ip){
+    public static String getAgentSnByIp(String ip){
         String agentSn = null;
         if (ip == null){
             return null;

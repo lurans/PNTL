@@ -255,7 +255,6 @@ public class RestClientExt {
     public static RestResp get(String url, Parameter parameters, Map<String, String> header) throws ClientException {
         try {
             String newUrl = buildUrl(url, parameters);
-            LOGGER.info("get url={}", newUrl);
             HttpGet httpPut = new HttpGet(newUrl);
 
             configHttpBaseRequest(httpPut, header);

@@ -63,7 +63,7 @@ public class ScriptSendJson implements Serializable{
         this.groupType = "";
         this.topic = "pntl";
         this.tag = "pntl";
-        this.userName = "gandalf";
+        this.userName = "root";
     }
 
     public String getFilename() {

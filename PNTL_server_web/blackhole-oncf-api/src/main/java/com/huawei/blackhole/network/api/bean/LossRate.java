@@ -3,6 +3,7 @@ package com.huawei.blackhole.network.api.bean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
 
 import java.io.Serializable;
@@ -47,6 +48,8 @@ public class LossRate implements Serializable{
         private String recvLossRate;
         @JsonProperty("recv_pkgs")
         private String recvPkgs;
+
+        private Long timestamp;
 
         public String getSrcIp() {
             return srcIp;
@@ -95,6 +98,14 @@ public class LossRate implements Serializable{
         public void setRecvPkgs(String recvPkgs) {
             this.recvPkgs = recvPkgs;
         }
+
+        public Long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(Long timestamp) {
+            this.timestamp = timestamp;
+        }
     }
 
     /**
@@ -116,11 +127,12 @@ public class LossRate implements Serializable{
         newData.setSendPkgs(flow.getSt().getPacketSent());
         newData.setRecvLossRate("0");///TODO:暂时设为0
         newData.setRecvPkgs(flow.getSt().getPacketDrops());
+        newData.setTimestamp(System.currentTimeMillis()/1000);
 
         List<LossRateResult> resultList = LossRate.result;
         for (LossRateResult result : resultList){
             if (result.getSrcIp().equals(srcIp) && result.getDstIp().equals(dstIp)){
-                resultList.set(resultList.indexOf(result), newData);
+                resultList.set(resultList.indexOf(result), newData);//replace old data
                 hasData = true;
                 break;
             }
@@ -139,5 +151,17 @@ public class LossRate implements Serializable{
 
         r.setModel(lossRate);
         return r;
+    }
+
+    public static void refleshLossRateWarning(){
+        List<LossRateResult> resultList = LossRate.result;
+        List<LossRateResult> delList = new ArrayList<>();
+        for (LossRateResult result : resultList){
+            Long intervalTime = System.currentTimeMillis()/1000 - result.getTimestamp();
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){//second
+                delList.add(result);
+            }
+        }
+        resultList.removeAll(delList);
     }
 }
