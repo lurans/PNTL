@@ -1,9 +1,12 @@
 package com.huawei.blackhole.network.core.service;
 
+import com.huawei.blackhole.network.api.bean.DelayInfo;
+import com.huawei.blackhole.network.api.bean.LossRate;
 import com.huawei.blackhole.network.api.bean.PntlConfig;
 import com.huawei.blackhole.network.api.resource.PntlShareInfo;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
@@ -234,7 +237,31 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         };
        // resultService.execute(getNetworkMapTask);
 
+         /* 启动轮询监控*/
+        Runnable monitorTask = new Runnable() {
+            @Override
+            public void run() {
+                    monitorPntl();
+            }
+        };
+        resultService.execute(monitorTask);
+
         return  result;
+    }
+
+    /**
+     * 监控当前告警，对于长时间没有上报的告警，设置老化时间，超时则删除
+     */
+    private void monitorPntl(){
+        while (true){
+            LossRate.refleshLossRateWarning();
+            DelayInfo.reflesDelayInfoWarning();
+            try{
+                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME * 1000);//second
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -356,24 +383,16 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return pntlHostList;
         /*
         hostList = new ArrayList<PntlHostContext>();
-        PntlHostContext tmpHost = new PntlHostContext();
-        tmpHost.setIp("100.109.253.152");
-        hostList.add(tmpHost);
-
-        PntlHostContext tmpHost2 = new PntlHostContext();
-        tmpHost2.setIp("127.0.0.1");
-        hostList.add(tmpHost2);
-
-        PntlHostContext tmpHost3 = new PntlHostContext();
-        tmpHost3.setIp("1.1.1.1");
-        hostList.add(tmpHost3);
-
         List<HostInfo.HostListInfo> hosts = new ArrayList<>();
-        int ip = 100;
+        int ip = 152;
         for (int i = 0; i < 40; i++){
             HostInfo.HostListInfo host = new HostInfo.HostListInfo();
             host.setIp("100.109.253." + String.valueOf(ip));
             hosts.add(host);
+
+            PntlHostContext tmpHost = new PntlHostContext();
+            tmpHost.setIp("100.109.253." + String.valueOf(ip));
+            hostList.add(tmpHost);
             ip++;
         }
         hostList.get(0).setPingMeshList("100.109.253.152", hosts);

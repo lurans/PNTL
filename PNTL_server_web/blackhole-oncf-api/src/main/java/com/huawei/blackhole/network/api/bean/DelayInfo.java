@@ -3,6 +3,7 @@ package com.huawei.blackhole.network.api.bean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class DelayInfo implements Serializable {
         @JsonProperty("recv_round_delay")
         private String recvRoundDelay;
 
+        private Long   timestamp;
         public String getSrcIp() {
             return srcIp;
         }
@@ -88,6 +90,14 @@ public class DelayInfo implements Serializable {
         public void setRecvRoundDelay(String recvRoundDelay) {
             this.recvRoundDelay = recvRoundDelay;
         }
+
+        public Long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(Long timestamp) {
+            this.timestamp = timestamp;
+        }
     }
 
     public static void saveInfo(DelayInfoAgent.Flow flow){
@@ -119,5 +129,17 @@ public class DelayInfo implements Serializable {
         if (!hasData){
             resultList.add(newData);
         }
+    }
+
+    public static void reflesDelayInfoWarning(){
+        List<DelayInfoResult> resultList = getResult();
+        List<DelayInfoResult> delList = new ArrayList<>();
+        for (DelayInfoResult result : resultList){
+            Long intervalTime = System.currentTimeMillis()/1000 - result.getTimestamp();
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){//second
+                delList.add(result);
+            }
+        }
+        resultList.remove(delList);
     }
 }

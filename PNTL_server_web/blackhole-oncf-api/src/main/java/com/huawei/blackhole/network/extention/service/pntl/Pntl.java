@@ -17,6 +17,7 @@ import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -186,6 +187,9 @@ public class Pntl {
             Map<String, String> file = FILENAME.get(fileType);
              /*两种os，agent不同*/
             for (PntlHostContext host : pntlHostList) {
+                if (host.getOs() == null){
+                    continue;
+                }
                 String key = host.getOs().toUpperCase();
                 if (!key.equals(OS_SUSE) && !key.equals(OS_EULER)){
                     continue;
@@ -206,7 +210,7 @@ public class Pntl {
                     if (resp.getRespBody() != null && resp.getRespBody().get("result") != null){
                         LOG.info(resp.getRespBody().get("result").toString());
                     }
-                } catch (ClientException e){
+                } catch (ClientException | JSONException e){
                     LOG.error("Send script to suse os agent failed");
                 }
             }
