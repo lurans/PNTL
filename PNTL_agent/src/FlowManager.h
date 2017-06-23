@@ -76,7 +76,7 @@ typedef struct tagServerFlowKey
     UINT32   uiSrcPortMin;        // 探测流源端口范围起始值, 需位于当前Agent已经保留的端口范围. 若为0时则使用agent保留的最小端口号.
     UINT32   uiSrcPortMax;        // 探测流源端口范围最大值, 需位于当前Agent已经保留的端口范围. 若为0时则使用agent保留的最大端口号.
     UINT32   uiSrcPortRange;      // 每个上报周期内覆盖的源端口个数. 若为0时则使用uiSrcPortMin to uiSrcPortMax计算
-    
+    UINT32   uiDestPort;
     // ServerAnt定义的拓扑信息, 来源于Server.
     ServerTopo_S stServerTopo;
    
@@ -85,6 +85,7 @@ typedef struct tagServerFlowKey
     {
         if (  (other.uiUrgentFlow == uiUrgentFlow)
             &&(other.eProtocol == eProtocol)
+            &&(other.uiDestPort == uiDestPort) 
             &&(other.uiSrcIP == uiSrcIP)
             &&(other.uiDestIP == uiDestIP)
             &&(other.uiDscp == uiDscp)
@@ -102,6 +103,7 @@ typedef struct tagServerFlowKey
     {
         if (  (other.uiUrgentFlow != uiUrgentFlow)
             ||(other.eProtocol != eProtocol)
+            ||(other.uiDestPort != uiDestPort) 
             ||(other.uiSrcIP != uiSrcIP)
             ||(other.uiDestIP != uiDestIP)
             ||(other.uiDscp != uiDscp)
@@ -139,9 +141,8 @@ class FlowManager_C : ThreadClass_C
 private:
     // DetectWorker 资源管理
     // 初始化后不再修改, 不用互斥
-    vector <DetectWorker_C *> WorkerList_UDP;           // UDP Sender Worker链表,  用于遍历源端口发送探测报文.
-    DetectWorker_C * pcWorkerTargetUDP;                 // UDP Target Worker, 用于接收探测报文并发送应答报文.
-    
+    DetectWorker_C * WorkerList_UDP;                 // UDP Target Worker, 用于接收探测报文并发送应答报文.
+
 
     // Agent 使用的流表.
     // 操作工作流表需互斥, 操作配置流表无需互斥. 当前单线程场景实际不会触发互斥.
@@ -212,8 +213,6 @@ private:
 
     KafkaClient_C *  pcKafkaClient;         // kafka客户端, 用于向Collector上报探测结果
     
-    // Thread 相关实现
-    sal_sem_t semTimer;                     // Timer的同步信号量 
     /* Thread 实现代码 */
     INT32 ThreadHandler();                        // 任务主处理函数    
     INT32 PreStopHandler();                       // StopThread触发, 通知ThreadHandler主动退出.

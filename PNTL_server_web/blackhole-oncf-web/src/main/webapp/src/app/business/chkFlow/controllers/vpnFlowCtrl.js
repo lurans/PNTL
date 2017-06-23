@@ -4,8 +4,8 @@ define(["language/chkFlow",
     function (i18n, commonException, $, Step, _StepDirective, ViewMode) {
         "use strict";
 
-        var vpnFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "chkFlowServ",
-            function ($scope, $rootScope, $state, $sce, $compile, $timeout, chkFlowServ) {
+        var locationFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "locationFlowServ",
+            function ($scope, $rootScope, $state, $sce, $compile, $timeout, locationFlowServ) {
                 $scope.i18n = i18n;
 
                 $scope.noDataShow = true;
@@ -125,6 +125,7 @@ define(["language/chkFlow",
                     divTip.hide();
                 };
 
+                //将状态保留
                 function copySrc2Dst(src, dst){
                     dst.cna_inGroups = src.cna_inGroups;
                     dst.cna_outGroups = src.cna_outGroups;
@@ -194,14 +195,17 @@ define(["language/chkFlow",
                     //ucd
                     dst.noDataShow = src.noDataShow;
                     dst.statusShow = src.statusShow;
+
                     dst.searchDisable = src.searchDisable;
                     dst.flowShow = src.flowShow;
                 }
 
                 function initStatusFlag(){
+                    //初始化L2,L3以及显示状态
                     copySrc2Dst(initVpnInfo, $scope);
                     //VPN
                     $scope.vpn_vmNetShow = initVpnInfo.vpn_vmNetShow;
+                    //vpn_vm_net下拉菜单
                     var options = $scope.vpn_vm_net.values;
                     $scope.vpn_vm_net.values = [];
                     if (null !== initVpnInfo.vmId){
@@ -217,8 +221,11 @@ define(["language/chkFlow",
                         options[0].checked = false;
                         options[1].checked = true;
                     }
+                    //获取下拉菜单的值
                     $scope.vpn_vm_net.values= options;
+                    //获取文本输入框vmIp的值
                     $scope.vmIp.value = initVpnInfo.vmIp;
+                    //获取文本输入框vpnRemoteIp的值
                     $scope.vpnRemoteIp.value = initVpnInfo.vpnRemoteIp;
                 }
 
@@ -471,11 +478,13 @@ define(["language/chkFlow",
 
                 function saveFlowResults(){
                     setFlowInfoContent(flowInfo);
-                    chkFlowServ.setFlowInfo("vpn", flowInfo);
+                    //serv1
+                    locationFlowServ.setFlowInfo("vpn", flowInfo);
                 };
 
                 function getChkFlowInfo(id){
-                    var promise = chkFlowServ.getNwFlowInfo(id);
+                    //serv2
+                    var promise = locationFlowServ.getNwFlowInfo(id);
                     promise.then(function(data){
                         setTaskStatus(data.status);
                         if ("ERROR" === data.status){
@@ -640,15 +649,19 @@ define(["language/chkFlow",
                 var isSelectTimeout;
                 var selectTimeout;
 
+                //2、点击Search按钮时，查询的入口
                 $scope.searchBtn = function() {
+                    //检验文本框输入的合法性,在button右边给出提示信息
                     if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
                         divTip.option("content",$scope.i18n.chkFlow_term_input_valid);
                         divTip.show(30000);
                         return;
                     }
-
+                    //输入合法，提示信息隐藏
                     divTip.hide();
+                    //获取输入参数
                     var para = getParaFromInput();
+                    //
                     clearLastResults();
                     setTaskStatus("PROCESSING");
                     $scope.searchDisable = true;
@@ -659,22 +672,35 @@ define(["language/chkFlow",
                     selectTimeout = $timeout(function(){
                         isSelectTimeout = true;
                     }, 10*60*1000);
-
-                    searchFlowInfo(para, chkFlowServ.getVpnTaskInfo);
+                    //serv3
+                    searchFlowInfo(para, locationFlowServ.getVpnTaskInfo);
                 }
-
+                /*this.getVpnFlowInfo = function(){
+                    return vpnFlowInfo;
+                    var vpnFlowInfo = {//初始化值
+                        "vpn_vmNetShow":true,
+                        "vmId":null,
+                        "netId":null,
+                        "vmIp":null,
+                        "vpnRemoteIp":null,
+                        "searchDisable":false,
+                        "flowShow":false
+                    };
+                }*/
                 function init(){
-                    initVpnInfo = chkFlowServ.getVpnFlowInfo();
+                    //serv4
+                    initVpnInfo = locationFlowServ.getVpnFlowInfo();
+                    //将各个状态初始化
                     initStatusFlag();
                     if($scope.searchDisable)
                         $timeout(function(){init();},500);
                 }
-
+                //1、未点击Search按钮时，初始化进入init函数
                 init();
             }]
 
         var module = angular.module('common.config');
-        module.tinyController('vpnFlow.ctrl', vpnFlowCtrl);
+        module.tinyController('locationFlow.ctrl', locationFlowCtrl);
 
         return module;
 

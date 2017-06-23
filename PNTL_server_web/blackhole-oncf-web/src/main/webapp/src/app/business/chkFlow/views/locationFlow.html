@@ -1,0 +1,132 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-control" content="no-cache">
+<meta http-equiv="Cache" content="no-cache">
+<!--FaultLocation -->
+<div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span1 input_label" style="width: 70px;">
+                <span>*</span>Source Ip
+            </div>
+            <div class="span3 input_content" style="margin-left: 0px;margin-left: 10px;">
+                <tiny-textbox id="sourceIp.id" value="sourceIp.value"
+                              width="sourceIp.width"
+                              validate="sourceIp.validate"
+                              max-length="sourceIp.maxLength"
+                              change="inputChg()"></tiny-textbox>
+            </div>
+            <div class="span1 input_label" style="width: 70px;margin-left: 20px;">
+                <span>*</span>{{i18n.chkFlow_term_remote_ip}}
+            </div>
+            <div class="span2 input_content" style="margin-left: 10px;">
+                <tiny-textbox id="remoteIp.id" value="remoteIp.value"
+                              width="remoteIp.width"
+                              validate="remoteIp.validate"
+                              max-length="remoteIp.maxLength"
+                              change="inputChg()"></tiny-textbox>
+            </div>
+            <div class="span2" style="float: right">
+                <tiny-button id="search.id" text="search.text"
+                             icons-class="search.iconsClass"
+                             width="search.width"
+                             disable="search.disable"
+                             click="searchBtn()"></tiny-button>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard_title"></div>
+    <div style="text-align: center;margin-top: 80px;color: #999999;" ng-show="noDataShow">{{i18n.chkFlow_term_no_data}}</div>
+    <div style="display: block;" ng-show="statusShow">
+        <div class="{{picStatus}}" style="text-align:center" ng-show="!erroInfoShow">{{status}}</div>
+        <div class="errInfo" ng-show="erroInfoShow">{{erroInfo}}</div>
+    </div>
+    <div style="display: inline-block;width: 100%" ng-show="flowShow">
+        <div class="routers">
+            <!--左侧-->
+            <div class="outputRouters">
+                <!--first-->
+                <div class="serv1" ng-style="l3_outHost1Style" ng-show="cna_firstOutShow">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;{{l3_outAz1}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: {{l3_outPod1}}<br>
+                        &nbsp;&nbsp;{{l3_outHostType1}}: {{l3_outHost1}}<br>
+                        &nbsp;&nbsp;{{vm_diplay}}:&nbsp;&nbsp;&nbsp;{{l3_srcVm}}<br>
+                    </div>
+                    <tinyplus-timeline side="right" class="wholeTimeLine">
+                        <div class="timeLine tinypuls-tl-axis-default"></div>
+                        <tinyplus-timeline-item ng-repeat="group in l3_firstOutGroup" style="height: 60px;">
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_blue': group.packets !== 0,
+                              'outerCircle_red': group.packets === 0}"></div>
+                            </tinyplus-timeline-badge>
+                            <div class="conLine"></div>
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
+                                    'tinypuls-tl-panel':group.packets !== 0}">
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <tinyplus-timeline-item ng-show="l3_outShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="output_arrow_down"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>
+                    </tinyplus-timeline>
+                </div>
+                <!--second-->
+                <div class="serv2" ng-style="l3_outHost2Style"  ng-show="cna_secdOutShow">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;{{l3_outAz2}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: {{l3_outPod2}}<br>
+                        &nbsp;&nbsp;{{l3_outHostType2}}: {{l3_outHost2}}<br>
+                        &nbsp;&nbsp;{{vm_diplay}}:&nbsp;&nbsp;&nbsp;{{l3_srcVm}}<br>
+                    </div>
+                    <tinyplus-timeline side="right" class="wholeTimeLine" style="margin-top: 25px">
+                        <div class="timeLine tinypuls-tl-axis-default"></div>
+                        <tinyplus-timeline-item ng-repeat="group in l3_secondOutGroup" style="height: 60px;">
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_blue': group.packets !== 0,
+                              'outerCircle_red': group.packets === 0}">
+                                </div>
+                            </tinyplus-timeline-badge>
+                            <div class="conLine"></div>
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
+                                    'tinypuls-tl-panel':group.packets !== 0}">
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <tinyplus-timeline-item ng-show="l3_outShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="output_arrow_down"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>
+                    </tinyplus-timeline>
+                </div>
+            </div>
+
+            <!--颜色标示-->
+            <div class="exam_framework">
+                <div class="row-fluid exam_li" >
+                    <div class="span2"><div class="exam_blue"></div></div>
+                    <div class="apan10">{{i18n.chkFlow_term_exam_blue}}</div>
+                </div>
+                <div class="row-fluid exam_li">
+                    <div class="span2"><div class="exam_yellow"></div></div>
+                    <div>{{i18n.chkFlow_term_exam_yellow}}</div>
+                </div>
+                <div class="row-fluid exam_li">
+                    <div class="span2"><div class="exam_red"></div></div>
+                    <div>{{i18n.chkFlow_term_exam_red}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

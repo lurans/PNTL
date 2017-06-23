@@ -297,6 +297,7 @@ public class Pntl {
      * @throws ClientException
      */
     public RestResp installAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
+
         List<String> snList = new ArrayList<>();
         for (PntlHostContext host : pntlHostList){
             snList.add(host.getAgentSN());

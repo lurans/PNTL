@@ -150,12 +150,12 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("PollingTimerPeriod");
-        iRet = pcCfg->SetPollingTimerPeriod(uiData);
+        /*iRet = pcCfg->SetPollingTimerPeriod(uiData);
         if (iRet)
         {
             JSON_PARSER_ERROR("SetPollingTimerPeriod failed[%d]", iRet);
             return iRet;
-        }
+        }*/
         uiData = ptDataTmp.get<UINT32>("ReportPeriod");
         iRet = pcCfg->SetReportPeriod(uiData);
         if (iRet)
@@ -189,27 +189,6 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         if (iRet)
         {
             JSON_PARSER_ERROR("SetDetectDropThresh failed[%d]", iRet);
-            return iRet;
-        }
-        uiData = ptDataTmp.get<UINT32>("DetectUrgentThresh");
-        iRet = pcCfg->SetDetectUrgentThresh(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectUrgentThresh failed[%d]", iRet);
-            return iRet;
-        }
-        uiData = ptDataTmp.get<UINT32>("DetectTrackingThresh");
-        iRet = pcCfg->SetDetectTrackingThresh(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectTrackingThresh failed[%d]", iRet);
-            return iRet;
-        }
-        uiData = ptDataTmp.get<UINT32>("DetectTrackingDscp");
-        iRet = pcCfg->SetDetectTrackingDscp(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectTrackingDscp failed[%d]", iRet);
             return iRet;
         }
 
@@ -406,8 +385,8 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             // 加入json数组, 暂不使用数组, Collector不支持.
             ptDataFlowArray.push_back(make_pair("", ptDataFlowEntry));
         }
-        
-        ptDataRoot.put_child("flows", ptDataFlowArray);
+
+        ptDataRoot.put_child("flow", ptDataFlowArray);
         //ptDataRoot.put_child("flow", ptDataFlowEntry);
 
         ssJsonData.clear();
@@ -522,8 +501,8 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
             // 加入json数组
             ptDataFlowArray.push_back(make_pair("", ptDataFlowEntry));
         }
-        
-        ptDataRoot.put_child("flows", ptDataFlowArray);
+
+        ptDataRoot.put_child("flow", ptDataFlowArray);
         //ptDataRoot.put_child("flow", ptDataFlowEntry);
 
         ssJsonData.clear();
@@ -695,28 +674,14 @@ INT32 IssueFlowFromJsonFlowArray(ptree ptFlowArray, FlowManager_C* pcFlowManager
                 JSON_PARSER_ERROR("Get Flow Info From Json failed [%d]", iRet);
                 return iRet;
             }
-            // 向flow manager中添加探测流.
-            if (uiIsUrgentFlow)
+
+            // 普通流程添加到配置表, 待配置倒换后生效.
+	   iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
+            if (iRet)
             {
-                // urgent 流程立即添加到当前工作表,立即生效.
-                iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
-                if (iRet)
-                {
-                    JSON_PARSER_ERROR("Add New ServerWorkingFlowTable failed [%d]", iRet);
-                    return iRet;
-                }
+                JSON_PARSER_ERROR("Add New ServerWorkingFlowTable failed [%d]", iRet);
+                return iRet;
             }
-            else
-            {
-                // 普通流程添加到配置表, 待配置倒换后生效.
-                iRet = pcFlowManager->ServerCfgFlowTableAdd(stNewServerFlowKey);
-                if (iRet)
-                {
-                    JSON_PARSER_ERROR("Add New ServerCfgFlowTable failed [%d]", iRet);
-                    return iRet;
-                }
-            }
-            
         }
     }
     catch (exception const & e)
@@ -851,7 +816,7 @@ ServerAntServer 回复的普通探测流格式
 #define NormalFlowReplayAction       "reply"
 
 // 解析json格式的字符串, 并下发到FlowManager, 负责处理向Server请求时Server回复的普通探测流.
-INT32 ProcessNormalFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
+INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManager)
 {
     INT32 iRet = AGENT_OK;
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
@@ -861,8 +826,6 @@ INT32 ProcessNormalFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
         stringstream ssStringData(pcJsonData);
 
-        //JSON_PARSER_INFO("Responce From Server[%s]", pcJsonData);
-        
         // boost::property_tree对象, 用于存储json格式数据.
         ptree ptDataRoot, ptFlowArray;
         read_json(ssStringData, ptDataRoot);
@@ -905,7 +868,7 @@ INT32 ProcessNormalFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 #else
         // 从data中解析数据,填充stServerFlowKey, 然后调用FlowManager接口添加探测流.
         ptFlowArray.clear();
-        ptFlowArray = ptDataRoot.get_child("flows");
+        ptFlowArray = ptDataRoot.get_child("flow");
         iRet = IssueFlowFromJsonFlowArray(ptFlowArray, pcFlowManager, AGENT_FALSE);
         if (iRet)
         {

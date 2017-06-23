@@ -2,6 +2,15 @@ define([], function () {
     "use strict";
 
     var chkFlow = {
+        "chkFlow_term_config_name":"Variable Name",
+        "chkFlow_term_config_value":"Variable Value",
+        "chkFlow_term_config_update_time":"Update Time",
+        "chkFlow_term_config_op":"Operation",
+        "chkFlow_term_manager":"Manage",
+        "chkFlow_term_config_edit":"Variable Edit",
+        "chkFlow_term_edit_variable_btn":"OK",
+        "chkFlow_term_cancel_variable_btn":"Cancel",
+        "chkFlow_term_reset_btn":"Reset",
         "chkFlow_term_name": "NetWork Flow Path",
         "chkFlow_term_protocol":"Protocol",
         "chkFlow_term_icmp":"ICMP",

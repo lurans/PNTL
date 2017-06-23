@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <vector> 
 #include <netinet/in.h>
+#include "ServerAntAgentCfg.h"
 
 #include "Sal.h"
 #include "ThreadClass.h"
@@ -109,8 +110,8 @@ enum
 // worker角色:sender(Client side), target(Server side)
 enum 
 {
-    WORKER_ROLE_SENDER  = 0,    // sender(Client side) 发送探测报文
-    WORKER_ROLE_TARGET,         // target(Server side) 响应探测报文,发送应答报文
+    WORKER_ROLE_CLIENT  = 0,    // sender(Client side) 发送探测报文
+    WORKER_ROLE_SERVER,         // target(Server side) 响应探测报文,发送应答报文
     WORKER_ROLE_MAX
 };
 
@@ -129,6 +130,7 @@ typedef struct tagPacketTime{
 // 探测报文格式 修改该结构时务必同步修改PacketHtoN()和PacketNtoH()函数
 typedef struct tagPacketInfo{
     UINT32   uiSequenceNumber;    // 报文序列号,sender发送报文的时候生成.
+    UINT32   uiRole;
     PacketTime_S    stT1;               // sender发出报文的时间
     PacketTime_S    stT2;               // target收到报文的时间
     PacketTime_S    stT3;               // target发出应答报文的时间
@@ -139,8 +141,9 @@ typedef struct tagPacketInfo{
 typedef struct tagWorkerCfg
 {
     AgentDetectProtocolType_E eProtocol;    // 协议类型, 见AgentDetectProtocolType_E, 创建socket时使用.
-    UINT32   uiRole;                  // Worker角色, sender/target.
-    
+    UINT32  uiRole;
+
+    UINT32   uiListenPort;                // 探测源IP, 创建socket时使用.	
     UINT32   uiSrcIP;                // 探测源IP, 创建socket时使用.
     UINT32   uiDestIP;               // 探测目的IP. 预留TCP扩展
     UINT32   uiSrcPort;              // 探测源端口号. 创建socket时使用
@@ -183,7 +186,7 @@ private:
     INT32 InitSocket();                               // 根据stProtocol信息申请socket资源.
     INT32 GetSocket();                                // 获取当前socket
     sal_mutex_t WorkerSocketLock;                   // Socket互斥锁, 保护WorkerSocket
-
+    int test();
     INT32 TxPacket(DetectWorkerSession_S* 
                         pNewSession);               // 启动报文发送.PushSession()时触发.
     INT32 TxUpdateSession(DetectWorkerSession_S* 
@@ -201,8 +204,8 @@ private:
 public:
     DetectWorker_C();                               // 构造函数, 填充默认值.
     ~DetectWorker_C();                              // 析构函数, 释放必要资源.
-    
-    INT32 Init(WorkerCfg_S stNewWorker);         // 根据入参完成对象初始化, FlowManage使用.
+    ServerAntAgentCfg_C * pcAgentCfg;                   // agent_cfg
+    INT32 Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAgentCfg);         // 根据入参完成对象初始化, FlowManage使用.
     INT32 PushSession(FlowKey_S stNewFlow);           // 添加探测任务, FlowManage使用.
     INT32 PopSession(DetectWorkerSession_S* 
                         pOldSession);               // 查询探测结果, FlowManage使用.

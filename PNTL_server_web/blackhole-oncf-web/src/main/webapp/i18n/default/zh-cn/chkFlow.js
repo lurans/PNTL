@@ -2,6 +2,15 @@ define([], function () {
     "use strict";
 
     var chkFlow = {
+        "chkFlow_term_config_name":"变量名称",
+        "chkFlow_term_config_value":"变量值",
+        "chkFlow_term_config_update_time":"更新时间",
+        "chkFlow_term_config_op":"操作",
+        "chkFlow_term_manager":"管理",
+        "chkFlow_term_config_edit":"参数设置",
+        "chkFlow_term_edit_variable_btn":"修改",
+        "chkFlow_term_cancel_variable_btn":"取消",
+        "chkFlow_term_reset_btn":"还原",
         "chkFlow_term_name":"流量路径",
         "chkFlow_term_protocol":"协议",
         "chkFlow_term_icmp":"ICMP",
