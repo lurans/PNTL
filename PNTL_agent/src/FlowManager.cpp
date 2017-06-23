@@ -223,7 +223,7 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
     	stNewServerFlowKey.uiDestIP  = sal_inet_aton(strIP.c_str());
 
     	iRet = ServerWorkingFlowTableAdd(stNewServerFlowKey);
-      	FLOW_MANAGER_INFO("Start Thread at  port: [%d], ip: [%s]", atoi(strPort.c_str()), , strIP.c_str());
+      	FLOW_MANAGER_INFO("Start Thread at  port: [%d], ip: [%s]", atoi(strPort.c_str()), strIP.c_str());
     }
     
     // 启动管理任务
