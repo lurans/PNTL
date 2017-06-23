@@ -200,13 +200,6 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
     stNewServerFlowKey.stServerTopo.uiSvid = 9;
     stNewServerFlowKey.stServerTopo.uiDvid = 11;
 
-
-
-
-
-
-
-    //return AGENT_OK;
     KafkaConnectInfo_S stKafkaConnectInfo;	
 
     iRet = pcAgentCfg->GetCollectorKafkaInfo(&stKafkaConnectInfo);
@@ -221,19 +214,16 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
          pstrKafkaBrokerInfo != stKafkaConnectInfo.KafkaBrokerList.end();
          pstrKafkaBrokerInfo++ )
     {
+		string ipAddressInfo = pstrKafkaBrokerInfo->c_str();
+		int index = ipAddressInfo.find(':');
+    	string strPort = ipAddressInfo.substr(index + 1, ipAddressInfo.length());
+		string strIP = ipAddressInfo.substr(0, index);
 
-//tNewServerFlowKey.uiDestIP = *pstrKafkaBrokerInfo;
-string ipAddressInfo = pstrKafkaBrokerInfo->c_str();
-    string strPort = ipAddressInfo.substr((ipAddressInfo.length() - 4), ipAddressInfo.length());
-string strIP = ipAddressInfo.substr(0, (ipAddressInfo.length() - 4));
-//	    string cPortstr = ipAddressInfo.substr(0, 5);
-	stNewServerFlowKey.uiDestPort = atoi(strPort.c_str());
-    stNewServerFlowKey.uiDestIP  = sal_inet_aton(strIP.c_str());
+		stNewServerFlowKey.uiDestPort = atoi(strPort.c_str());
+    	stNewServerFlowKey.uiDestIP  = sal_inet_aton(strIP.c_str());
 
-    iRet = ServerWorkingFlowTableAdd(stNewServerFlowKey);
-              FLOW_MANAGER_INFO("StartThread____^^^^^^^^^^^^^^^^^^^^^^^^_********************port: %d", atoi(strPort.c_str()));
-              FLOW_MANAGER_INFO("StartThread____^^^^^^^^^^^^^^^^^^^^^^^^_********************ip: %s", strIP.c_str());
-//         iRet = ServerWorkingFlowTableAdd(stNewServerFlowKey);
+    	iRet = ServerWorkingFlowTableAdd(stNewServerFlowKey);
+      	FLOW_MANAGER_INFO("Start Thread at  port: [%d], ip: [%s]", atoi(strPort.c_str()), , strIP.c_str());
     }
     
     // 启动管理任务
@@ -513,7 +503,7 @@ INT32 FlowManager_C::ServerFlowTablePreAdd(ServerFlowKey_S * pstNewServerFlowKey
             pstNewServerFlowKey->uiSrcPortMax = uiSrcPortMax;            
         }
 
-        pstNewServerFlowKey->uiDestPort = 6001;
+        pstNewServerFlowKey->uiDestPort = uiDestPort;
             FLOW_MANAGER_INFO("uiDestPort is 0, Using Default uiDestPort[%u]++++++++++++++++++++++++++++=.",uiDestPort);
 
         uiAgentSrcPortRange = pstNewServerFlowKey->uiSrcPortMax - pstNewServerFlowKey->uiSrcPortMin + 1;
