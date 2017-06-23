@@ -9,6 +9,7 @@ import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
+import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
@@ -16,10 +17,15 @@ import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
 import com.huawei.blackhole.network.extention.bean.pntl.HostInfo;
 import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.bean.pntl.PntlNetworkMap;
+import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.*;
 
 @Service("pntlService")
@@ -35,7 +41,16 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Result<String> result = new Result<>();
         String errMsg = null;
 
+        /*临时方案，从配置文件获取iplist*/
+        try {
+            hostList = readFileHostList();
+        } catch (Exception e){
+            LOG.error("get host list failed:" + e.getMessage());
+            result.addError("", "get host list failed:" + e.getMessage());
+            return result;
+        }
         /* 获取主机列表 */
+        /*
         try {
             hostList = genProbeHostList();
         } catch (Exception e){
@@ -43,9 +58,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "get probe host list failed:" + e.getMessage());
             return result;
         }
-
+*/
         /* 初始化配置 */
-
         try {
            result = initPntlConfig(hostList);
         } catch (Exception e){
@@ -155,6 +169,11 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return agentFlowsJson;
     }
 
+    /*
+     *1. 上传到仓库
+     *2. 分发到agent
+     *3. 安装
+     */
     private Result<String> installStartAgent() throws ClientException{
         Result<String> result = new Result<String>();
         final PntlShareInfo pntlInfo = new PntlShareInfo();
@@ -363,6 +382,37 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             hostsList.add(hostContext);
         }
 
+        return hostsList;
+    }
+
+    private String getPath(String confFile) {
+        String directory = FileUtil.getResourcePath();
+        final String separator = System.lineSeparator();
+        if (separator.equals("\\") && directory.startsWith("/")) {
+            directory = directory.substring(1);
+        }
+        return directory + confFile;
+    }
+
+    private List<PntlHostContext> readFileHostList() throws Exception{
+        List<PntlHostContext> hostsList = new ArrayList<PntlHostContext>();
+        File file = new File(getPath("ipList.cfg"));
+        BufferedReader reader = null;
+        try{
+            reader = new BufferedReader(new FileReader(file));
+            String ipString = null;
+            while ((ipString = reader.readLine()) != null){
+                PntlHostContext host = new PntlHostContext();
+                host.setIp(ipString);
+                host.setOs("SUSE");
+                host.setAgentSN(Pntl.getAgentSnByIp(ipString));
+                hostsList.add(host);
+                System.out.println("ip:" + ipString);
+            }
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return hostsList;
     }
 

@@ -326,7 +326,7 @@ public class Pntl {
         }
     }
 
-    private static String getAgentSnByIp(String ip){
+    public static String getAgentSnByIp(String ip){
         String agentSn = null;
         if (ip == null){
             return null;
