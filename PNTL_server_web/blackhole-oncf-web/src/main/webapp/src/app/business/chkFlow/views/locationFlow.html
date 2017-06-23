@@ -43,35 +43,40 @@
         <div class="{{picStatus}}" style="text-align:center" ng-show="!erroInfoShow">{{status}}</div>
         <div class="errInfo" ng-show="erroInfoShow">{{erroInfo}}</div>
     </div>
-    <div style="display: inline-block;width: 100%" ng-show="flowShow">
+    <div style="display: inline-block;width: 100%;text-align: center;" ng-show="flowShow">
         <div class="routers">
             <!--左侧-->
             <div class="outputRouters">
                 <!--first-->
-                <div class="serv1" ng-style="l3_outHost1Style" ng-show="cna_firstOutShow">
+                <div class="serv1" ng-style="POD1_style" ng-show="POD1_Show">
                     <div class="hostInfo">
-                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;{{l3_outAz1}}<br>
-                        &nbsp;&nbsp;{{pod_diplay}}: {{l3_outPod1}}<br>
-                        &nbsp;&nbsp;{{l3_outHostType1}}: {{l3_outHost1}}<br>
-                        &nbsp;&nbsp;{{vm_diplay}}:&nbsp;&nbsp;&nbsp;{{l3_srcVm}}<br>
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{az}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;{{pod1}}<br>
                     </div>
+                    <!--整体时间轴-->
                     <tinyplus-timeline side="right" class="wholeTimeLine">
+                        <!--竖线-->
                         <div class="timeLine tinypuls-tl-axis-default"></div>
-                        <tinyplus-timeline-item ng-repeat="group in l3_firstOutGroup" style="height: 60px;">
+                        <!-- 一项一项内容 -->
+                        <tinyplus-timeline-item ng-repeat="group in first_POD" style="height: 60px;">
+                            <!--圆点-->
                             <tinyplus-timeline-badge>
                                 <div ng-class="{'outerCircle_blue': group.packets !== 0,
                               'outerCircle_red': group.packets === 0}"></div>
                             </tinyplus-timeline-badge>
+                            <!--横线-->
                             <div class="conLine"></div>
+                            <!--详细信息-->
                             <tinyplus-timeline-panel>
                                 <div ng-class="{'custom-timeline-panel':group.packets === 0,
                                     'tinypuls-tl-panel':group.packets !== 0}">
-                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
-                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.ip}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.POD}}<br></span>
                                 </div>
                             </tinyplus-timeline-panel>
                         </tinyplus-timeline-item>
-                        <tinyplus-timeline-item ng-show="l3_outShowEnd">
+                        <!--最后一项箭头-->
+                        <tinyplus-timeline-item ng-show="POD1ShowEnd">
                             <tinyplus-timeline-badge>
                                 <div class="output_arrow_down"></div>
                             </tinyplus-timeline-badge>
@@ -79,16 +84,14 @@
                     </tinyplus-timeline>
                 </div>
                 <!--second-->
-                <div class="serv2" ng-style="l3_outHost2Style"  ng-show="cna_secdOutShow">
+                <div class="serv2" ng-style="POD2_style"  ng-show="POD2_Show">
                     <div class="hostInfo">
-                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;{{l3_outAz2}}<br>
-                        &nbsp;&nbsp;{{pod_diplay}}: {{l3_outPod2}}<br>
-                        &nbsp;&nbsp;{{l3_outHostType2}}: {{l3_outHost2}}<br>
-                        &nbsp;&nbsp;{{vm_diplay}}:&nbsp;&nbsp;&nbsp;{{l3_srcVm}}<br>
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{az}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;{{pod2}}<br>
                     </div>
                     <tinyplus-timeline side="right" class="wholeTimeLine" style="margin-top: 25px">
                         <div class="timeLine tinypuls-tl-axis-default"></div>
-                        <tinyplus-timeline-item ng-repeat="group in l3_secondOutGroup" style="height: 60px;">
+                        <tinyplus-timeline-item ng-repeat="group in secd_POD" style="height: 60px;">
                             <tinyplus-timeline-badge>
                                 <div ng-class="{'outerCircle_blue': group.packets !== 0,
                               'outerCircle_red': group.packets === 0}">
@@ -98,21 +101,21 @@
                             <tinyplus-timeline-panel>
                                 <div ng-class="{'custom-timeline-panel':group.packets === 0,
                                     'tinypuls-tl-panel':group.packets !== 0}">
-                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
-                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.ip}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.POD}}<br></span>
                                 </div>
                             </tinyplus-timeline-panel>
                         </tinyplus-timeline-item>
-                        <tinyplus-timeline-item ng-show="l3_outShowEnd">
+                        <!--<tinyplus-timeline-item ng-show="POD2ShowEnd">
                             <tinyplus-timeline-badge>
                                 <div class="output_arrow_down"></div>
                             </tinyplus-timeline-badge>
-                        </tinyplus-timeline-item>
+                        </tinyplus-timeline-item>-->
                     </tinyplus-timeline>
                 </div>
             </div>
 
-            <!--颜色标示-->
+            <!--颜色标示
             <div class="exam_framework">
                 <div class="row-fluid exam_li" >
                     <div class="span2"><div class="exam_blue"></div></div>
@@ -126,7 +129,7 @@
                     <div class="span2"><div class="exam_red"></div></div>
                     <div>{{i18n.chkFlow_term_exam_red}}</div>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 </div>

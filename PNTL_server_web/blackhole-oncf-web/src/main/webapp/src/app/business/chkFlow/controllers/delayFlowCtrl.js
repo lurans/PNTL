@@ -33,9 +33,9 @@ define(["language/chkFlow",
                     //svg
                     var margin = {top: 10, right: 10, bottom: 50, left: 10};
                     var width = 640,height = 640;
-                    var colors = ['#79CD79', '#92DD92', '#B8EFB8', '#FFFFB9', '#FFED97', '#FFBB77', '#FFA042', '#FF8000', '#FF2D2D', '#EA0000', '#AE0000'];
-                    var delay_time_axis = [0, 100, 200, 300, 400, 500, 600, 800, 1000, 1500, 2000];
-                    var delay_time_axis_label = ["0ms", "100ms", "200ms", "300ms", "400ms", "500ms", "600ms", "800ms", "1000ms", "1500ms", "2000+ms"];
+                    var colors = ['#750000','#79CD79', '#92DD92', '#B8EFB8', '#FFFFB9', '#FFED97', '#FFBB77', '#FFA042', '#FF8000', '#FF2D2D'];
+                    var delay_time_axis = [-1, 0, 100, 200, 300, 400, 500, 600, 800, 1000];
+                    var delay_time_axis_label = ["Disconnect", "0ms", "100ms", "200ms", "300ms", "400ms", "500ms", "600ms", "800ms", "1000+ms"];
                     var legendElementWidth = width/colors.length;
 
                     var ipListPromise = delayFlowServ.postIpList({"az_id":"","pod_id":""});
@@ -55,8 +55,18 @@ define(["language/chkFlow",
                             });
                             delayLink.forEach(function(link,i)
                             {
-                                delayMatrix[ipSeq[link['src_ip']]][ipSeq[link['dst_ip']]].z=
-                                    d3.max([link['send_delay'],link['recv_delay'],link['send_round_delay'],link['recv_round_delay']]);
+                                var srcIp = link['src_ip'];
+                                var dstIp = link['dst_ip'];
+                                if(srcIp in ipSeq && dstIp in ipSeq)
+                                {
+                                    var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                                    var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                                    var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                                    var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                                    var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
+                                    var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
+                                    delayMatrix[ipSeq[srcIp]][ipSeq[dstIp]].z = min < 0 ? -1 : max;
+                                }
                             });
 
                             var xEvent,yEvent,sEvent;
