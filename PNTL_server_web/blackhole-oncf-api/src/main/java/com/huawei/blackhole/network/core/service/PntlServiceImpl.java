@@ -1,9 +1,6 @@
 package com.huawei.blackhole.network.core.service;
 
-import com.huawei.blackhole.network.api.bean.DelayInfo;
-import com.huawei.blackhole.network.api.bean.LossRate;
-import com.huawei.blackhole.network.api.bean.PingListRequest;
-import com.huawei.blackhole.network.api.bean.PntlConfig;
+import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.api.resource.PntlShareInfo;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
@@ -410,17 +407,18 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private List<PntlHostContext> readFileHostList() throws Exception{
         List<PntlHostContext> hostsList = new ArrayList<PntlHostContext>();
 
-        Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_IPLIST_CONF);
-        List<String> ipList = new ArrayList<>();
-        ipList = (List<String>) data.get("ipList");
-
+        Map<String, PntlHostInfo> data = (Map<String, PntlHostInfo>) YamlUtil.getConf(Resource.PNTL_IPLIST_CONF);
+        List<Map<String, String>> ipList = (List<Map<String, String>>) data.get("host");
         for (int i = 0; i < ipList.size(); i++) {
             PntlHostContext host = new PntlHostContext();
-            host.setIp(ipList.get(i));
-            host.setOs("SUSE");
-            host.setAgentSN(Pntl.getAgentSnByIp(ipList.get(i)));
+            String ip = (String)ipList.get(i).get("ip");
+            host.setIp(ip);
+            host.setOs((String)ipList.get(i).get("os"));
+            host.setZoneId((String)ipList.get(i).get("az"));
+            host.setPodId((String)ipList.get(i).get("pod"));
+            host.setAgentSN(Pntl.getAgentSnByIp(ip));
             hostsList.add(host);
-            System.out.println("ip:" + ipList.get(i));
+           System.out.println("ip:" + ip);
         }
         return hostsList;
     }
