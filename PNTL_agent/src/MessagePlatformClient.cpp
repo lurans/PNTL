@@ -70,13 +70,18 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
 
 	}
 
-	char* newPStr = new char[size * nmemb + 1];
-	sal_strncpy(newPStr, pStr, size * nmemb);
-	newPStr[size * nmemb] = '\0';
+	char* newPStr = (char*)malloc(size * nmemb + 1);
+	if (NULL == newPStr) {
+		MSG_CLIENT_ERROR("Apply for size [%d] memory fail.", size * nmemb + 1);
+		return 0;
+	}
+	sal_memset(newPStr, 0, size * nmemb + 1);
+	memcpy(newPStr, pStr, size * nmemb);
     (*pssResponce) << newPStr;
     MSG_CLIENT_WARNING("ReceiveResponce..................strlen[%d].........................data:'%s'         nmemb:%d",
 					strlen(newPStr), newPStr, nmemb);
-	delete newPStr;
+	free(newPStr);
+	
     return size*nmemb;
 }
 
