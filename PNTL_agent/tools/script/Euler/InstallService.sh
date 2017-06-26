@@ -63,7 +63,6 @@ ${CHMOD} 644 ${LOG_CFG_FILE}
 # 从环境变量中获取当前连接IP
 # 先尝试Ansible下发的环境变量中查找 ServerAntAgentIP
 ConnectIP=${ServerAntAgentIP}
-ConnectIP=${ServerAntAgentIP}
 ConnectIP=$(ip address | grep -A 3  Mgnt-0 | grep 'inet[^6]' | awk -F ' ' '{print $2}')
 ConnectIP=${ConnectIP%\/*}
 
