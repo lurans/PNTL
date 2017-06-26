@@ -3,6 +3,7 @@
 #include <curl/curl.h>
 #include <sstream>
 #include <string>
+#include <stdlib.h>
 
 using namespace std;
 
