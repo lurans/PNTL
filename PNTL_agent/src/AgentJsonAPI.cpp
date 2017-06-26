@@ -887,4 +887,36 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
 
 }
 
+/*
+	接收从Server端下发的轮询周期
+	为0的话，停止探测
+	格式为
+	{
+		"probe_interval":"0"
+	}
+*/
+INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
+{
+	
+	// pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
+    stringstream ssStringData(pcJsonData);
+
+    // boost::property_tree对象, 用于存储json格式数据.
+    ptree ptDataRoot;
+	UINT32 interval;
+    try 
+	{
+        // 防止Json消息体不规范
+        read_json(ssStringData, ptDataRoot);
+        // 防止没有设值，传入空值
+        interval = ptDataRoot.get<UINT32>("probe_interval");
+    }
+	catch (exception const & e)
+	{
+        JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
+        return AGENT_E_ERROR;
+	}
+	INT32 iRet = pcFlowManager -> FlowManagerAction(interval);
+	return iRet;
+}
 
