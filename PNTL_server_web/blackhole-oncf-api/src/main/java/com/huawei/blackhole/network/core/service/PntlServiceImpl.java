@@ -2,6 +2,7 @@ package com.huawei.blackhole.network.core.service;
 
 import com.huawei.blackhole.network.api.bean.DelayInfo;
 import com.huawei.blackhole.network.api.bean.LossRate;
+import com.huawei.blackhole.network.api.bean.PingListRequest;
 import com.huawei.blackhole.network.api.bean.PntlConfig;
 import com.huawei.blackhole.network.api.resource.PntlShareInfo;
 import com.huawei.blackhole.network.common.constants.Constants;
@@ -71,7 +72,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return result;
     }
 
-    public Result<AgentFlowsJson> getPingList(PntlConfig config){
+    public Result<AgentFlowsJson> getPingList(PingListRequest config){
         Result<AgentFlowsJson> result = new Result<>();
 
         try {
@@ -140,7 +141,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @param config
      * @return
      */
-    private AgentFlowsJson generateAgentFlowJson(PntlConfig config){
+    private AgentFlowsJson generateAgentFlowJson(PingListRequest config){
         AgentFlowsJson agentFlowsJson = new AgentFlowsJson();
         Map<String, List<String>> pingMeshMap = null;
 
@@ -175,16 +176,18 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      *3. 安装
      */
     private Result<String> installStartAgent() throws ClientException{
-        Result<String> result = new Result<String>();
         final PntlShareInfo pntlInfo = new PntlShareInfo();
-
+        Result<String> result = new Result<String>();
         Runnable scriptSendTask = new Runnable() {
             @Override
             public void run() {
+                Result<String> result = new Result<String>();
                 try {
                     String token = identityWrapperService.getPntlAccessToken();
-                    RestResp rsp = pntlRequest.sendFilesToAgents(hostList, token);
-                    pntlInfo.setSendSuccess(true);
+                    result = pntlRequest.sendFilesToAgents(hostList, token);
+                    if (result.isSuccess()) {
+                        pntlInfo.setSendSuccess(true);
+                    }
                 } catch (ClientException e){
                     LOG.error("Send files to agents failed, " + e.getMessage());
                     String msg = e.toString();
@@ -211,6 +214,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         try{
             installAgent(hostList);
         } catch(ClientException e){
+            result.addError("", e.getMessage());
             throw new ClientException(ExceptionType.SERVER_ERR, e.getMessage());
         }
 

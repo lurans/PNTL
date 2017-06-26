@@ -126,7 +126,7 @@ public class LossRate implements Serializable{
         newData.setSendLossRate(df2.format(rate*100)+"%");
         newData.setSendPkgs(flow.getSt().getPacketSent());
         newData.setRecvLossRate("0");///TODO:暂时设为0
-        newData.setRecvPkgs(flow.getSt().getPacketDrops());
+        newData.setRecvPkgs("0");
         newData.setTimestamp(System.currentTimeMillis()/1000);
 
         List<LossRateResult> resultList = LossRate.result;

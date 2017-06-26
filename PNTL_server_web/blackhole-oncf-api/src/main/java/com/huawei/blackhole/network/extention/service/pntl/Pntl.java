@@ -12,6 +12,7 @@ import com.huawei.blackhole.network.common.utils.http.Parameter;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
+import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
@@ -163,8 +164,9 @@ public class Pntl {
      * @return
      * @throws ClientException
      */
-    public RestResp sendFilesToAgents(List<PntlHostContext> pntlHostList, String token)
+    public Result<String> sendFilesToAgents(List<PntlHostContext> pntlHostList, String token)
             throws ClientException {
+        Result<String> result = new Result<>();
         LOG.info("send files to agents");
 
         RestResp resp = null;
@@ -207,16 +209,17 @@ public class Pntl {
                 body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
-                    if (resp.getRespBody() != null && resp.getRespBody().get("result") != null){
-                        LOG.info(resp.getRespBody().get("result").toString());
+                    if (resp.getStatusCode().isError()){
+                        LOG.info("send file to agent failed" + resp.getRespBody().get("reason").toString());
                     }
                 } catch (ClientException | JSONException e){
                     LOG.error("Send script to suse os agent failed");
+                    result.addError("", e.getMessage());
                 }
             }
         }
 
-        return resp;
+        return result;
     }
 
     /**
@@ -356,6 +359,7 @@ public class Pntl {
     }
 
     public void startTraceroute(String srcIp, String dstIp){
+        RestResp resp = null;
         if (srcIp == null || dstIp == null){
             return;
         }
@@ -374,7 +378,10 @@ public class Pntl {
         }
         final String command = "cd /opt/huawei/ServerAntAgent & python tracetool.py";
         try {
-            sendCommandToAgents(snList, token, command, "async");
+            resp = sendCommandToAgents(snList, token, command, "async");
+            if (resp.getStatusCode().isError()){
+                LOG.error("Execute:" + command + "fail");
+            }
         } catch(ClientException e){
             LOG.error("Execute:" + command + "fail " + e.getMessage());
         }
