@@ -5,8 +5,15 @@
 <meta http-equiv="Cache-control" content="no-cache">
 <meta http-equiv="Cache" content="no-cache">
 <div>
-    <div style="width:840px;">
-        <tiny-button id="button.id" text='button.text' click="resetBtn()"></tiny-button>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span1" style="float:right; width: 160px; margin-left: 70px">
+                <tiny-button id="button.id"
+                             text='button.text'
+                             click="resetBtn()">
+                </tiny-button>
+            </div>
+        </div>
     </div>
     <div class="dashboard_title"></div>
     <div class="panel-body" id="packets_loss_chart_wrapper">
