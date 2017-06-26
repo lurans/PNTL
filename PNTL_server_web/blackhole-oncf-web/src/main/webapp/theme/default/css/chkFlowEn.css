@@ -45,13 +45,14 @@
 }
 
 .serv1{
-    width: 390px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 420px;
     height: 75px;
     border:dashed 1px;
     border-radius: 0%;
     border-color:#d3d3d3;
     position: relative;
-    left:-120px;
     top:-30px;
 }
 
@@ -79,7 +80,9 @@
 }
 
 .serv2{
-    width: 390px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 420px;
     height: 75px;
     border:dashed 1px;
     border-radius: 0%;
@@ -87,7 +90,6 @@
     /*margin-top: 85px;*/
     position: relative;
     margin-bottom: 30px;
-    left:-120px;
     top:0px;
 }
 
@@ -217,7 +219,6 @@
 .routers{
     margin-left: auto;
     margin-right: auto;
-    min-width: 1200px;
     margin-top: 30px;
 }
 
@@ -293,7 +294,7 @@
     background: rgba(227, 227, 227, 1);
 }*/
 .backRect {
-  fill:  #eee;
+  fill:  #5DC45D;
 }
 line {
   stroke: #fff;
@@ -447,11 +448,38 @@ text.text-hover {
     margin-right: -1px;
     background-color: #808080;
 }
-
 .grayWord{
     color: gray;
 }
 
+#collapseConfig{
+    width:80%
+    height:70%;
+    margin:30px;
+}
+.collapse_head{
+    height:32px;
+    font-size:16px;
+    margin-top:10px;
+    margin-bottom:10px;
+    border-bottom: 1px solid #E5E5E5;
+    cursor: pointer;
+}
+.collapse-body{
+    padding-left: 30px;
+    margin-bottom:10px;
+}
+.collapse_btn{
+    padding-left: 30px;
+    margin-bottom:30px;
+}
+.collapse-content{
+    height:auto;
+    padding: 5px;
+}
+.tiny-file-multi-select{
+    overflow:inherit;
+}
 #service-footer {
     width: 100%;
 }

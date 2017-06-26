@@ -14,7 +14,7 @@
     font-family: '微软雅黑 Regular', '微软雅黑';
     font-weight: 400;
     font-style: normal;
-    font-size: 14px;
+    font-size: small;
     color: #FFFFFF;
 }
 .custom-timeline-panel{
@@ -45,13 +45,14 @@
 }
 
 .serv1{
-    width: 390px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 420px;
     height: 75px;
     border:dashed 1px;
     border-radius: 0%;
     border-color:#d3d3d3;
     position: relative;
-    left:-120px;
     top:-30px;
 }
 
@@ -67,6 +68,7 @@
 }.input_label span{
      color: #ff0000;
  }
+
 .input_content{
     width: 160px;
 }
@@ -78,7 +80,9 @@
 }
 
 .serv2{
-    width: 390px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 420px;
     height: 75px;
     border:dashed 1px;
     border-radius: 0%;
@@ -86,7 +90,6 @@
     /*margin-top: 85px;*/
     position: relative;
     margin-bottom: 30px;
-    left:-120px;
     top:0px;
 }
 
@@ -111,23 +114,6 @@
     height: 15px;
 }
 
-.outerCircle_red {
-    width: 21px;
-    height: 21px;
-    border-radius: 50%;
-    background: #ff0000;
-    position: relative
-}
-
-.outerCircle_red:hover{
-    border: 5px solid rgb(245, 211, 211);
-    position: relative;
-    right: 2px;
-    bottom: 1px;
-    width: 15px;
-    height: 15px;
-}
-
 .outerCircle_yellow {
     width: 21px;
     height: 21px;
@@ -138,6 +124,23 @@
 
 .outerCircle_yellow:hover{
     border: 5px solid rgb(229, 220, 220);
+    position: relative;
+    right: 2px;
+    bottom: 1px;
+    width: 15px;
+    height: 15px;
+}
+
+.outerCircle_red {
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: #ff0000;
+    position: relative
+}
+
+.outerCircle_red:hover{
+    border: 5px solid rgb(245, 211, 211);
     position: relative;
     right: 2px;
     bottom: 1px;
@@ -216,7 +219,6 @@
 .routers{
     margin-left: auto;
     margin-right: auto;
-    min-width: 1200px;
     margin-top: 30px;
 }
 
@@ -292,10 +294,10 @@
     background: rgba(227, 227, 227, 1);
 }*/
 .backRect {
-    fill:  #eee;
+  fill:  #5DC45D;
 }
 line {
-    stroke: #fff;
+  stroke: #fff;
 }
 #packets_loss_chart{
     text-align:center;
@@ -411,11 +413,10 @@ text.text-hover {
     word-wrap: break-word;
 }
 
-.default_tab{
+.default_tab {
     background-color: white;
     height: 72px;
-    font-size: 14px;
-    cursor:pointer;
+    cursor: pointer;
     border-bottom-style: solid;
     border-width: thin;
     border-color: #edeef2;
@@ -447,11 +448,38 @@ text.text-hover {
     margin-right: -1px;
     background-color: #808080;
 }
-
 .grayWord{
     color: gray;
 }
 
+#collapseConfig{
+    width:80%
+    height:70%;
+    margin:30px;
+}
+.collapse_head{
+    height:32px;
+    font-size:16px;
+    margin-top:10px;
+    margin-bottom:10px;
+    border-bottom: 1px solid #E5E5E5;
+    cursor: pointer;
+}
+.collapse-body{
+    padding-left: 30px;
+    margin-bottom:10px;
+}
+.collapse_btn{
+    padding-left: 30px;
+    margin-bottom:30px;
+}
+.collapse-content{
+    height:auto;
+    padding: 5px;
+}
+.tiny-file-multi-select{
+    overflow:inherit;
+}
 #service-footer {
     width: 100%;
 }
@@ -477,6 +505,23 @@ text.text-hover {
     font-style: normal;
 }
 
+button.tiny-btn-basic.tiny-btn-without-icon{
+    width: 90px;
+    padding: 0px 0px;
+}
+
+button.tiny-btn-basic.tiny-btn-without-icon.tiny-file-upload-button.tiny-file-upload-single{
+    width: 64px;
+}
+
+.configText-step3{
+    padding-right: 30px;
+    text-align: right;
+    font-size: 14px;
+    color: #333333;
+    margin-top: 5px;
+}
+
 .timeoutInfo{
     text-align: center;
     font-size: 14px;
@@ -498,6 +543,6 @@ div.snSelect.span2 div.tiny-select-input-field{
 }
 
 .exam_framework{
-    float: left;
-    width: 150px;
+    float: right;
+    width: 210px;
 }

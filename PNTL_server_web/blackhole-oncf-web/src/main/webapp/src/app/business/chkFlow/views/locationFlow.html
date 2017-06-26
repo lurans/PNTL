@@ -9,7 +9,7 @@
     <div class="container-fluid">
         <div class="row-fluid">
             <div class="span1 input_label" style="width: 70px;">
-                <span>*</span>Source Ip
+                <span>*</span>{{i18n.chkFlow_term_source_ip}}
             </div>
             <div class="span3 input_content" style="margin-left: 0px;margin-left: 10px;">
                 <tiny-textbox id="sourceIp.id" value="sourceIp.value"
@@ -45,8 +45,6 @@
     </div>
     <div style="display: inline-block;width: 100%;text-align: center;" ng-show="flowShow">
         <div class="routers">
-            <!--左侧-->
-            <div class="outputRouters">
                 <!--first-->
                 <div class="serv1" ng-style="POD1_style" ng-show="POD1_Show">
                     <div class="hostInfo">
@@ -56,22 +54,22 @@
                     <!--整体时间轴-->
                     <tinyplus-timeline side="right" class="wholeTimeLine">
                         <!--竖线-->
-                        <div class="timeLine tinypuls-tl-axis-default"></div>
+                        <div class="timeLine tinypuls-tl-axis-default" ng-style="time_line_style"></div>
                         <!-- 一项一项内容 -->
                         <tinyplus-timeline-item ng-repeat="group in first_POD" style="height: 60px;">
                             <!--圆点-->
                             <tinyplus-timeline-badge>
-                                <div ng-class="{'outerCircle_blue': group.packets !== 0,
-                              'outerCircle_red': group.packets === 0}"></div>
+                                <div ng-class="{'outerCircle_blue': group.packets === 0,
+                              'outerCircle_red': group.packets !== 0}"></div>
                             </tinyplus-timeline-badge>
                             <!--横线-->
                             <div class="conLine"></div>
                             <!--详细信息-->
                             <tinyplus-timeline-panel>
-                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
-                                    'tinypuls-tl-panel':group.packets !== 0}">
+                                <div ng-class="{'custom-timeline-panel':group.packets !== 0,
+                                    'tinypuls-tl-panel':group.packets === 0}">
                                     {{i18n.chkFlow_term_dev_name}}:{{group.ip}}<br>
-                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.POD}}<br></span>
+                                    <span class="grayWord">{{i18n.chkFlow_term_packets_loss}}:{{group.packets}}<br></span>
                                 </div>
                             </tinyplus-timeline-panel>
                         </tinyplus-timeline-item>
@@ -90,19 +88,18 @@
                         &nbsp;&nbsp;{{pod_diplay}}: &nbsp;{{pod2}}<br>
                     </div>
                     <tinyplus-timeline side="right" class="wholeTimeLine" style="margin-top: 25px">
-                        <div class="timeLine tinypuls-tl-axis-default"></div>
                         <tinyplus-timeline-item ng-repeat="group in secd_POD" style="height: 60px;">
                             <tinyplus-timeline-badge>
-                                <div ng-class="{'outerCircle_blue': group.packets !== 0,
-                              'outerCircle_red': group.packets === 0}">
+                                <div ng-class="{'outerCircle_blue': group.packets === 0,
+                              'outerCircle_red': group.packets !== 0}">
                                 </div>
                             </tinyplus-timeline-badge>
                             <div class="conLine"></div>
                             <tinyplus-timeline-panel>
-                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
-                                    'tinypuls-tl-panel':group.packets !== 0}">
+                                <div ng-class="{'custom-timeline-panel':group.packets !== 0,
+                                    'tinypuls-tl-panel':group.packets === 0}">
                                     {{i18n.chkFlow_term_dev_name}}:{{group.ip}}<br>
-                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.POD}}<br></span>
+                                    <span class="grayWord">{{i18n.chkFlow_term_packets_loss}}:{{group.packets}}<br></span>
                                 </div>
                             </tinyplus-timeline-panel>
                         </tinyplus-timeline-item>
@@ -113,7 +110,6 @@
                         </tinyplus-timeline-item>-->
                     </tinyplus-timeline>
                 </div>
-            </div>
 
             <!--颜色标示
             <div class="exam_framework">

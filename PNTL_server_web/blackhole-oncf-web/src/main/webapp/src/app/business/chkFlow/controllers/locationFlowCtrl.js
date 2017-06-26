@@ -90,7 +90,7 @@ define(["language/chkFlow",
                     $scope.flowShow=true;
                 }
                 function setHostStyle(routerlength,dataType){
-                    var length_serv = 79*routerlength + 10;
+                    var length_serv = 80*routerlength + 10;
                     if (1 == length){
                         length_serv += 20;
                     }
@@ -111,6 +111,10 @@ define(["language/chkFlow",
                 function statisData(){
                     statisDetailData($scope.first_POD, "POD1");
                     statisDetailData($scope.secd_POD, "POD2");
+
+                    var length_timeLine = ($scope.first_POD.length + $scope.secd_POD.length ) * 80 - 20;
+                    var timeLineStyle = {'height':length_timeLine + 'px'};
+                    $scope.time_line_style = timeLineStyle;
                 }
                 function init(){
                     $scope.noDataShow=false;
@@ -123,19 +127,47 @@ define(["language/chkFlow",
                         {
                             "AZ":"AZ1",
                             "POD":"POD1",
-                            "ip":"192.168.1.1"
+                            "ip":"192.168.1.1",
+                            "packets":0,
                         },
                         {
                             "AZ":"AZ1",
                             "POD":"POD1",
-                            "ip":"192.168.1.10"
+                            "ip":"192.168.1.10",
+                            "packets":0,
+                        },
+                        {
+                            "AZ":"AZ1",
+                            "POD":"POD1",
+                            "ip":"192.168.1.1",
+                            "packets":100,
+                        },
+                        {
+                            "AZ":"AZ1",
+                            "POD":"POD1",
+                            "ip":"192.168.1.10",
+                            "packets":0,
                         },
                         {
                             "AZ":"AZ1",
                             "POD":"POD2",
-                            "ip":"192.168.2.1"
+                            "ip":"192.168.2.1",
+                            "packets":0,
+                        },
+                        {
+                            "AZ":"AZ1",
+                            "POD":"POD2",
+                            "ip":"192.168.2.10",
+                            "packets":0,
+                        },
+                        {
+                            "AZ":"AZ1",
+                            "POD":"POD2",
+                            "ip":"192.168.2.19",
+                            "packets":0,
                         }
                     ];
+
                     extractRouteData(initInfo);
                     statisData();
                 }
