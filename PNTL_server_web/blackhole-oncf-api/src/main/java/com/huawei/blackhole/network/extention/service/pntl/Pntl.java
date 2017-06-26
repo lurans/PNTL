@@ -140,25 +140,6 @@ public class Pntl {
     }
 
     /**
-     * 发送ip列表到agent
-     * @param pntlHostList
-     * @return
-     * @throws ClientException
-     */
-    public RestResp sendIpListToAgents(List<PntlHostContext> pntlHostList)
-        throws ClientException{
-        LOG.info("send host ip list to agents");
-
-        StringBuffer ips = new StringBuffer();
-        for (PntlHostContext host : pntlHostList){
-            ips.append(host.getIp()+"\n");
-        }
-
-        ///TODO 发送ips到agent
-        return RestClientExt.post(null, null, null,  null);
-    }
-
-    /**
      *  发送ants agent和脚本
      * @param pntlHostList
      * @return

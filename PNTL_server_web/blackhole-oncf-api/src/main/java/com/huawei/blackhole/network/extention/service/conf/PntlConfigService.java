@@ -22,7 +22,7 @@ public class PntlConfigService {
         Result<PntlConfig> result = new Result<PntlConfig>();
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(Resource.NAME_CONF);
+            Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_CONF);
 
             PntlConfig pntlConfig = new PntlConfig();
             pntlConfig.setByMap(data);
@@ -52,7 +52,7 @@ public class PntlConfigService {
         try {
             validPntlConfig(pntlConfig);
             Map<String, Object> data = pntlConfig.convertToMap();
-            YamlUtil.setConf(data, Resource.NAME_CONF);
+            YamlUtil.setConf(data, Resource.PNTL_CONF);
         } catch (ApplicationException | InvalidParamException e) {
             String errMsg = "set config [" + Resource.NAME_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);

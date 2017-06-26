@@ -8,9 +8,11 @@ import com.huawei.blackhole.network.api.resource.PntlShareInfo;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
+import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.utils.FileUtil;
+import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
@@ -187,6 +189,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                     result = pntlRequest.sendFilesToAgents(hostList, token);
                     if (result.isSuccess()) {
                         pntlInfo.setSendSuccess(true);
+                    } else {
+                        pntlInfo.setErrMsg(result.getErrorMessage());
                     }
                 } catch (ClientException e){
                     LOG.error("Send files to agents failed, " + e.getMessage());
@@ -207,11 +211,15 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             } catch (InterruptedException e) {
                 LOG.warn("ignore : interrupted sleep");
             }
-
         }
 
         LOG.info("agent upload ok, begin to install");
         try{
+            if (!pntlInfo.isSendSuccess()){
+                result.setErrorMessage(pntlInfo.getErrMsg());
+                result.setSuccess(false);
+                return result;
+            }
             installAgent(hostList);
         } catch(ClientException e){
             result.addError("", e.getMessage());
@@ -230,7 +238,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Result<String> result = new Result<String>();
 
         try {
-            installStartAgent();
+            result = installStartAgent();
         } catch (ClientException e){
             result.setErrorMessage("Install and start agent failed:" + e.getMessage());
             LOG.error("Install and start agent failed: " + e.getMessage());
@@ -249,6 +257,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Runnable getNetworkMapTask = new Runnable() {
             @Override
             public void run() {
+                Result<String> result = new Result<String>();
                 try{
                     genNetworkMap(hostList);
                 } catch (ClientException e){
@@ -400,22 +409,18 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     private List<PntlHostContext> readFileHostList() throws Exception{
         List<PntlHostContext> hostsList = new ArrayList<PntlHostContext>();
-        File file = new File(getPath("ipList.cfg"));
-        BufferedReader reader = null;
-        try{
-            reader = new BufferedReader(new FileReader(file));
-            String ipString = null;
-            while ((ipString = reader.readLine()) != null){
-                PntlHostContext host = new PntlHostContext();
-                host.setIp(ipString);
-                host.setOs("SUSE");
-                host.setAgentSN(Pntl.getAgentSnByIp(ipString));
-                hostsList.add(host);
-                System.out.println("ip:" + ipString);
-            }
-            reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_IPLIST_CONF);
+        List<String> ipList = new ArrayList<>();
+        ipList = (List<String>) data.get("ipList");
+
+        for (int i = 0; i < ipList.size(); i++) {
+            PntlHostContext host = new PntlHostContext();
+            host.setIp(ipList.get(i));
+            host.setOs("SUSE");
+            host.setAgentSN(Pntl.getAgentSnByIp(ipList.get(i)));
+            hostsList.add(host);
+            System.out.println("ip:" + ipList.get(i));
         }
         return hostsList;
     }

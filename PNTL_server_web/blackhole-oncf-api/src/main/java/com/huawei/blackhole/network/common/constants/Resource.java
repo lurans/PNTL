@@ -56,4 +56,7 @@ public class Resource {
 
     public static final String NAME_CONF = "config.yml";
     public static final String ROLE_CONF = "role.yml";
+
+    public static final String PNTL_CONF = "pntlConfig.yml";
+    public static final String PNTL_IPLIST_CONF = "ipList.yml";
 }
