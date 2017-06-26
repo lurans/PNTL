@@ -210,8 +210,8 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         MSG_CLIENT_ERROR("curl easy init failed");
         iRet = AGENT_E_ERROR;
     }
+    curl_slist_free_all(headers);
     curl_global_cleanup();
-    
     return iRet;
 }
 
