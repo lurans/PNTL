@@ -63,10 +63,10 @@ ${CHMOD} 644 ${LOG_CFG_FILE}
 # 从环境变量中获取当前连接IP
 # 先尝试Ansible下发的环境变量中查找 ServerAntAgentIP
 ConnectIP=${ServerAntAgentIP}
-if [ _${ConnectIP}_ == _""_  ]; then
-    # 再尝试从SSH连接信息中获取, SSH_CONNECTION=172.25.1.2 36047 172.25.3.198 22
-    ConnectIP=$(env | grep SSH_CONNECTION |   awk -F ' ' '{print $3}')
-fi
+ConnectIP=${ServerAntAgentIP}
+ConnectIP=$(ip address | grep -A 3  Mgnt-0 | grep 'inet[^6]' | awk -F ' ' '{print $2}')
+ConnectIP=${ConnectIP%\/*}
+
 # 如果获取成功, 则刷新IP.
 if [ _${ConnectIP}_ != _""_  ]; then
     ${ECHO} "Update AgentIP to [${ConnectIP}]"
