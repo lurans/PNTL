@@ -7,7 +7,6 @@ using namespace std;
 #include "Log.h"
 #include "AgentJsonAPI.h"
 #include "MessagePlatformServer.h"
-
     
 // 构造函数, 填充默认值.
 MessagePlatformServer_C::MessagePlatformServer_C()
@@ -101,6 +100,7 @@ data =
 */
 // POST 提交的key必须为ServerAntAgentName, 否则会返回错误.
 #define ServerAntAgentName          "ServerAntsAgent"
+#define ServerAntAgentAction        "ServerAntsAgentAction"
 
 #if 1
 // 使用json格式反馈post操作结果
@@ -150,6 +150,21 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
         }
         return iRet;
     }
+	else if (0 == sal_strcmp(pcKey, ServerAntAgentAction))
+	{
+        MSG_SERVER_INFO("Begin to handle flowmanager action");
+        iRet = ProcessActionFlowFromServer(pcData, pcFlowManager);
+        if (iRet)
+        {
+            MSG_SERVER_ERROR("Process set interval to [%s] From Server failed[%d]", pcData, iRet);
+            (* pstrResponce) = ResponcePageError;
+        }
+        else
+        {
+            (* pstrResponce) = ResponcePageOK;
+        }
+        return iRet;
+	}
     else
     {
         // 终止本次post处理, 忽略尚未处理的key/data值.

@@ -1,8 +1,7 @@
 
 #include <math.h>       // 计算标准差
 #include <algorithm>    // 数组排序
-#include <sys/time.h>   // 获取时间
-
+#include <sys/time.h>   // 获取时间   
 using namespace std;
 
 #include "Log.h"
@@ -1533,4 +1532,39 @@ INT32 FlowManager_C::PreStopHandler()
     return AGENT_OK;
 }
 
+INT32 FlowManager_C::FlowManagerAction(UINT32 interval)
+{
+	INT32 iRet = AGENT_OK;
+	stringstream ss(pcData);
+	UINT32 interval;
+	ss >> interval;
+	UINT32 oldInterval = GetCurrentInterval();
+	if (0 == oldInterval) 
+	{
+        if (interval) 
+		{
+            // 启动FlowManager
+            SetNewInterval(interval);
+            FLOW_MANAGER_INFO("Set CurrentInterval to [%d] success.", interval);
+            StartThread();
+            FLOW_MANAGER_INFO("Start flowmanager thread success");
+            return iRet;
+		}
+		else
+		{
+            // 已经停止，无需再次停止，直接返回
+            FLOW_MANAGER_INFO("CurrentInterval is alread 0, return.");
+            return iRet;
+		}	
+		
+	}
+	else 
+	{
+        // 设置新的间隔时间
+        SetNewInterval(interval);
+        FLOW_MANAGER_INFO("Set CurrentInterval from [%d] to [%d] success.", oldInterval, interval);
+        return iRet;
+	}
+	return iRet;
+}
 
