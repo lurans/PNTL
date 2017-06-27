@@ -23,4 +23,6 @@ extern INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, s
 // 生成json格式的字符串, 用于向Analyzer上报丢包信息.
 extern INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData);
 
+extern INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
+
 #endif
