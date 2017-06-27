@@ -20,6 +20,7 @@ import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
 import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
 import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
+import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.pntl.PntlInfoService;
 import com.huawei.blackhole.network.extention.service.sso.SsoConfiger;
@@ -86,6 +87,8 @@ public class RouterApi {
     @Resource(name = "pntlInfoService")
     private PntlInfoService pntlInfoService;
 
+    @Resource(name = "pntlConfigService")
+    private PntlConfigService pntlConfigService;
     /**
      * 获取当前配置 config.ymal <br />
      * {<br />
@@ -338,7 +341,7 @@ public class RouterApi {
 
     @Path("/pingList")
     @POST
-    public Response getPingList(PntlConfig config){
+    public Response getPingList(PingListRequest config){
         LOGGER.info("receive ping list from agent[" + config.getContent().getAgentIp() + "]");
         Result<AgentFlowsJson> result = new Result<AgentFlowsJson>();
 
@@ -383,6 +386,9 @@ public class RouterApi {
         LOGGER.info("send loss rate to UI");
 
         Result<Object> result = pntlInfoService.getLossRate();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
         return ResponseUtil.succ(result.getModel());
     }
 
@@ -392,19 +398,36 @@ public class RouterApi {
         LOGGER.info("send delay info to UI");
 
         Result<Object> result = pntlInfoService.getDelayInfo();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
         return ResponseUtil.succ(result.getModel());
     }
 
     @Path("/pntlConfig")
     @POST
-    public Response setPntlConfig(){
+    public Response setPntlConfig(PntlConfig config){
+        Result<String> result = pntlConfigService.setPntlConfig(config);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        result = pntlService.setProbeInterval(config.getProbeInterval());
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
         return ResponseUtil.succ();
     }
 
     @Path("/pntlConfig")
     @GET
     public Response getPntlConfig(){
-        return ResponseUtil.succ();
+        Result<PntlConfig> result = pntlConfigService.getPntlConfig();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ(result.getModel());
     }
 
     @Path("/ipList")
@@ -419,5 +442,15 @@ public class RouterApi {
         }
 
         return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/stopProbe")
+    @POST
+    public Response stopProbe(){
+        Result<String> result = pntlService.setProbeInterval("0");
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
     }
 }

@@ -48,7 +48,7 @@ public class PntlInfoService {
             }
             LossRate.saveInfo(flow);
             if (needTracerouteLossRate(flow)){
-                new Pntl().startTraceroute(flow.getSip(), flow.getDip());
+            //    new Pntl().startTraceroute(flow.getSip(), flow.getDip());
             }
         }
         return result;
@@ -75,7 +75,7 @@ public class PntlInfoService {
             }
             DelayInfo.saveInfo(flow);
             if (needTracerouteDelay(flow)){
-                new Pntl().startTraceroute(flow.getSip(), flow.getDip());
+            //    new Pntl().startTraceroute(flow.getSip(), flow.getDip());
             }
         }
         return result;

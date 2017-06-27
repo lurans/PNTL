@@ -99,6 +99,7 @@ public class PntlHostContext {
         this.pingMeshList = pingMeshList;
     }
 
+    /*
     public void setPingMeshList(String srcIp, List<HostInfo.HostListInfo> hosts){
         Map<String, List<String>> pingMeshList = new HashMap<>();
         List<String> ipList = new ArrayList<>();
@@ -109,6 +110,22 @@ public class PntlHostContext {
             ipList.add(host.getIp());
         }
         pingMeshList.put(srcIp, ipList);
+
+        setPingMeshList(pingMeshList);
+    }*/
+
+    public void setPingMeshList(String srcIp, List<Map<String, String>> ipList){
+        Map<String, List<String>> pingMeshList = new HashMap<>();
+        List<String> ips = new ArrayList<>();
+        for (int i = 0; i < ipList.size() ;i++) {
+            String ip = (String) ipList.get(i).get("ip");
+            if (srcIp.equals(ip)){
+                continue;
+            }
+            ips.add(ip);
+
+        }
+        pingMeshList.put(srcIp, ips);
 
         setPingMeshList(pingMeshList);
     }

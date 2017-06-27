@@ -12,54 +12,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AgentFlowsJson implements Serializable {
     private static final long serialVersionUID = -1806885486879192482L;
-/*
-    @JsonProperty("orgnizationSignature")
-    private String orgnizationSignature;
-
-    @JsonProperty("serverIp")
-    private String serverIp;
-
-    @JsonProperty("action")
-    private String action;
-
-    @JsonProperty("content")
-    private String content;
-*/
     @JsonProperty("flow")
     private List<FlowList> list;
-/*
-    public String getOrgnizationSignature() {
-        return orgnizationSignature;
-    }
 
-    public void setOrgnizationSignature(String orgnizationSignature) {
-        this.orgnizationSignature = orgnizationSignature;
-    }
-
-    public String getServerIp() {
-        return serverIp;
-    }
-
-    public void setServerIp(String serverIp) {
-        this.serverIp = serverIp;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-*/
     public List<FlowList> getList() {
         return list;
     }

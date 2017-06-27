@@ -12,6 +12,7 @@ import com.huawei.blackhole.network.common.utils.http.Parameter;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
+import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
@@ -37,7 +38,7 @@ public class Pntl {
     private static final String HOSTCLASS = "hostClass";
     private static final String PAGESIZE = "pageSize";
     private static final String PAGEINDEX = "pageIndex";
-    private static final String PORT = "8080";
+    private static final String PORT = "1200";
     private static final String USERNAME = "user_name";
     private static final String SERVICENAME = "service_name";
     private static final String BEARER = "Bearer";
@@ -112,17 +113,14 @@ public class Pntl {
     }
 
     /**
-     * 发送探测流表到agent
+     * 发送探测时间间隔到agent
      * @param agentIp
      * @param json
      * @return
      * @throws ClientException
-     * @throws JsonProcessingException
-     * @throws MalformedURLException
-     * @throws UnsupportedEncodingException
      */
-    public RestResp sendProbeList(String agentIp, AgentFlowsJson json)
-            throws ClientException, JsonProcessingException, MalformedURLException, UnsupportedEncodingException {
+    public RestResp sendProbeInterval(String agentIp, ProbeInterval json)
+            throws ClientException, JsonProcessingException {
         LOG.info("start to send Probe");
 
         Map<String, String> header = new HashMap<>();
@@ -133,28 +131,9 @@ public class Pntl {
         String jsonInString = mapper.writeValueAsString(json);
 
         List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT, jsonInString));
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT_ACTION, jsonInString));
 
         return RestClientExt.post(url, null, formBody,  header);
-    }
-
-    /**
-     * 发送ip列表到agent
-     * @param pntlHostList
-     * @return
-     * @throws ClientException
-     */
-    public RestResp sendIpListToAgents(List<PntlHostContext> pntlHostList)
-        throws ClientException{
-        LOG.info("send host ip list to agents");
-
-        StringBuffer ips = new StringBuffer();
-        for (PntlHostContext host : pntlHostList){
-            ips.append(host.getIp()+"\n");
-        }
-
-        ///TODO 发送ips到agent
-        return RestClientExt.post(null, null, null,  null);
     }
 
     /**
@@ -163,8 +142,9 @@ public class Pntl {
      * @return
      * @throws ClientException
      */
-    public RestResp sendFilesToAgents(List<PntlHostContext> pntlHostList, String token)
+    public Result<String> sendFilesToAgents(List<PntlHostContext> pntlHostList, String token)
             throws ClientException {
+        Result<String> result = new Result<>();
         LOG.info("send files to agents");
 
         RestResp resp = null;
@@ -207,16 +187,17 @@ public class Pntl {
                 body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
-                    if (resp.getRespBody() != null && resp.getRespBody().get("result") != null){
-                        LOG.info(resp.getRespBody().get("result").toString());
+                    if (resp.getStatusCode().isError()){
+                        LOG.info("send file to agent failed" + resp.getRespBody().get("reason").toString());
                     }
                 } catch (ClientException | JSONException e){
                     LOG.error("Send script to suse os agent failed");
+                    result.addError("", e.getMessage());
                 }
             }
         }
 
-        return resp;
+        return result;
     }
 
     /**
@@ -356,6 +337,7 @@ public class Pntl {
     }
 
     public void startTraceroute(String srcIp, String dstIp){
+        RestResp resp = null;
         if (srcIp == null || dstIp == null){
             return;
         }
@@ -374,7 +356,10 @@ public class Pntl {
         }
         final String command = "cd /opt/huawei/ServerAntAgent & python tracetool.py";
         try {
-            sendCommandToAgents(snList, token, command, "async");
+            resp = sendCommandToAgents(snList, token, command, "async");
+            if (resp.getStatusCode().isError()){
+                LOG.error("Execute:" + command + "fail");
+            }
         } catch(ClientException e){
             LOG.error("Execute:" + command + "fail " + e.getMessage());
         }
