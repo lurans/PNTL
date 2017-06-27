@@ -13,4 +13,6 @@ public interface PntlService {
     Result<AgentFlowsJson> getPingList(PingListRequest config);
 
     Result<IpListJson> getIpListinfo(String azId, String podId);
+
+    public Result<String> setProbeInterval(String timeInterval);
 }

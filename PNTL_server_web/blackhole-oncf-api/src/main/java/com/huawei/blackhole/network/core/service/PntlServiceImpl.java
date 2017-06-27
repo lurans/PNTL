@@ -1,5 +1,6 @@
 package com.huawei.blackhole.network.core.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.api.resource.PntlShareInfo;
 import com.huawei.blackhole.network.common.constants.Constants;
@@ -13,10 +14,7 @@ import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
-import com.huawei.blackhole.network.extention.bean.pntl.HostInfo;
-import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
-import com.huawei.blackhole.network.extention.bean.pntl.PntlNetworkMap;
+import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,36 +87,43 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
 
         AgentFlowsJson agentFlowsJson = generateAgentFlowJson(config);
+        if (agentFlowsJson == null){
+            result.addError("", "pingList is null");
+            return result;
+        }
         result.setModel(agentFlowsJson);
 
         return result;
     }
 
     /**
-     * 生产pingMesh策略列表
+     * 设置探测时间间隔，若为0，则停止探测
      * @return
      */
-    /*
-    private Map<String, List<String>> genDstIp(List<PntlHostContext> hostList){
-        Map<String, List<String>> pingMeshList = new HashMap<String, List<String>>();
+    public Result<String> setProbeInterval(String timeInterval){
+        Result<String> result = new Result<>();
+        ProbeInterval interval = new ProbeInterval();
+        interval.setProbe_interval(timeInterval);
+
         if (hostList == null || hostList.size() == 0){
-            return null;
+            result.addError("", "No host information");
+            return result;
         }
-
-        ///TODO:目前是全遍历，后期需要优化算法
-        for (PntlHostContext host : hostList){
-            List<String> dstIpList = new ArrayList<String>();
-            for (int i = 0;i < hostList.size(); i++){
-                if (host.getIp().equals(hostList.get(i).getIp())){
-                    continue;
+        for (int i = 0; i < hostList.size(); i++){
+            String agentIp = hostList.get(i).getIp();
+            try {
+                RestResp resp = pntlRequest.sendProbeInterval(agentIp, interval);
+                if (resp.getStatusCode().isError()){
+                    LOG.error("stop probe failed[" + agentIp + "]");
+                    result.addError("", "stop probe failed[" + agentIp + "]");
                 }
-                dstIpList.add(hostList.get(i).getIp());
+            } catch (ClientException | JsonProcessingException e){
+                LOG.error("stop probe failed[" + agentIp + "] " + e.getMessage());
+                result.addError("", "stop probe failed[" + agentIp + "] "+ e.getMessage());
             }
-            pingMeshList.put(host.getIp(), dstIpList);
         }
-
-        return pingMeshList;
-    }*/
+        return result;
+    }
 
     private void setFlowCommon(AgentFlowsJson.FlowList flow, String agentIp){
         flow.setUrgent("false");
@@ -331,7 +336,6 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             } catch (Exception e){
 
             }
-
         }
         PntlNetworkMap networkMap = new PntlNetworkMap();
 

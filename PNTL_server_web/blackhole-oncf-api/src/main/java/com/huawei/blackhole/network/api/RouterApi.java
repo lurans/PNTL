@@ -411,6 +411,12 @@ public class RouterApi {
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
+
+        result = pntlService.setProbeInterval(config.getProbeInterval());
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
         return ResponseUtil.succ();
     }
 
@@ -436,5 +442,15 @@ public class RouterApi {
         }
 
         return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/stopProbe")
+    @POST
+    public Response stopProbe(){
+        Result<String> result = pntlService.setProbeInterval("0");
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
     }
 }

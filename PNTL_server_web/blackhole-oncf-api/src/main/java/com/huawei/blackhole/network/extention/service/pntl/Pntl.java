@@ -38,7 +38,7 @@ public class Pntl {
     private static final String HOSTCLASS = "hostClass";
     private static final String PAGESIZE = "pageSize";
     private static final String PAGEINDEX = "pageIndex";
-    private static final String PORT = "8080";
+    private static final String PORT = "1200";
     private static final String USERNAME = "user_name";
     private static final String SERVICENAME = "service_name";
     private static final String BEARER = "Bearer";
@@ -113,17 +113,14 @@ public class Pntl {
     }
 
     /**
-     * 发送探测流表到agent
+     * 发送探测时间间隔到agent
      * @param agentIp
      * @param json
      * @return
      * @throws ClientException
-     * @throws JsonProcessingException
-     * @throws MalformedURLException
-     * @throws UnsupportedEncodingException
      */
-    public RestResp sendProbeList(String agentIp, AgentFlowsJson json)
-            throws ClientException, JsonProcessingException, MalformedURLException, UnsupportedEncodingException {
+    public RestResp sendProbeInterval(String agentIp, ProbeInterval json)
+            throws ClientException, JsonProcessingException {
         LOG.info("start to send Probe");
 
         Map<String, String> header = new HashMap<>();
@@ -134,7 +131,7 @@ public class Pntl {
         String jsonInString = mapper.writeValueAsString(json);
 
         List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT, jsonInString));
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT_ACTION, jsonInString));
 
         return RestClientExt.post(url, null, formBody,  header);
     }
