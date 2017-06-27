@@ -2,6 +2,8 @@
 
 #include <curl/curl.h>
 #include <sstream>
+#include <string>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -62,9 +64,25 @@ data =
 size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssResponce)
 {
     char * pStr = (char *)ptr;
-    
-    (*pssResponce) << pStr;
-    
+
+	if (strlen(pStr) != (nmemb + 2))
+	{
+              MSG_CLIENT_WARNING("ReceiveResponce.............wrong&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&.....");
+
+	}
+
+	char* newPStr = (char*)malloc(size * nmemb + 1);
+	if (NULL == newPStr) {
+		MSG_CLIENT_ERROR("Apply for size [%d] memory fail.", size * nmemb + 1);
+		return 0;
+	}
+	sal_memset(newPStr, 0, size * nmemb + 1);
+	memcpy(newPStr, pStr, size * nmemb);
+    (*pssResponce) << newPStr;
+    MSG_CLIENT_WARNING("ReceiveResponce..................strlen[%d].........................data:'%s'         nmemb:%d",
+					strlen(newPStr), newPStr, nmemb);
+	free(newPStr);
+	
     return size*nmemb;
 }
 
@@ -78,7 +96,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
     CURL *curl;
     CURLcode res;
     char error_msg[CURL_ERROR_SIZE];
-    struct curl_slist *headers = NULL;	
+    struct curl_slist *headers = NULL;
     curl_global_init(CURL_GLOBAL_ALL);
     
     // 创建一个curl句柄
@@ -109,7 +127,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         headers = curl_slist_append(headers, "Content-Type:application/json");
 
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        
+
         // 设定超时时间, 避免因为SERVER无响应而挂死.
         res = curl_easy_setopt(curl, CURLOPT_TIMEOUT, AGENT_REQUEST_TIMEOUT);
         if(CURLE_OK != res)
@@ -192,8 +210,8 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         MSG_CLIENT_ERROR("curl easy init failed");
         iRet = AGENT_E_ERROR;
     }
+    curl_slist_free_all(headers);
     curl_global_cleanup();
-    
     return iRet;
 }
 
@@ -212,7 +230,7 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     stringstream ssPostData;
     // 保存post的response(查询结果),json格式字符串, 后续交给json模块处理.
     stringstream ssResponceData;
-    const char * pcJsonData = NULL;
+    char * pcJsonData = NULL;
 
     // 生成 URL
     UINT32 uiServerIP = 0;
@@ -225,7 +243,7 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     }
     ssUrl.clear();
     ssUrl << "http://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << "/rest/chkflow/pingList";
-    
+
     //MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
 
 
@@ -233,7 +251,6 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     ssPostData.clear();
     ssPostData.str("");
     //ssPostData << ServerAntServerName << "=";
-	        MSG_CLIENT_INFO("RequestProbeListFromServer    Server Address 2");
 
     iRet = CreatProbeListRequestPostData(pcFlowManager->pcAgentCfg, &ssPostData);
     if (iRet)
@@ -255,15 +272,15 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
 
     // 字符串格式转换.
     string strResponceData = ssResponceData.str();
-    pcJsonData = strResponceData.c_str();
-    
+    pcJsonData = (char *)strResponceData.c_str();
+
    // 处理response数据
     //MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
     
     iRet = ProcessNormalFlowFromServer( pcJsonData, pcFlowManager);
     if (iRet)
     {
-        MSG_CLIENT_ERROR("Process Normal Flow From Server failed[%d]", iRet);
+        MSG_CLIENT_ERROR("Process Normal Flow From Server failed[%d], pcJsonData: [%s]", iRet, pcJsonData);
         return iRet;
     }
     return iRet;
@@ -272,10 +289,10 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     
 
 // 向ServerAnrServer请求新的probe列表
-INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrReportData)
+INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrReportData, string strUrl)
 {
     INT32 iRet = AGENT_OK;
-    
+
     // 用于提交的URL地址
     stringstream ssUrl;
     // 保存需要post的数据,json格式字符串, 由json模块生成.
@@ -287,7 +304,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
     // 生成 URL
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
-	        MSG_CLIENT_INFO("ReportDataToServer    Server Address 1");
+
 
     iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
     if (iRet)
@@ -296,8 +313,8 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
         return iRet;
     }
     ssUrl.clear();
-    ssUrl << "http://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << "/rest/chkflow/reportData";
-    
+    ssUrl << "http://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << strUrl;
+
     //MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
 
 
@@ -318,12 +335,17 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
     // 字符串格式转换.
     string strResponceData = ssResponceData.str();
     pcJsonData = strResponceData.c_str();
-    
+
    // 处理response数据
-    MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());   
-    
-   
+    MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
+
+
     return iRet;
-    
+
 }
-    
+
+
+
+
+
+

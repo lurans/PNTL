@@ -1,0 +1,131 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-control" content="no-cache">
+<meta http-equiv="Cache" content="no-cache">
+<!--FaultLocation -->
+<div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span1 input_label" style="width: 70px;">
+                <span>*</span>{{i18n.chkFlow_term_source_ip}}
+            </div>
+            <div class="span3 input_content" style="margin-left: 0px;margin-left: 10px;">
+                <tiny-textbox id="sourceIp.id" value="sourceIp.value"
+                              width="sourceIp.width"
+                              validate="sourceIp.validate"
+                              max-length="sourceIp.maxLength"
+                              change="inputChg()"></tiny-textbox>
+            </div>
+            <div class="span1 input_label" style="width: 70px;margin-left: 20px;">
+                <span>*</span>{{i18n.chkFlow_term_remote_ip}}
+            </div>
+            <div class="span2 input_content" style="margin-left: 10px;">
+                <tiny-textbox id="remoteIp.id" value="remoteIp.value"
+                              width="remoteIp.width"
+                              validate="remoteIp.validate"
+                              max-length="remoteIp.maxLength"
+                              change="inputChg()"></tiny-textbox>
+            </div>
+            <div class="span2" style="float: right">
+                <tiny-button id="search.id" text="search.text"
+                             icons-class="search.iconsClass"
+                             width="search.width"
+                             disable="search.disable"
+                             click="searchBtn()"></tiny-button>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard_title"></div>
+    <div style="text-align: center;margin-top: 80px;color: #999999;" ng-show="noDataShow">{{i18n.chkFlow_term_no_data}}</div>
+    <div style="display: block;" ng-show="statusShow">
+        <div class="{{picStatus}}" style="text-align:center" ng-show="!erroInfoShow">{{status}}</div>
+        <div class="errInfo" ng-show="erroInfoShow">{{erroInfo}}</div>
+    </div>
+    <div style="display: inline-block;width: 100%;text-align: center;" ng-show="flowShow">
+        <div class="routers">
+                <!--first-->
+                <div class="serv1" ng-style="POD1_style" ng-show="POD1_Show">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{az}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;{{pod1}}<br>
+                    </div>
+                    <!--整体时间轴-->
+                    <tinyplus-timeline side="right" class="wholeTimeLine">
+                        <!--竖线-->
+                        <div class="timeLine tinypuls-tl-axis-default" ng-style="time_line_style"></div>
+                        <!-- 一项一项内容 -->
+                        <tinyplus-timeline-item ng-repeat="group in first_POD" style="height: 60px;">
+                            <!--圆点-->
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_blue': group.packets === 0,
+                              'outerCircle_red': group.packets !== 0}"></div>
+                            </tinyplus-timeline-badge>
+                            <!--横线-->
+                            <div class="conLine"></div>
+                            <!--详细信息-->
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets !== 0,
+                                    'tinypuls-tl-panel':group.packets === 0}">
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.ip}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_packets_loss}}:{{group.packets}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <!--最后一项箭头-->
+                        <tinyplus-timeline-item ng-show="POD1ShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="output_arrow_down"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>
+                    </tinyplus-timeline>
+                </div>
+                <!--second-->
+                <div class="serv2" ng-style="POD2_style"  ng-show="POD2_Show">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{az}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;{{pod2}}<br>
+                    </div>
+                    <tinyplus-timeline side="right" class="wholeTimeLine" style="margin-top: 25px">
+                        <tinyplus-timeline-item ng-repeat="group in secd_POD" style="height: 60px;">
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_blue': group.packets === 0,
+                              'outerCircle_red': group.packets !== 0}">
+                                </div>
+                            </tinyplus-timeline-badge>
+                            <div class="conLine"></div>
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets !== 0,
+                                    'tinypuls-tl-panel':group.packets === 0}">
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.ip}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_packets_loss}}:{{group.packets}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <!--<tinyplus-timeline-item ng-show="POD2ShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="output_arrow_down"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>-->
+                    </tinyplus-timeline>
+                </div>
+
+            <!--颜色标示
+            <div class="exam_framework">
+                <div class="row-fluid exam_li" >
+                    <div class="span2"><div class="exam_blue"></div></div>
+                    <div class="apan10">{{i18n.chkFlow_term_exam_blue}}</div>
+                </div>
+                <div class="row-fluid exam_li">
+                    <div class="span2"><div class="exam_yellow"></div></div>
+                    <div>{{i18n.chkFlow_term_exam_yellow}}</div>
+                </div>
+                <div class="row-fluid exam_li">
+                    <div class="span2"><div class="exam_red"></div></div>
+                    <div>{{i18n.chkFlow_term_exam_red}}</div>
+                </div>
+            </div>-->
+        </div>
+    </div>
+</div>

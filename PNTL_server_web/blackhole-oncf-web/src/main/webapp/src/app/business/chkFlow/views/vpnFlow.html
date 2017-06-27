@@ -29,16 +29,6 @@
                                   change="inputChg()"></tiny-textbox>
                 </div>
             </div>
-            <div class="span1 input_label"  style="width: 70px;margin-left: 10px">
-                <span>*</span>{{i18n.chkFlow_term_vm_ip}}
-            </div>
-            <div class="span2 input_content" style="margin-left: 10px;">
-                <tiny-textbox id="vmIp.id" value="vmIp.value"
-                              width="vmIp.width"
-                              validate="vmIp.validate"
-                              max-length="vmIp.maxLength"
-                              change="inputChg()"></tiny-textbox>
-            </div>
             <div class="span1 input_label" style="width: 80px;margin-left: 10px;">
                 <span>*</span>{{i18n.chkFlow_term_remote_ip}}
             </div>
@@ -48,7 +38,6 @@
                               validate="vpnRemoteIp.validate"
                               max-length="vpnRemoteIp.maxLength"
                               change="inputChg()"></tiny-textbox>
-
             </div>
             <!--Search Button -->
             <div class="span2" style="float: left;margin-left: 70px">
@@ -165,135 +154,135 @@
                             </tinyplus-timeline-item>
                         </tinyplus-timeline>
                     </div>
-                    </div>
                 </div>
+            </div>
 
-                <!--右侧input-->
-                <div class="inputRouters">
-                    <!--first-->
-                    <div class="serv1" ng-style="cna_inHost1Style" ng-show="cna_firstInShow">
-                        <div class="hostInfo">
-                            &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{cna_inAz1}}<br>
-                            &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{cna_inPod1}}<br>
-                            &nbsp;&nbsp;{{cna_inHostType1}}: &nbsp;&nbsp;{{cna_inHost1}}<br>
-                            &nbsp;&nbsp;{{vm_diplay}}: &nbsp;&nbsp;{{cna_srcVm}}<br>
+            <!--右侧input-->
+            <div class="inputRouters">
+                <!--first-->
+                <div class="serv1" ng-style="cna_inHost1Style" ng-show="cna_firstInShow">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{cna_inAz1}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{cna_inPod1}}<br>
+                        &nbsp;&nbsp;{{cna_inHostType1}}: &nbsp;&nbsp;{{cna_inHost1}}<br>
+                        &nbsp;&nbsp;{{vm_diplay}}: &nbsp;&nbsp;{{cna_srcVm}}<br>
+                    </div>
+                    <tinyplus-timeline side="right" class="wholeTimeLine">
+                        <div class="timeLine tinypuls-tl-axis-default">
                         </div>
-                        <tinyplus-timeline side="right" class="wholeTimeLine">
-                            <div class="timeLine tinypuls-tl-axis-default">
-                            </div>
-                            <tinyplus-timeline-item ng-repeat="group in cna_firstInGroup" style="height: 60px;width: 300px">
-                                <tinyplus-timeline-badge>
-                                    <div ng-class="{'outerCircle_red': group.packets === 0,'outerCircle_blue': group.packets !== 0 && group.type !=='vBond' && group.type !=='ETH',
+                        <tinyplus-timeline-item ng-repeat="group in cna_firstInGroup" style="height: 60px;width: 300px">
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_red': group.packets === 0,'outerCircle_blue': group.packets !== 0 && group.type !=='vBond' && group.type !=='ETH',
                                   'outerCircle_yellow':group.packets !== 0 && ( group.type ==='vBond'||group.type ==='ETH')}"></div>
-                                </tinyplus-timeline-badge>
-                                <div class="conLine"></div>
-                                <tinyplus-timeline-panel>
-                                    <div ng-class="{'custom-timeline-panel':group.packets === 0,
+                            </tinyplus-timeline-badge>
+                            <div class="conLine"></div>
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
                                     'tinypuls-tl-panel':group.packets !== 0}">
-                                        {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
-                                        <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
-                                    </div>
-                                </tinyplus-timeline-panel>
-                            </tinyplus-timeline-item>
-                            <tinyplus-timeline-item ng-show="cna_inShowEnd">
-                                <tinyplus-timeline-badge>
-                                    <div class="input_arrow_up"></div>
-                                </tinyplus-timeline-badge>
-                            </tinyplus-timeline-item>
-                        </tinyplus-timeline>
-                    </div>
-                    <!--l2gw-->
-                    <div class="serv2" ng-style="l2gw_inHostStyle" ng-show="l2gw_inShow">
-                        <div class="hostInfo">
-                            &nbsp;&nbsp;{{l2gw_display}}: &nbsp;&nbsp;{{l2gw_inHost}}<br>
-                            &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{l2gw_inAz}}<br>
-                            &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{l2gw_inPod}}<br>
-                        </div>
-                        <tinyplus-timeline side="right" class="wholeTimeLine">
-                            <div class="timeLine tinypuls-tl-axis-default"></div>
-                            <tinyplus-timeline-item ng-repeat="group in l2gw_inGroup" style="height: 60px;width: 300px">
-                                <tinyplus-timeline-badge>
-                                    <div ng-class="{'outerCircle_red': group.packets == 0,'outerCircle_yellow':group.packets != 0 }"></div>
-                                </tinyplus-timeline-badge>
-                                <div class="conLine"></div>
-                                <tinyplus-timeline-panel>
-                                    <div ng-class="{'custom-timeline-panel':group.packets === 0,
-                                    'tinypuls-tl-panel':group.packets !== 0}">
-                                        {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
-                                        <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
-                                    </div>
-                                </tinyplus-timeline-panel>
-                            </tinyplus-timeline-item>
-                            <tinyplus-timeline-item ng-show="l2gw_inShowEnd">
-                                <tinyplus-timeline-badge>
-                                    <div class="input_arrow_up"></div>
-                                </tinyplus-timeline-badge>
-                            </tinyplus-timeline-item>
-                        </tinyplus-timeline>
-                    </div>
-                    <!--vroute-->
-                    <div class="serv2" ng-style="rf_inHostStyle" ng-show="rf_inShow">
-                        <div class="hostInfo">
-                            &nbsp;&nbsp;{{vroute_display}}: &nbsp;&nbsp;{{rf_inHost}}<br>
-                            &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{rf_inAz}}<br>
-                            &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{rf_inPod}}<br>
-                        </div>
-                        <tinyplus-timeline side="right" class="wholeTimeLine">
-                            <div class="timeLine tinypuls-tl-axis-default"></div>
-                            <tinyplus-timeline-item ng-repeat="group in rf_inGroup" style="height: 60px;width: 300px">
-                                <tinyplus-timeline-badge>
-                                    <div ng-class="{'outerCircle_red': group.packets === 0,'outerCircle_blue': group.packets !== 0 && group.type !=='vBond' && group.type !=='ETH',
-                                  'outerCircle_yellow':group.packets !== 0 && ( group.type ==='vBond'||group.type ==='ETH')}"></div>
-                                </tinyplus-timeline-badge>
-                                <div class="conLine"></div>
-                                <tinyplus-timeline-panel>
-                                    <div ng-class="{'custom-timeline-panel':group.packets === 0,
-                                    'tinypuls-tl-panel':group.packets !== 0}">
-                                        {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
-                                        <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
-                                    </div>
-                                </tinyplus-timeline-panel>
-                            </tinyplus-timeline-item>
-                            <tinyplus-timeline-item ng-show="rf_inShowEnd">
-                                <tinyplus-timeline-badge>
-                                    <div class="input_arrow_up"></div>
-                                </tinyplus-timeline-badge>
-                            </tinyplus-timeline-item>
-                        </tinyplus-timeline>
-                    </div>
-                    <!--second-->
-                    <div class="serv2" ng-style="cna_inHost2Style" ng-show="cna_secdInShow">
-                        <div class="hostInfo">
-                            &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{cna_inAz2}}<br>
-                            &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{cna_inPod2}}<br>
-                            &nbsp;&nbsp;{{cna_inHostType1}}: &nbsp;&nbsp;{{cna_inHost2}}<br>
-                            &nbsp;&nbsp;{{vm_diplay}}: &nbsp;&nbsp;{{cna_srcVm}}<br>
-                        </div>
-                        <tinyplus-timeline side="right" class="wholeTimeLine" style="margin-top: 25px">
-                            <div class="timeLine tinypuls-tl-axis-default">
-                            </div>
-                            <tinyplus-timeline-item ng-repeat="group in cna_secondInGroup" style="height: 60px;width: 300px">
-                                <tinyplus-timeline-badge>
-                                    <div ng-class="{'outerCircle_red': group.packets === 0,'outerCircle_blue': group.packets !== 0 && group.type !=='vBond' && group.type !=='ETH',
-                                  'outerCircle_yellow':group.packets !== 0 && ( group.type ==='vBond'||group.type ==='ETH')}"></div>
-                                </tinyplus-timeline-badge>
-                                <div class="conLine"></div>
-                                <tinyplus-timeline-panel>
-                                    <div ng-class="{'custom-timeline-panel':group.packets === 0,
-                                    'tinypuls-tl-panel':group.packets !== 0}">
-                                        {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
-                                        <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
-                                    </div>
-                                </tinyplus-timeline-panel>
-                            </tinyplus-timeline-item>
-                            <tinyplus-timeline-item ng-show="cna_inShowEnd">
-                                <tinyplus-timeline-badge>
-                                    <div class="input_arrow_up"></div>
-                                </tinyplus-timeline-badge>
-                            </tinyplus-timeline-item>
-                        </tinyplus-timeline>
-                    </div>
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <tinyplus-timeline-item ng-show="cna_inShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="input_arrow_up"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>
+                    </tinyplus-timeline>
                 </div>
+                <!--l2gw-->
+                <div class="serv2" ng-style="l2gw_inHostStyle" ng-show="l2gw_inShow">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{l2gw_display}}: &nbsp;&nbsp;{{l2gw_inHost}}<br>
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{l2gw_inAz}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{l2gw_inPod}}<br>
+                    </div>
+                    <tinyplus-timeline side="right" class="wholeTimeLine">
+                        <div class="timeLine tinypuls-tl-axis-default"></div>
+                        <tinyplus-timeline-item ng-repeat="group in l2gw_inGroup" style="height: 60px;width: 300px">
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_red': group.packets == 0,'outerCircle_yellow':group.packets != 0 }"></div>
+                            </tinyplus-timeline-badge>
+                            <div class="conLine"></div>
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
+                                    'tinypuls-tl-panel':group.packets !== 0}">
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <tinyplus-timeline-item ng-show="l2gw_inShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="input_arrow_up"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>
+                    </tinyplus-timeline>
+                </div>
+                <!--vroute-->
+                <div class="serv2" ng-style="rf_inHostStyle" ng-show="rf_inShow">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{vroute_display}}: &nbsp;&nbsp;{{rf_inHost}}<br>
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{rf_inAz}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{rf_inPod}}<br>
+                    </div>
+                    <tinyplus-timeline side="right" class="wholeTimeLine">
+                        <div class="timeLine tinypuls-tl-axis-default"></div>
+                        <tinyplus-timeline-item ng-repeat="group in rf_inGroup" style="height: 60px;width: 300px">
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_red': group.packets === 0,'outerCircle_blue': group.packets !== 0 && group.type !=='vBond' && group.type !=='ETH',
+                                  'outerCircle_yellow':group.packets !== 0 && ( group.type ==='vBond'||group.type ==='ETH')}"></div>
+                            </tinyplus-timeline-badge>
+                            <div class="conLine"></div>
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
+                                    'tinypuls-tl-panel':group.packets !== 0}">
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <tinyplus-timeline-item ng-show="rf_inShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="input_arrow_up"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>
+                    </tinyplus-timeline>
+                </div>
+                <!--second-->
+                <div class="serv2" ng-style="cna_inHost2Style" ng-show="cna_secdInShow">
+                    <div class="hostInfo">
+                        &nbsp;&nbsp;{{az_diplay}}: &nbsp;&nbsp;{{cna_inAz2}}<br>
+                        &nbsp;&nbsp;{{pod_diplay}}: &nbsp;&nbsp;{{cna_inPod2}}<br>
+                        &nbsp;&nbsp;{{cna_inHostType1}}: &nbsp;&nbsp;{{cna_inHost2}}<br>
+                        &nbsp;&nbsp;{{vm_diplay}}: &nbsp;&nbsp;{{cna_srcVm}}<br>
+                    </div>
+                    <tinyplus-timeline side="right" class="wholeTimeLine" style="margin-top: 25px">
+                        <div class="timeLine tinypuls-tl-axis-default">
+                        </div>
+                        <tinyplus-timeline-item ng-repeat="group in cna_secondInGroup" style="height: 60px;width: 300px">
+                            <tinyplus-timeline-badge>
+                                <div ng-class="{'outerCircle_red': group.packets === 0,'outerCircle_blue': group.packets !== 0 && group.type !=='vBond' && group.type !=='ETH',
+                                  'outerCircle_yellow':group.packets !== 0 && ( group.type ==='vBond'||group.type ==='ETH')}"></div>
+                            </tinyplus-timeline-badge>
+                            <div class="conLine"></div>
+                            <tinyplus-timeline-panel>
+                                <div ng-class="{'custom-timeline-panel':group.packets === 0,
+                                    'tinypuls-tl-panel':group.packets !== 0}">
+                                    {{i18n.chkFlow_term_dev_name}}:{{group.name}}<br>
+                                    <span class="grayWord">{{i18n.chkFlow_term_dev_type}}:{{group.type}}<br></span>
+                                </div>
+                            </tinyplus-timeline-panel>
+                        </tinyplus-timeline-item>
+                        <tinyplus-timeline-item ng-show="cna_inShowEnd">
+                            <tinyplus-timeline-badge>
+                                <div class="input_arrow_up"></div>
+                            </tinyplus-timeline-badge>
+                        </tinyplus-timeline-item>
+                    </tinyplus-timeline>
+                </div>
+            </div>
 
             <!--图示-->
             <div class="exam_framework">
@@ -310,8 +299,6 @@
                     <div>{{i18n.chkFlow_term_exam_red}}</div>
                 </div>
             </div>
-            </div>
-
         </div>
     </div>
 </div>

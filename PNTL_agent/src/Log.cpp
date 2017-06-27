@@ -293,7 +293,7 @@ INT32 AgentLogSaveToFile( UINT32 ulModule, UINT32 ulLogType, const char *pcMsg )
 INT32 AgentLogPrintf(UINT32 ulModule, UINT32 ulLogType, const char *szFormat, ...)
 {
     va_list         arg;
-    char            acStrTmpBuffer[AGENT_LOG_TMPBUF_SIZE] = {0};
+    char            acStrTmpstSendMsg[AGENT_LOG_TMPBUF_SIZE] = {0};
     char            acCurTime[32]   = {0};
     UINT32    uiStrLen = 0;
 
@@ -309,37 +309,37 @@ INT32 AgentLogPrintf(UINT32 ulModule, UINT32 ulLogType, const char *szFormat, ..
     }
     
     /* 记录时间标签 */
-    sal_memset(acStrTmpBuffer, 0, sizeof(acStrTmpBuffer));
+    sal_memset(acStrTmpstSendMsg, 0, sizeof(acStrTmpstSendMsg));
     GetPrintTime(acCurTime);
 
     /* 加入时间戳 */
-    snprintf(acStrTmpBuffer, sizeof(acStrTmpBuffer), "%s ", acCurTime);
+    snprintf(acStrTmpstSendMsg, sizeof(acStrTmpstSendMsg), "%s ", acCurTime);
     
 
     /* 记录时间标签的结束位置 */
-    uiStrLen = strlen(acStrTmpBuffer);
+    uiStrLen = strlen(acStrTmpstSendMsg);
     
     va_start(arg, szFormat);
-    vsnprintf((acStrTmpBuffer + strlen(acStrTmpBuffer)), (sizeof(acStrTmpBuffer) - strlen(acStrTmpBuffer) - 2),
+    vsnprintf((acStrTmpstSendMsg + strlen(acStrTmpstSendMsg)), (sizeof(acStrTmpstSendMsg) - strlen(acStrTmpstSendMsg) - 2),
                             szFormat, arg);
     va_end(arg);
     
     /* 对用户字符串中的换行符统一进行处理,跳过添加的时间标签 */
-    AgentLogPreParser(&acStrTmpBuffer[uiStrLen], sizeof(acStrTmpBuffer));
+    AgentLogPreParser(&acStrTmpstSendMsg[uiStrLen], sizeof(acStrTmpstSendMsg));
 
     // 互斥锁等基础功能是在SAL层实现的, 避免嵌套.
     if(AGENT_MODULE_SAL != ulModule) 
     {
         /* 锁住对应模块的log资源 */
         AGENT_LOG_MODULE_LOCK(ulModule, ulLogType);
-        printf(acStrTmpBuffer);
-        AgentLogSaveToFile(ulModule, ulLogType, acStrTmpBuffer);
+        printf(acStrTmpstSendMsg);
+        AgentLogSaveToFile(ulModule, ulLogType, acStrTmpstSendMsg);
         AGENT_LOG_MODULE_UNLOCK(ulModule, ulLogType);
     }
     else
     {
-        printf(acStrTmpBuffer);
-        AgentLogSaveToFile(ulModule, ulLogType, acStrTmpBuffer);
+        printf(acStrTmpstSendMsg);
+        AgentLogSaveToFile(ulModule, ulLogType, acStrTmpstSendMsg);
     }
 
     return AGENT_OK;

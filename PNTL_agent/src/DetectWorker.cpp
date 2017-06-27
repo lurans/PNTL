@@ -48,7 +48,7 @@ using namespace std;
 void  PacketHtoN(PacketInfo_S * pstSendMsg)
 {
     pstSendMsg->uiSequenceNumber   = htonl(pstSendMsg->uiSequenceNumber);
-    pstSendMsg->uiRole   = htonl(pstSendMsg->uiRole);	
+    pstSendMsg->uiRole   = htonl(pstSendMsg->uiRole);
     pstSendMsg->stT1.uiSec         = htonl(pstSendMsg->stT1.uiSec);
     pstSendMsg->stT1.uiUsec        = htonl(pstSendMsg->stT1.uiUsec);
     pstSendMsg->stT2.uiSec         = htonl(pstSendMsg->stT2.uiSec);
@@ -63,7 +63,7 @@ void  PacketHtoN(PacketInfo_S * pstSendMsg)
 void  PacketNtoH(PacketInfo_S * pstSendMsg)
 {
     pstSendMsg->uiSequenceNumber   = ntohl(pstSendMsg->uiSequenceNumber);
-    pstSendMsg->uiRole   = ntohl(pstSendMsg->uiRole);	
+    pstSendMsg->uiRole   = ntohl(pstSendMsg->uiRole);
     pstSendMsg->stT1.uiSec         = ntohl(pstSendMsg->stT1.uiSec);
     pstSendMsg->stT1.uiUsec        = ntohl(pstSendMsg->stT1.uiUsec);
     pstSendMsg->stT2.uiSec         = ntohl(pstSendMsg->stT2.uiSec);
@@ -139,7 +139,7 @@ INT32 DetectWorker_C::ThreadHandler()
     struct timeval tm;      // 缓存当前时间.    
     struct sockaddr_in stPrtnerAddr;    // 对端socket地址信息
     char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// 保存报文所有附加信息的buffer, 当前只预留了tos值空间.
-    PacketInfo_S  stSendMsg;    // 保存报文payload信息的buffer, 当前只缓存一个报文.
+    PacketInfo_S stSendMsg;    // 保存报文payload信息的buffer, 当前只缓存一个报文.
 
     struct msghdr msg;      // 描述报文信息, socket收发包使用.
     struct cmsghdr *cmsg;   // 用于遍历 msg.msg_control中所有报文附加信息, 目前是tos值.
@@ -158,7 +158,7 @@ INT32 DetectWorker_C::ThreadHandler()
         iSockFd = GetSocket();        
 
         sal_memset(&tm, 0, sizeof(tm));
-        tm.tv_sec  = 3*GetCurrentInterval() / SECOND_USEC;  //us -> s
+        tm.tv_sec  = GetCurrentInterval() / SECOND_USEC;  //us -> s
         tm.tv_usec = GetCurrentInterval() % SECOND_USEC; // us -> us
         iRet = setsockopt(iSockFd, SOL_SOCKET, SO_RCVTIMEO, &tm, sizeof(tm)); //设置socket 读取超时时间
         if( 0 > iRet )
@@ -167,16 +167,15 @@ INT32 DetectWorker_C::ThreadHandler()
             return AGENT_E_HANDLER;
         }
 
-
         // 填充 msg
-         sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
+        sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
         
         // 对端socket地址
         msg.msg_name = &stPrtnerAddr;
         msg.msg_namelen = sizeof(stPrtnerAddr);
 
         // 报文payload接收buffer
-        iov[0].iov_base = &stSendMsg;
+        iov[0].iov_base =  &stSendMsg;
         iov[0].iov_len  = sizeof(PacketInfo_S);
         msg.msg_iov = iov;
         msg.msg_iovlen = 1;
@@ -196,7 +195,7 @@ INT32 DetectWorker_C::ThreadHandler()
             return AGENT_E_HANDLER;
         }
 
-        DETECT_WORKER_INFO("RX: @@@@@@@@@@@@@@@@@@@@@@@@@@Start Working, Using socket[%u], Protocol[%u], Port[%u], Interval[%dus], Role[%d]",
+        DETECT_WORKER_INFO("RX: Start Working, Using socket[%u], Protocol[%u], Port[%u], Interval[%dus], Role[%d]",
                 iSockFd, stCfg.eProtocol,stCfg.uiSrcPort, GetCurrentInterval(), stCfg.uiRole);
 
         while (GetCurrentInterval())
@@ -207,7 +206,7 @@ INT32 DetectWorker_C::ThreadHandler()
                     // 清空对端地址, payload buffer.
                     sal_memset(&stPrtnerAddr, 0, sizeof(stPrtnerAddr));
                     sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
-                    sal_memset(acCmsgBuf, 0, sizeof(acCmsgBuf));                    
+                    sal_memset(acCmsgBuf, 0, sizeof(acCmsgBuf));
                     iTos = 0;
 
                     /* 
@@ -287,7 +286,7 @@ INT32 DetectWorker_C::ThreadHandler()
                             gettimeofday(&tm,NULL); //获取当前时间
                             stSendMsg.stT3.uiSec = tm.tv_sec;
                             stSendMsg.stT3.uiUsec = tm.tv_usec;
-    			            stSendMsg.uiRole = WORKER_ROLE_SERVER;
+							stSendMsg.uiRole = WORKER_ROLE_SERVER;
                             
                             PacketHtoN(&stSendMsg); // 报文payload主机序转网络序
                             
@@ -296,6 +295,7 @@ INT32 DetectWorker_C::ThreadHandler()
                             {   
                                 DETECT_WORKER_WARNING("RX: Send reply packet failed[%d]: %s [%d]", iRet, strerror(errno), errno);
                             }
+							sleep(0);
                         }
                     }
                     else
@@ -378,8 +378,8 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAg
         DETECT_WORKER_ERROR("Do not reinit this worker");
         return AGENT_E_ERROR;
     }
-
-    pcAgentCfg = pcNewAgentCfg;
+	
+	pcAgentCfg = pcNewAgentCfg;
     
     // 根据worker角色不同, 初始化stCfg, 同时进行入参检查
     switch (stNewWorker.uiRole)
@@ -480,7 +480,7 @@ INT32 DetectWorker_C::InitSocket()
             //servaddr.sin_addr.s_addr = htonl(stCfg.uiSrcIP);
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
             servaddr.sin_port = htons(uiDestPort);
-            
+
             if( bind(SocketTmp, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
             {
                 DETECT_WORKER_WARNING("Bind socket failed, SrcIP[%s],SrcPort[%d]: %s [%d]", 
@@ -501,9 +501,9 @@ INT32 DetectWorker_C::InitSocket()
     SOCKET_LOCK();
     WorkerSocket = SocketTmp;
     SOCKET_UNLOCK();
-    
+
     DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", WorkerSocket,uiDestPort,servaddr.sin_addr.s_addr);
-	
+
     return AGENT_OK;
 }
 
@@ -533,6 +533,8 @@ INT32 DetectWorker_C::RxUpdateSession
         if ( ( pstPakcet->uiSequenceNumber == pSession ->uiSequenceNumber )
             && (SESSION_STATE_WAITING_REPLY == pSession->uiSessionState) )
         {
+                 DETECT_WORKER_INFO("RX: RxUpdateSession st2[%u], st3[%u]",
+                                    pstPakcet->stT2.uiSec, pstPakcet->stT3.uiSec);
             pSession->stT2 = pstPakcet->stT2;
             pSession->stT3 = pstPakcet->stT3;
             pSession->stT4 = pstPakcet->stT4;
@@ -586,7 +588,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
         return AGENT_E_MEMORY;
     }
     sal_memset(pstSendMsg, 0, sizeof(PacketInfo_S));
-    
+
     pstSendMsg->uiSequenceNumber = pNewSession->uiSequenceNumber;
     sal_memset(&tm, 0, sizeof(tm));
     gettimeofday(&tm,NULL); //获取当前时间
@@ -653,10 +655,10 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
             iRet = AGENT_E_PARA;
     }
     SOCKET_UNLOCK();
-    
+
     delete pstSendMsg;
     pstSendMsg = NULL;
-    
+
     return iRet;
 }
 
@@ -680,13 +682,7 @@ INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
         DETECT_WORKER_ERROR("New session Protocol do not match this worker"); 
         return AGENT_E_PARA;
     }
-    
-    if (stNewFlow.uiSrcPort!= stCfg.uiSrcPort)     // 检查flow的源端口是否与当前worker匹配
-    {
-        DETECT_WORKER_ERROR("New session SrcPort do not match this worker"); 
-        return AGENT_E_PARA;
-    }
-    
+
     if ( SAL_INADDR_ANY !=  stCfg.uiSrcIP
         && (stNewFlow.uiSrcIP!= stCfg.uiSrcIP))    // 检查flow的源IP是否与当前worker匹配. stProtocol.uiSrcIP为0表示匹配任意IP.
     {
@@ -751,8 +747,8 @@ INT32 DetectWorker_C::PopSession(DetectWorkerSession_S*
     INT32 iRet = AGENT_E_NOT_FOUND;
 
 
-    SESSION_LOCK();    
-    vector<DetectWorkerSession_S>::iterator pSession;    
+    SESSION_LOCK();
+    vector<DetectWorkerSession_S>::iterator pSession;
     for(pSession = SessionList.begin(); pSession != SessionList.end(); pSession++)
     {
         if ( (SESSION_STATE_SEND_FAIELD == pSession->uiSessionState )

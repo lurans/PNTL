@@ -7,22 +7,27 @@
                      || $stateParams.state === 'blackhole.manager.eipFlow'}" class="default_tab">
                     <div class="tab_title">{{i18n.follow_term_eip}}</div>
                 </li>
-                <li ng-click="go('blackhole.manager.vpnFlow')"
-                    ng-class="{leftCurrent:$state.includes('blackhole.manager.vpnFlow')
-                     || $stateParams.state === 'blackhole.manager.vpnFlow'}" class="default_tab">
+                <li ng-click="go('blackhole.manager.locationFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.locationFlow')
+                     || $stateParams.state === 'blackhole.manager.locationFlow'}" class="default_tab">
                     <div class="tab_title2">{{i18n.follow_term_vpn}}</div>
                 </li>
-                <li ng-click="go('blackhole.manager.ewFlow')"
-                    ng-class="{leftCurrent:$state.includes('blackhole.manager.ewFlow')
-                     || $stateParams.state === 'blackhole.manager.ewFlow'}" class="default_tab">
+                <li ng-click="go('blackhole.manager.delayFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.delayFlow')
+                     || $stateParams.state === 'blackhole.manager.delayFlow'}" class="default_tab">
                     <div class="tab_title3">{{i18n.follow_term_ew}}</div>
                 </li>
-                <li>
-                    <div id="config" class="configIcon">
-                        <a ng-href="/#/blackhole/config">
-                            {{i18n.follow_term_sc}}
-                        </a>
-                    </div>
+                <!--title4-->
+                <li ng-click="go('blackhole.manager.lossFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.lossFlow')
+                     || $stateParams.state === 'blackhole.manager.lossFlow'}" class="default_tab">
+                    <div class="tab_title4">{{i18n.follow_term_title4}}</div>
+                </li>
+                <!--在线配置-->
+                <li ng-click="go('blackhole.manager.configFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.configFlow')
+                     || $stateParams.state === 'blackhole.manager.configFlow'}" class="default_tab">
+                    <div class="tab_title5">{{i18n.follow_term_sc}}</div>
                 </li>
             </ul>
         </div>
@@ -32,7 +37,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
     function resetOverflow() {

@@ -45,16 +45,13 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     
     AgentCfgLock = sal_mutex_create("ServerAntAgentCfg");
 
-    pcTimer = new Timer_C;
-    pcTimer->Init(uiAgentPollingTimerPeriod);
-    
 }
 
 // 析构函数,释放资源
 ServerAntAgentCfg_C::~ServerAntAgentCfg_C()
 {
     AGENT_CFG_INFO("Destroy ServerAntAgentCfg");
-    
+
 }
 
 INT32 ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP, 

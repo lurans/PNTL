@@ -62,12 +62,12 @@ private:
     UINT32 uiAgentDetectPeriod;       // Agent探测其他Agent周期, 单位Polling周期, 默认20(2s).
     UINT32 uiAgentDetectTimeout;      // Agent探测报文超时时间, 单位Polling周期, 默认10(1s).
     UINT32 uiAgentDetectDropThresh;   // Agent探测报文丢包门限, 单位为报文个数, 默认5(即连续5个探测报文超时即认为链接出现丢包).
-    
+
     /* Detect 协议控制参数 */
     ServerAntAgentProtocolUDP_S stProtocolUDP; // UDP 探测报文全局设定,包括源端口范围及目的端口信息.
 
     sal_mutex_t AgentCfgLock;               // 互斥锁保护
-
+    
 public:
     ServerAntAgentCfg_C();                  // 类构造函数, 填充默认值.
     ~ServerAntAgentCfg_C();                 // 类析构函数, 释放必要资源.
@@ -97,7 +97,7 @@ public:
         return uiAgentPollingTimerPeriod;
     }
     INT32 SetPollingTimerPeriod(UINT32 uiNewPeriod);  //设置Polling周期, 如跟已有周期不一致则同时刷新定时器
-    
+
     UINT32 GetDetectPeriod()                         // 查询Detect周期
     {
         return uiAgentDetectPeriod;
@@ -107,7 +107,11 @@ public:
         uiAgentDetectPeriod = uiNewPeriod;
         return AGENT_OK;
     }
-    
+
+    INT32 GetAgentIP()          // 查询ServerAntAgent地址信息.
+    {
+        return uiAgentIP;
+    }
     UINT32 GetReportPeriod()                         // 查询Report周期
     {
         return uiAgentReportPeriod;
@@ -147,9 +151,9 @@ public:
         uiAgentDetectDropThresh = uiNewThresh;
         return AGENT_OK;
     }
-    
-    INT32 GetProtocolUDP(UINT32 * puiSrcPortMin, 
-                    UINT32 * puiSrcPortMax, 
+
+    INT32 GetProtocolUDP(UINT32 * puiSrcPortMin,
+                    UINT32 * puiSrcPortMax,
                     UINT32 * puiDestPort);           // 查询UDP探测报文端口范围.
                     
     INT32 SetProtocolUDP(UINT32 uiSrcPortMin, 

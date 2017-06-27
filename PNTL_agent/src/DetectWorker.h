@@ -186,7 +186,7 @@ private:
     INT32 InitSocket();                               // 根据stProtocol信息申请socket资源.
     INT32 GetSocket();                                // 获取当前socket
     sal_mutex_t WorkerSocketLock;                   // Socket互斥锁, 保护WorkerSocket
-
+    int test();
     INT32 TxPacket(DetectWorkerSession_S* 
                         pNewSession);               // 启动报文发送.PushSession()时触发.
     INT32 TxUpdateSession(DetectWorkerSession_S* 

@@ -33,16 +33,29 @@ define([
                     'controllers': ['app/business/common/controllers/managerCtrl']
                 }
             },
-            //east and west direction
+            //delayInfo
             {
-                name:"blackhole.manager.ewFlow",
-                url:"/ewFlow",
-                templateUrl:"src/app/business/chkFlow/views/ewFlow.html",
-                controller:"ewFlow.ctrl",
+                name:"blackhole.manager.delayFlow",
+                url:"/delayFlow",
+                templateUrl:"src/app/business/chkFlow/views/delayFlow.html",
+                controller:"delayFlow.ctrl",
                 scripts: {
-                    'controllers': ['app/business/chkFlow/controllers/ewFlowCtrl'],
+                    'controllers': ['app/business/chkFlow/controllers/delayFlowCtrl'],
                     'services': [
+                        'app/business/chkFlow/services/delayFlowService',
                         'app/business/chkFlow/services/chkFlowService']
+                }
+            },
+            //lossInfo
+            {
+                name:"blackhole.manager.lossFlow",
+                url:"/lossFlow",
+                templateUrl:"src/app/business/chkFlow/views/lossFlow.html",
+                controller:"lossFlow.ctrl",
+                scripts: {
+                    'controllers': ['app/business/chkFlow/controllers/lossFlowCtrl'],
+                    'services' :[
+                        'app/business/chkFlow/services/lossFlowService']
                 }
             },
             //eip
@@ -59,24 +72,37 @@ define([
             },
             //vpn
             {
-                name:"blackhole.manager.vpnFlow",
-                url:"/vpnFlow",
-                templateUrl:"src/app/business/chkFlow/views/vpnFlow.html",
-                controller:"vpnFlow.ctrl",
+                name:"blackhole.manager.locationFlow",
+                url:"/locationFlow",
+                templateUrl:"src/app/business/chkFlow/views/locationFlow.html",
+                controller:"locationFlow.ctrl",
                 scripts: {
-                    'controllers': ['app/business/chkFlow/controllers/vpnFlowCtrl'],
+                    'controllers': ['app/business/chkFlow/controllers/locationFlowCtrl'],
                     'services': [
-                        'app/business/chkFlow/services/chkFlowService']
+                        'app/business/chkFlow/services/locationFlowService']
                 }
-            },{
-                name:"blackhole.config",
-                url:"/config",
-                templateUrl:"src/app/business/config/views/config.html",
-                controller:"config.ctrl",
+            },
+            {//参数配置
+                name:"blackhole.manager.configFlow",
+                url:"/configFlow",
+                templateUrl:"src/app/business/chkFlow/views/configFlow.html",
+                controller:"configFlow.ctrl",
                 scripts: {
-                    'controllers': ['app/business/config/controllers/configCtrl'],
+                    'controllers': ['app/business/chkFlow/controllers/configFlowCtrl'],
+                    'services' :[
+                        'app/business/chkFlow/services/chkFlowService',
+                        'app/business/chkFlow/services/configFlowService']
+                }
+            },
+            {//编辑参数
+                name:"blackhole.config.editVariable",
+                url:"/editVariable",
+                templateUrl:"src/app/business/chkFlow/views/editVariable.html",
+                controller:"editVariable.ctrl",
+                scripts: {
+                    'controllers': ['app/business/chkFlow/controllers/editVariableCtrl'],
                     'services': [
-                        'app/business/config/services/configService']
+                        'app/business/chkFlow/services/configFlowService']
                 }
             }
         ];
