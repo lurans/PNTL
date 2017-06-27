@@ -1535,9 +1535,6 @@ INT32 FlowManager_C::PreStopHandler()
 INT32 FlowManager_C::FlowManagerAction(UINT32 interval)
 {
 	INT32 iRet = AGENT_OK;
-	stringstream ss(pcData);
-	UINT32 interval;
-	ss >> interval;
 	UINT32 oldInterval = GetCurrentInterval();
 	if (0 == oldInterval) 
 	{
