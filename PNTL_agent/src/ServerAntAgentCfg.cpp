@@ -37,9 +37,7 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     uiAgentDetectPeriod         = 20;       // Agent探测其他Agent周期, 单位Polling周期, 默认20(2s).
     uiAgentDetectTimeout        = 10;       // Agent探测报文超时时间, 单位Polling周期, 默认10(1s).
     uiAgentDetectDropThresh     = 5;        // Agent探测报文丢包门限, 单位为报文个数, 默认5(即连续5个探测报文超时即认为链接出现丢包).
-    uiAgentDetectUrgentThresh   = 10;       // Agent探测Urgent流探测次数, 单位为报文个数, 默认10(即Urgent流发送10个探测报文后启动上报).
-    uiAgentDetectTrackingThresh = 30;       // Tracking报文发送间隔, 单位为uiAgentDetectPeriod, 默认为30, 即每30个普通探测报文发送一个追踪报文.
-    uiAgentDetectTrackingDscp   = 63;       // Tracking报文使用的dscp值.
+
 
     stProtocolUDP.uiDestPort    = 6000;                      // UDP探测的目的端口号, 需全局统一.
     stProtocolUDP.uiSrcPortMin  = 5000;                      // UDP探测源端口号范围, 初始化时会尝试绑定该端口.
@@ -57,25 +55,6 @@ ServerAntAgentCfg_C::~ServerAntAgentCfg_C()
 {
     AGENT_CFG_INFO("Destroy ServerAntAgentCfg");
     
-    if(AgentCfgLock)
-        sal_mutex_destroy(AgentCfgLock);
-
-    if(pcTimer)
-        delete pcTimer;
-}
-
-INT32 ServerAntAgentCfg_C::SetPollingTimerPeriod(UINT32 uiNewPeriod)  //设置Polling周期, 如跟已有周期不一致则同时刷新定时器
-{
-    INT32 iRet = AGENT_OK;
-    if ( uiAgentPollingTimerPeriod != uiNewPeriod ) // Timer周期变化,需要进行刷新       
-    {
-        AGENT_CFG_INFO("Set Polling Timer Period to [%d]us", uiNewPeriod);
-        uiAgentPollingTimerPeriod = uiNewPeriod;        
-        iRet = pcTimer->SetPeriod(uiAgentPollingTimerPeriod);
-        if (iRet)
-            AGENT_CFG_ERROR("Set Polling Timer Period to [%d]us failed", uiNewPeriod);
-    }
-    return iRet;
 }
 
 INT32 ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP, 

@@ -190,28 +190,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         {
             JSON_PARSER_ERROR("SetDetectDropThresh failed[%d]", iRet);
             return iRet;
-        }
-        uiData = ptDataTmp.get<UINT32>("DetectUrgentThresh");
-        iRet = pcCfg->SetDetectUrgentThresh(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectUrgentThresh failed[%d]", iRet);
-            return iRet;
-        }
-        uiData = ptDataTmp.get<UINT32>("DetectTrackingThresh");
-        iRet = pcCfg->SetDetectTrackingThresh(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectTrackingThresh failed[%d]", iRet);
-            return iRet;
-        }
-        uiData = ptDataTmp.get<UINT32>("DetectTrackingDscp");
-        iRet = pcCfg->SetDetectTrackingDscp(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectTrackingDscp failed[%d]", iRet);
-            return iRet;
-        }
+        }      
 
         // 解析ServerAntAgent.ProtocolUDP数据.
         ptDataTmp.clear();
@@ -695,28 +674,14 @@ INT32 IssueFlowFromJsonFlowArray(ptree ptFlowArray, FlowManager_C* pcFlowManager
                 JSON_PARSER_ERROR("Get Flow Info From Json failed [%d]", iRet);
                 return iRet;
             }
-            // 向flow manager中添加探测流.
-            if (uiIsUrgentFlow)
+           
+            // 普通流程添加到配置表, 待配置倒换后生效.
+            iRet = pcFlowManager->ServerCfgFlowTableAdd(stNewServerFlowKey);
+            if (iRet)
             {
-                // urgent 流程立即添加到当前工作表,立即生效.
-                iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
-                if (iRet)
-                {
-                    JSON_PARSER_ERROR("Add New ServerWorkingFlowTable failed [%d]", iRet);
-                    return iRet;
-                }
-            }
-            else
-            {
-                // 普通流程添加到配置表, 待配置倒换后生效.
-                iRet = pcFlowManager->ServerCfgFlowTableAdd(stNewServerFlowKey);
-                if (iRet)
-                {
-                    JSON_PARSER_ERROR("Add New ServerCfgFlowTable failed [%d]", iRet);
-                    return iRet;
-                }
-            }
-            
+                JSON_PARSER_ERROR("Add New ServerCfgFlowTable failed [%d]", iRet);
+                return iRet;
+            }                       
         }
     }
     catch (exception const & e)

@@ -6,6 +6,19 @@
 
 #include <sys/time.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+#define UDP_TEST_PORT       6000
+#define UDP_SERVER_IP       "127.0.0.1"
 
 using namespace std;
 
@@ -32,31 +45,33 @@ using namespace std;
 #define HANDELER_DEFAULT_INTERVAL (1000000)
 
 // 探测报文主机序转网络序
-void  PacketHtoN(PacketInfo_S * pBuffer)
+void  PacketHtoN(PacketInfo_S * pstSendMsg)
 {
-    pBuffer->uiSequenceNumber   = htonl(pBuffer->uiSequenceNumber);
-    pBuffer->stT1.uiSec         = htonl(pBuffer->stT1.uiSec);
-    pBuffer->stT1.uiUsec        = htonl(pBuffer->stT1.uiUsec);
-    pBuffer->stT2.uiSec         = htonl(pBuffer->stT2.uiSec);
-    pBuffer->stT2.uiUsec        = htonl(pBuffer->stT2.uiUsec);
-    pBuffer->stT3.uiSec         = htonl(pBuffer->stT3.uiSec);
-    pBuffer->stT3.uiUsec        = htonl(pBuffer->stT3.uiUsec);
-    pBuffer->stT4.uiSec         = htonl(pBuffer->stT4.uiSec);
-    pBuffer->stT4.uiUsec        = htonl(pBuffer->stT4.uiUsec);
+    pstSendMsg->uiSequenceNumber   = htonl(pstSendMsg->uiSequenceNumber);
+    pstSendMsg->uiRole   = htonl(pstSendMsg->uiRole);	
+    pstSendMsg->stT1.uiSec         = htonl(pstSendMsg->stT1.uiSec);
+    pstSendMsg->stT1.uiUsec        = htonl(pstSendMsg->stT1.uiUsec);
+    pstSendMsg->stT2.uiSec         = htonl(pstSendMsg->stT2.uiSec);
+    pstSendMsg->stT2.uiUsec        = htonl(pstSendMsg->stT2.uiUsec);
+    pstSendMsg->stT3.uiSec         = htonl(pstSendMsg->stT3.uiSec);
+    pstSendMsg->stT3.uiUsec        = htonl(pstSendMsg->stT3.uiUsec);
+    pstSendMsg->stT4.uiSec         = htonl(pstSendMsg->stT4.uiSec);
+    pstSendMsg->stT4.uiUsec        = htonl(pstSendMsg->stT4.uiUsec);
 }
 
 // 探测报文网络序转主机序
-void  PacketNtoH(PacketInfo_S * pBuffer)
+void  PacketNtoH(PacketInfo_S * pstSendMsg)
 {
-    pBuffer->uiSequenceNumber   = ntohl(pBuffer->uiSequenceNumber);
-    pBuffer->stT1.uiSec         = ntohl(pBuffer->stT1.uiSec);
-    pBuffer->stT1.uiUsec        = ntohl(pBuffer->stT1.uiUsec);
-    pBuffer->stT2.uiSec         = ntohl(pBuffer->stT2.uiSec);
-    pBuffer->stT2.uiUsec        = ntohl(pBuffer->stT2.uiUsec);
-    pBuffer->stT3.uiSec         = ntohl(pBuffer->stT3.uiSec);
-    pBuffer->stT3.uiUsec        = ntohl(pBuffer->stT3.uiUsec);
-    pBuffer->stT4.uiSec         = ntohl(pBuffer->stT4.uiSec);
-    pBuffer->stT4.uiUsec        = ntohl(pBuffer->stT4.uiUsec);
+    pstSendMsg->uiSequenceNumber   = ntohl(pstSendMsg->uiSequenceNumber);
+    pstSendMsg->uiRole   = ntohl(pstSendMsg->uiRole);	
+    pstSendMsg->stT1.uiSec         = ntohl(pstSendMsg->stT1.uiSec);
+    pstSendMsg->stT1.uiUsec        = ntohl(pstSendMsg->stT1.uiUsec);
+    pstSendMsg->stT2.uiSec         = ntohl(pstSendMsg->stT2.uiSec);
+    pstSendMsg->stT2.uiUsec        = ntohl(pstSendMsg->stT2.uiUsec);
+    pstSendMsg->stT3.uiSec         = ntohl(pstSendMsg->stT3.uiSec);
+    pstSendMsg->stT3.uiUsec        = ntohl(pstSendMsg->stT3.uiUsec);
+    pstSendMsg->stT4.uiSec         = ntohl(pstSendMsg->stT4.uiSec);
+    pstSendMsg->stT4.uiUsec        = ntohl(pstSendMsg->stT4.uiUsec);
 }
 
 // 构造函数, 所有成员初始化默认值.
@@ -68,9 +83,10 @@ DetectWorker_C::DetectWorker_C()
 
     sal_memset(&stCfg, 0, sizeof(stCfg));
     stCfg.eProtocol = AGENT_DETECT_PROTOCOL_NULL;
-    stCfg.uiRole = WORKER_ROLE_SENDER; // 默认为sender
+    stCfg.uiRole = WORKER_ROLE_CLIENT; // 默认为sender
 
     WorkerSocket = 0;
+    pcAgentCfg = NULL;
 
     clock_gettime(CLOCK_REALTIME, &ts);
     srandom(ts.tv_nsec + ts.tv_sec); //用时间做随机数种子
@@ -123,7 +139,7 @@ INT32 DetectWorker_C::ThreadHandler()
     struct timeval tm;      // 缓存当前时间.    
     struct sockaddr_in stPrtnerAddr;    // 对端socket地址信息
     char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// 保存报文所有附加信息的buffer, 当前只预留了tos值空间.
-    PacketInfo_S * pPacketBuffer = NULL;    // 保存报文payload信息的buffer, 当前只缓存一个报文.
+    PacketInfo_S  stSendMsg;    // 保存报文payload信息的buffer, 当前只缓存一个报文.
 
     struct msghdr msg;      // 描述报文信息, socket收发包使用.
     struct cmsghdr *cmsg;   // 用于遍历 msg.msg_control中所有报文附加信息, 目前是tos值.
@@ -142,7 +158,7 @@ INT32 DetectWorker_C::ThreadHandler()
         iSockFd = GetSocket();        
 
         sal_memset(&tm, 0, sizeof(tm));
-        tm.tv_sec  = GetCurrentInterval() / SECOND_USEC;  //us -> s
+        tm.tv_sec  = 3*GetCurrentInterval() / SECOND_USEC;  //us -> s
         tm.tv_usec = GetCurrentInterval() % SECOND_USEC; // us -> us
         iRet = setsockopt(iSockFd, SOL_SOCKET, SO_RCVTIMEO, &tm, sizeof(tm)); //设置socket 读取超时时间
         if( 0 > iRet )
@@ -151,22 +167,16 @@ INT32 DetectWorker_C::ThreadHandler()
             return AGENT_E_HANDLER;
         }
 
-        pPacketBuffer = new PacketInfo_S;
-        if (NULL == pPacketBuffer)
-        {
-            DETECT_WORKER_ERROR("RX: No Enough Memory");
-            return AGENT_E_HANDLER;
-        }
 
         // 填充 msg
-        sal_memset(&msg, 0, sizeof(msg));
+         sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
         
         // 对端socket地址
         msg.msg_name = &stPrtnerAddr;
         msg.msg_namelen = sizeof(stPrtnerAddr);
 
         // 报文payload接收buffer
-        iov[0].iov_base = pPacketBuffer;
+        iov[0].iov_base = &stSendMsg;
         iov[0].iov_len  = sizeof(PacketInfo_S);
         msg.msg_iov = iov;
         msg.msg_iovlen = 1;
@@ -183,11 +193,10 @@ INT32 DetectWorker_C::ThreadHandler()
         if( 0 > iRet )
         {
             DETECT_WORKER_ERROR("RX: Setsockopt IP_RECVTOS failed[%d]: %s [%d]", iRet, strerror(errno), errno);
-            delete pPacketBuffer;
             return AGENT_E_HANDLER;
         }
 
-        DETECT_WORKER_INFO("RX: Start Working, Using socket[%u], Protocol[%u], Port[%u], Interval[%dus], Role[%d]",
+        DETECT_WORKER_INFO("RX: @@@@@@@@@@@@@@@@@@@@@@@@@@Start Working, Using socket[%u], Protocol[%u], Port[%u], Interval[%dus], Role[%d]",
                 iSockFd, stCfg.eProtocol,stCfg.uiSrcPort, GetCurrentInterval(), stCfg.uiRole);
 
         while (GetCurrentInterval())
@@ -197,7 +206,7 @@ INT32 DetectWorker_C::ThreadHandler()
                 case AGENT_DETECT_PROTOCOL_UDP:
                     // 清空对端地址, payload buffer.
                     sal_memset(&stPrtnerAddr, 0, sizeof(stPrtnerAddr));
-                    sal_memset(pPacketBuffer, 0, sizeof(PacketInfo_S));
+                    sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
                     sal_memset(acCmsgBuf, 0, sizeof(acCmsgBuf));                    
                     iTos = 0;
 
@@ -232,26 +241,26 @@ INT32 DetectWorker_C::ThreadHandler()
                         }
                         iTos = ((INT32 *) CMSG_DATA(cmsg))[0];
                         
-                        PacketNtoH(pPacketBuffer); // 报文payload网络序转主机序
+                        PacketNtoH(&stSendMsg); // 报文payload网络序转主机序
 
-                        if(WORKER_ROLE_SENDER == stCfg.uiRole)
+                        if(WORKER_ROLE_SERVER == stSendMsg.uiRole)
                         {
                             /*
                             DETECT_WORKER_INFO("RX: Get reply packet from socket[%d], Len[%d], TOS[%d]",
                                     iSockFd, iRet, iTos);
                             */
                                                         
-                            pPacketBuffer->stT4.uiSec = tm.tv_sec;
-                            pPacketBuffer->stT4.uiUsec = tm.tv_usec;
-                            iRet = RxUpdateSession(pPacketBuffer); //刷新sender的会话列表
+                            stSendMsg.stT4.uiSec = tm.tv_sec;
+                            stSendMsg.stT4.uiUsec = tm.tv_usec;
+                            iRet = RxUpdateSession(&stSendMsg); //刷新sender的会话列表
                             // 若应答报文返回的太晚(Timeout), Sender会话列表已经删除会话, 会返回找不到.
                             if ((AGENT_OK!= iRet) && (AGENT_E_NOT_FOUND != iRet))
                                 DETECT_WORKER_WARNING("RX: Update Session failed. iRet:[%d]", iRet);
                         }
-                        else if(WORKER_ROLE_TARGET == stCfg.uiRole)
+                        else if(WORKER_ROLE_CLIENT == stSendMsg.uiRole)
                         {
-                            pPacketBuffer->stT2.uiSec = tm.tv_sec;
-                            pPacketBuffer->stT2.uiUsec = tm.tv_usec;
+                            stSendMsg.stT2.uiSec = tm.tv_sec;
+                            stSendMsg.stT2.uiUsec = tm.tv_usec;
 
                             /* 
                                老版本的Linux kernel, sendmsg时不支持设定tos, recvmsg支持获取tos.
@@ -276,10 +285,11 @@ INT32 DetectWorker_C::ThreadHandler()
                             
                             sal_memset(&tm, 0, sizeof(tm));
                             gettimeofday(&tm,NULL); //获取当前时间
-                            pPacketBuffer->stT3.uiSec = tm.tv_sec;
-                            pPacketBuffer->stT3.uiUsec = tm.tv_usec;
+                            stSendMsg.stT3.uiSec = tm.tv_sec;
+                            stSendMsg.stT3.uiUsec = tm.tv_usec;
+    			            stSendMsg.uiRole = WORKER_ROLE_SERVER;
                             
-                            PacketHtoN(pPacketBuffer); // 报文payload主机序转网络序
+                            PacketHtoN(&stSendMsg); // 报文payload主机序转网络序
                             
                             iRet = sendmsg(iSockFd, &msg, 0);
                             if (iRet != sizeof(PacketInfo_S)) // send failed
@@ -296,12 +306,10 @@ INT32 DetectWorker_C::ThreadHandler()
                     
                 default :   //不支持的协议类型, 直接退出
                     DETECT_WORKER_ERROR("RX: Unsupported Protocol[%d]", stCfg.eProtocol);
-                    delete pPacketBuffer;
                     return AGENT_E_HANDLER;
                     break;
             }
         }
-        delete pPacketBuffer;
     }
 
     DETECT_WORKER_INFO("RX: Task Exiting, Socket[%d], RxInterval[%d]", GetSocket(), GetCurrentInterval());
@@ -361,7 +369,7 @@ INT32 DetectWorker_C::InitCfg(WorkerCfg_S stNewWorker)
     return AGENT_OK;
 }
 
-INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker)
+INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAgentCfg)
 {
     INT32 iRet = AGENT_OK;
 
@@ -370,12 +378,14 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker)
         DETECT_WORKER_ERROR("Do not reinit this worker");
         return AGENT_E_ERROR;
     }
+
+    pcAgentCfg = pcNewAgentCfg;
     
     // 根据worker角色不同, 初始化stCfg, 同时进行入参检查
     switch (stNewWorker.uiRole)
     {
-        case WORKER_ROLE_SENDER:  //暂时无需区分角色,
-        case WORKER_ROLE_TARGET:
+        case WORKER_ROLE_CLIENT:  //暂时无需区分角色,
+        case WORKER_ROLE_SERVER:
             iRet = InitCfg(stNewWorker);
             if(iRet)
             {
@@ -442,8 +452,17 @@ INT32 DetectWorker_C::InitSocket()
 {
     INT32 SocketTmp = 0;
     struct sockaddr_in servaddr;
+    INT32 iRet;
+    UINT32 uiSrcPortMin = 0, uiSrcPortMax=0, uiDestPort=0;
 
-    // 先释放socket资源
+
+    iRet = pcAgentCfg ->GetProtocolUDP(&uiSrcPortMin, &uiSrcPortMax, &uiDestPort);
+    if (iRet)
+    {
+        FLOW_MANAGER_ERROR("Get Protocol UDP cfg failed[%d]", iRet);
+        return AGENT_E_PARA;
+    }
+        FLOW_MANAGER_INFO("InitSocket~~~~~~~~~~~~~~~~~~~~~~~~[%d]", uiDestPort);
     ReleaseSocket();
     
     // 根据协议类型, 创建对应socket.
@@ -458,8 +477,9 @@ INT32 DetectWorker_C::InitSocket()
             }
             sal_memset(&servaddr, 0, sizeof(servaddr));
             servaddr.sin_family = AF_INET;
-            servaddr.sin_addr.s_addr = htonl(stCfg.uiSrcIP);
-            servaddr.sin_port = htons(stCfg.uiSrcPort);
+            //servaddr.sin_addr.s_addr = htonl(stCfg.uiSrcIP);
+            servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+            servaddr.sin_port = htons(uiDestPort);
             
             if( bind(SocketTmp, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
             {
@@ -482,7 +502,8 @@ INT32 DetectWorker_C::InitSocket()
     WorkerSocket = SocketTmp;
     SOCKET_UNLOCK();
     
-    //DETECT_WORKER_INFO("Init a new socket [%d]", WorkerSocket);
+    DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", WorkerSocket,uiDestPort,servaddr.sin_addr.s_addr);
+	
     return AGENT_OK;
 }
 
@@ -552,27 +573,28 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
 {
     INT32 iRet = AGENT_OK;
     struct timeval tm;
-    PacketInfo_S * pBuffer = NULL;
+    PacketInfo_S * pstSendMsg = NULL;
     struct sockaddr_in servaddr;
     INT32 tos = 0;
 
     sal_memset(&servaddr, 0, sizeof(servaddr));
 
-    pBuffer = new PacketInfo_S;
-    if (NULL == pBuffer)
+    pstSendMsg = new PacketInfo_S;
+    if (NULL == pstSendMsg)
     {
         DETECT_WORKER_ERROR("No enough memory"); 
         return AGENT_E_MEMORY;
     }
-    sal_memset(pBuffer, 0, sizeof(PacketInfo_S));
+    sal_memset(pstSendMsg, 0, sizeof(PacketInfo_S));
     
-    pBuffer->uiSequenceNumber = pNewSession->uiSequenceNumber;
+    pstSendMsg->uiSequenceNumber = pNewSession->uiSequenceNumber;
     sal_memset(&tm, 0, sizeof(tm));
     gettimeofday(&tm,NULL); //获取当前时间
-    pBuffer->stT1.uiSec = tm.tv_sec;
-    pBuffer->stT1.uiUsec = tm.tv_usec;
+    pstSendMsg->stT1.uiSec = tm.tv_sec;
+    pstSendMsg->stT1.uiUsec = tm.tv_usec;
+    pstSendMsg->uiRole = WORKER_ROLE_CLIENT;
 
-    pNewSession->stT1 = pBuffer->stT1; //保存T1时间 
+    pNewSession->stT1 = pstSendMsg->stT1; //保存T1时间 
 
     // 检查socket是否已经ready
     if( 0 == GetSocket()) 
@@ -581,8 +603,8 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
         if(iRet)
         {
             DETECT_WORKER_WARNING("Init Socket failed again[%d]", iRet);
-            delete pBuffer;
-            pBuffer = NULL;
+            delete pstSendMsg;
+            pstSendMsg = NULL;
             return iRet;
         }
     }
@@ -607,8 +629,8 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
                 break;
             }
             
-            PacketHtoN(pBuffer);// 主机序转网络序            
-            iRet = sendto(GetSocket(), pBuffer, sizeof(PacketInfo_S), 0, (sockaddr *)&servaddr, sizeof(servaddr));            
+            PacketHtoN(pstSendMsg);// 主机序转网络序            
+            iRet = sendto(GetSocket(), pstSendMsg, sizeof(PacketInfo_S), 0, (sockaddr *)&servaddr, sizeof(servaddr));            
             if (sizeof(PacketInfo_S) == iRet) //发送成功.
             {
                 pNewSession->uiSessionState = SESSION_STATE_WAITING_REPLY;
@@ -632,8 +654,8 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
     }
     SOCKET_UNLOCK();
     
-    delete pBuffer;
-    pBuffer = NULL;
+    delete pstSendMsg;
+    pstSendMsg = NULL;
     
     return iRet;
 }
@@ -647,7 +669,7 @@ INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
     sal_memset(&stNewSession, 0, sizeof(stNewSession));
 
     // 入参检查,公共部分.
-    if (WORKER_ROLE_TARGET == stCfg.uiRole)     // Target端不允许压入探测会话
+    if (WORKER_ROLE_SERVER == stCfg.uiRole)     // Target端不允许压入探测会话
     {
         DETECT_WORKER_ERROR("Role target do not support POP session"); 
         return AGENT_E_PARA;
@@ -728,12 +750,7 @@ INT32 DetectWorker_C::PopSession(DetectWorkerSession_S*
 {
     INT32 iRet = AGENT_E_NOT_FOUND;
 
-    if (WORKER_ROLE_TARGET == stCfg.uiRole)     // Target端不允许查询探测结果
-    {
-        DETECT_WORKER_ERROR("Role target do not support POP session"); 
-        return AGENT_E_NOT_FOUND;
-    }
-    
+
     SESSION_LOCK();    
     vector<DetectWorkerSession_S>::iterator pSession;    
     for(pSession = SessionList.begin(); pSession != SessionList.end(); pSession++)
