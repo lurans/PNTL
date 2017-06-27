@@ -5,12 +5,72 @@
 #    - 8.10.23.110
 
 host:
-- ip: 8.15.1.103
+- ip: 8.10.53.36
   pod: pod103
   az: az103
-  os: SUSE
+  os: Euler
 
-- ip: 8.15.1.105
+- ip: 8.13.3.39
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.15.1.106
   pod: pod105
   az: az105
   os: SUSE
+
+- ip: 8.13.3.38
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.10.53.93
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.13.3.54
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.15.1.109
+  pod: pod105
+  az: az105
+  os: SUSE
+
+- ip: 8.10.53.54
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.13.3.76
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.13.3.58
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.13.3.18
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.10.53.41
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.13.3.40
+  pod: pod105
+  az: az105
+  os: Euler
+
+- ip: 8.10.53.72
+  pod: pod105
+  az: az105
+  os: Euler

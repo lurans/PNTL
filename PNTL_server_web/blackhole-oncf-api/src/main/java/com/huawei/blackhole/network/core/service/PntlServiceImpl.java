@@ -75,10 +75,11 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Result<AgentFlowsJson> result = new Result<>();
 
         try {
-            hostList = genProbeHostList();
-        } catch (ApplicationException | ClientException e){
+            hostList = readFileHostList();
+           // hostList = genProbeHostList();
+        } catch (Exception e){
             LOG.error("get host list failed " + e.getMessage());
-            result.addError("", e.getMessage());
+            result.addError("", "get host list failed");
             return result;
         }
 
@@ -388,7 +389,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             hostContext.setOs(host.getOs());
             hostContext.setPodId(host.getPodId());
             hostContext.setZoneId(host.getZoneId());
-            hostContext.setPingMeshList(host.getIp(), hostInfo.getHostsInfoList());
+            //hostContext.setPingMeshList(host.getIp(), hostInfo.getHostsInfoList());
             hostsList.add(hostContext);
         }
 
@@ -417,8 +418,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             host.setZoneId((String)ipList.get(i).get("az"));
             host.setPodId((String)ipList.get(i).get("pod"));
             host.setAgentSN(Pntl.getAgentSnByIp(ip));
+            //host.setPingMeshList(host.getIp(), hostInfo.getHostsInfoList());
+            host.setPingMeshList(host.getIp(), ipList);
+
             hostsList.add(host);
            System.out.println("ip:" + ip);
+
+
         }
         return hostsList;
     }
