@@ -284,10 +284,11 @@ public class Pntl {
      * @throws ClientException
      */
     public RestResp installAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
-
         List<String> snList = new ArrayList<>();
         for (PntlHostContext host : pntlHostList){
-            snList.add(host.getAgentSN());
+            if (host.getAgentSN() != null) {
+                snList.add(host.getAgentSN());
+            }
         }
         final String command = "cd" + " " + PNTL_PATH + ";sh -x install_pntl.sh";
         return sendCommandToAgents(snList, token, command, "sync");
