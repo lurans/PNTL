@@ -232,7 +232,7 @@ public:
             
     INT32 ServerCfgFlowTableAdd
                 (ServerFlowKey_S stServerFlowKey);   // 向ServerCfgFlowTable中添加非Urgent Entry, 由DoQuery()查询Server后触发.
-    INT32 FlowManagerAction(UINT32 interval);	    // 根据参数启停FlowManager
+    INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
 };
 
 #endif

@@ -108,7 +108,7 @@ public:
         return AGENT_OK;
     }
 
-    INT32 GetAgentIP()          // 查询ServerAntAgent地址信息.
+    UINT32 GetAgentIP()          // 查询ServerAntAgent地址信息.
     {
         return uiAgentIP;
     }
