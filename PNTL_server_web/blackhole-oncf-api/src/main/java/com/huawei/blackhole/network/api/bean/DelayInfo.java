@@ -135,7 +135,7 @@ public class DelayInfo implements Serializable {
         }
     }
 
-    public static void reflesDelayInfoWarning(){
+    public static void refleshDelayInfoWarning(){
         List<DelayInfoResult> resultList = getResult();
         List<DelayInfoResult> delList = new ArrayList<>();
         if (resultList == null){

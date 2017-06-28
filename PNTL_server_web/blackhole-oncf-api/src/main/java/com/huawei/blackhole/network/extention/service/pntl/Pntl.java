@@ -180,7 +180,9 @@ public class Pntl {
 
                 body.get(key).setPath(PNTL_PATH);
                 body.get(key).setMode("644");
-                agentSnList.get(key).add(host.getAgentSN());
+                if (host.getAgentSN() != null) {
+                    agentSnList.get(key).add(host.getAgentSN());
+                }
             }
 
             for (String key : body.keySet()){

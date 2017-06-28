@@ -290,7 +290,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private void monitorPntl(){
         while (true){
             LossRate.refleshLossRateWarning();
-            DelayInfo.reflesDelayInfoWarning();
+            DelayInfo.refleshDelayInfoWarning();
             try{
                 Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME * 1000);//second
             } catch (InterruptedException e) {
@@ -307,9 +307,10 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      */
     public Result<String> installAgent(List<PntlHostContext> pntlHostList) throws ClientException{
         Result<String> result = new Result<>();
+        RestResp resp = null;
         try{
             String token = identityWrapperService.getPntlAccessToken();
-            RestResp resp = pntlRequest.installAgent(hostList, token);
+            resp = pntlRequest.installAgent(hostList, token);
         } catch (ClientException e){
             LOG.error("Send ip list to agents failed, " + e.getMessage());
             result.addError("", e.toString());
@@ -426,9 +427,6 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             host.setPingMeshList(host.getIp(), ipList);
 
             hostsList.add(host);
-           System.out.println("ip:" + ip);
-
-
         }
         return hostsList;
     }
