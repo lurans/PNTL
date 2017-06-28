@@ -52,6 +52,10 @@ ${CHECKPROC} -p ${SERVICE_PID_FILE} ${PROC_START_FILE} || \
 # 停止进程, 同时会删除pid文件
 ${KILLPROC} -p ${SERVICE_PID_FILE} -t 10 ${PROC_START_FILE}
 
+pid=$(ps aux | grep ${PROC_START_FILE} | grep -v grep | awk '{print $2}')
+if [ ${pid} ]; then
+    ${KILL} -9 ${pid}
+fi
 # 是否有额外的操作?
 if [ _"${PROC_STOP_FILE}"_ != __ ]; then 
     ${PROC_STOP_FILE} || \

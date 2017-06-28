@@ -50,7 +50,7 @@ EGREP=$(which egrep)
 CHMOD=$(which chmod)
 NOHUP=$(which nohup)
 LN=$(which ln)
-
+KILL=$(which kill)
 # 部分OS下普通用户PATH未包括/sbin目录
 SERVICE="/sbin/service"
 CHECKPROC="/sbin/checkproc"
