@@ -1546,7 +1546,7 @@ INT32 FlowManager_C::FlowManagerAction(INT32 interval)
     if (-1 == interval)
     {
         FLOW_MANAGER_INFO("New Interval is %d, exit current process.", interval);
-        return -2;
+        exit(0);
     }
 	
 	UINT32 oldInterval = GetCurrentInterval();
