@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DelayInfo implements Serializable {
     private static final long serialVersionUID = 5115688643432800494L;
+    private static final Logger LOG = LoggerFactory.getLogger(LossRate.class);
     @JsonProperty("result")
     private static List<DelayInfoResult> result = new ArrayList<DelayInfoResult>();
 
@@ -42,7 +45,7 @@ public class DelayInfo implements Serializable {
         @JsonProperty("recv_round_delay")
         private String recvRoundDelay;
 
-        private Long   timestamp;
+        private Long timestamp;
         public String getSrcIp() {
             return srcIp;
         }
@@ -116,6 +119,7 @@ public class DelayInfo implements Serializable {
         newData.setRecvDelay(String.valueOf(t4-t3));
         newData.setSendRoundDelay(String.valueOf(t4-t1));
         newData.setRecvRoundDelay("0");
+        newData.setTimestamp(System.currentTimeMillis()/1000);
 
         List<DelayInfoResult> resultList = getResult();
         for (DelayInfoResult result : resultList){
@@ -134,9 +138,14 @@ public class DelayInfo implements Serializable {
     public static void reflesDelayInfoWarning(){
         List<DelayInfoResult> resultList = getResult();
         List<DelayInfoResult> delList = new ArrayList<>();
+        if (resultList == null){
+            LOG.error("delayInfo is null");
+            return;
+        }
         for (DelayInfoResult result : resultList){
             Long intervalTime = System.currentTimeMillis()/1000 - result.getTimestamp();
             if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){//second
+                LOG.info("Remove warning:" + result.getSrcIp() +" -> " + result.getDstIp());
                 delList.add(result);
             }
         }
