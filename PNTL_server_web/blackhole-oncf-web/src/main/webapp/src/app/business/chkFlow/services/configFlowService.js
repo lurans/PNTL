@@ -14,6 +14,17 @@ define([], function () {
             });
             return promise;
         };
+        this.variableConfig = function(data){
+            var uri = rest_prefix + "/chkflow/pntlConf";
+            var promise = camel.post({
+                "url": {
+                    "s": uri
+                },
+                "params":data,
+                "timeout":60000
+            });
+            return promise;
+        };
     };
 
     var configFlowModule = angular.module('common.config');
