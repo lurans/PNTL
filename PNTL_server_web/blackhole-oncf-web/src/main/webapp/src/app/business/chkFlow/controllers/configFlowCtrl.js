@@ -12,53 +12,74 @@ define(["language/chkFlow",
                 $scope.isVariableCollapsed = true;
                 $scope.isFileCollapsed = true;
                 $scope.variable = {
-                    "detectIntervalTime" : i18n.chkFlow_term_detect_interval_time_name,
-                    "packetsNum" : i18n.chkFlow_term_detect_packets_number_name,
-                    "timeDelay" : i18n.chkFlow_term_detect_max_time_delay_name,
-                    "packetsLoss" : i18n.chkFlow_term_detect_max_loss_rate_name
+                    "probeIntervalTime" : i18n.chkFlow_term_probe_interval_time_name,
+                    "packetsNum" : i18n.chkFlow_term_probe_packets_number_name,
+                    "timeDelay" : i18n.chkFlow_term_probe_max_time_delay_name,
+                    "packetsLoss" : i18n.chkFlow_term_probe_max_loss_rate_name
                 };
-                $scope.detectRoundTextBox = {
-                    "id": "detectRoundTextBoxId",
+                $scope.probeRoundTextBox = {
+                    "id": "probeRoundTextBoxId",
                     "value": "",
+                    "tooltip":i18n.chkFlow_term_probe_interval_tooltip,
                     "validate": [
                         {
-                            "validFn" : "required"
+                            "validFn" : "required",
                         },
                         {
                             "validFn" : "number",
+                        },
+                        {
+                            "validFn" : "rangeValue",
+                            "params" : [-1,60],
                         }]
                 };
                 $scope.packetsNumTextBox = {
                     "id": "packetsNumTextBoxId",
                     "value": "",
+                    "tooltip":i18n.chkFlow_term_packets_num_tooltip,
                     "validate": [
                         {
                             "validFn" : "required"
                         },
                         {
                             "validFn" : "number",
-                        }]
+                        },
+                        {
+                            "validFn" : "minValue",
+                            "params" : 1,
+                        }
+                    ]
                 };
                 $scope.timeDelayTextBox = {
                     "id": "timeDelayTextBoxId",
                     "value": "",
+                    "tooltip":i18n.chkFlow_term_max_time_delay_tooltip,
                     "validate": [
                         {
                             "validFn" : "required"
                         },
                         {
                             "validFn" : "number",
+                        },
+                        {
+                            "validFn" : "minValue",
+                            "params" : 0,
                         }]
                 };
                 $scope.packetsLossTextBox = {
                     "id": "packetsLossTextBoxId",
                     "value": "",
+                    "tooltip":i18n.chkFlow_term_max_loss_rate_tooltip,
                     "validate": [
                         {
                             "validFn" : "required"
                         },
                         {
                             "validFn" : "number",
+                        },
+                        {
+                            "validFn" : "minValue",
+                            "params" : 0,
                         }]
                 };
                 $scope.deployBtn = {
@@ -71,6 +92,13 @@ define(["language/chkFlow",
                     "text" : i18n.chkFlow_term_confirm,
                     "disable":false,
                 };
+                $scope.fileUpload = {
+                    "action" : "upload_fles.html", //文件上传地址路径
+                    "multi" : "true",
+                    "completeDefa" : function(event, responseText) {
+                        alert(responseText);
+                    }
+               }
                 var divTip = new tinyWidget.Tip({
                     content : "",
                     element : ("#variableBtnId"),
@@ -80,9 +108,13 @@ define(["language/chkFlow",
                     auto:false
                 });
 
-                function sleep (time) {
+                /*function sleep (time) {
                     return new Promise((resolve) => setTimeout(resolve, time));
                 }
+                // 用法
+                sleep(500).then(() => {
+                    // 这里写sleep之后需要去做的事情
+                })*/
 
                 var postFirstDeploy = function(para)
                 {
@@ -107,7 +139,7 @@ define(["language/chkFlow",
                 }
                 var postVariableConfig = function(para)
                 {
-                    var promise = configFlowServ.variableConfig(para);
+                    var promise = configFlowServ.postVariableConfig(para);
                     promise.then(function(responseData){
                         commonException.showMsg(i18n.chkflow_term_config_ok);
                         $scope.variableBtn.disable = false;
@@ -116,13 +148,13 @@ define(["language/chkFlow",
                         commonException.showMsg(i18n.chkflow_term_config_err, "error");
                         $scope.variableBtn.disable = false;
                     });
-                }
+                };
                 function getParaFromInput(){
-                    var detectRound = $scope.detectRoundTextBox.value;
+                    var probeRound = $scope.probeRoundTextBox.value;
                     var packetsNum = $scope.packetsNumTextBox.value;
                     var timeDelay = $scope.timeDelayTextBox.value;
                     var packetsLoss = $scope.packetsLossTextBox.value;
-                    var para = {"probe_interval":detectRound, "pkg_count":packetsNum,
+                    var para = {"probe_interval":probeRound, "pkg_count":packetsNum,
                                 "delay_threshold":timeDelay,"lossRate_threshold":packetsLoss};
                     return para;
                 }
@@ -130,12 +162,12 @@ define(["language/chkFlow",
                 {
                     $scope.variableBtn.disable = true;
                     var para = getParaFromInput();
-                    var detect_round=parseInt(para.probe_interval)
-                    if(detect_round<60&&detect_round>0)
+                    var probe_round=parseInt(para.probe_interval)
+                    if(probe_round<60&&probe_round>0)
                     {
                         postVariableConfig(para);
                     }
-                    else if(-1==detect_round||0==detect_round)
+                    else if(-1==probe_round||0==probe_round)
                     {
                         var tinyWindowOptions = {
                             title : i18n.chkFlow_term_confirm_window,
@@ -173,13 +205,24 @@ define(["language/chkFlow",
                         return;
                     }
                 }
-                $scope.fileUpload = {
-                    "action" : "upload_fles.html", //文件上传地址路径
-                    "multi" : "true",
-                    "completeDefa" : function(event, responseText) {
-                        alert(responseText);
-                    }
-               }
+                var getVariableConfig = function()
+                 {
+                     var promise = configFlowServ.getVariableConfig();
+                     promise.then(function(responseData){
+                         $scope.probeRoundTextBox.value = responseData.probe_interval;
+                         $scope.packetsNumTextBox.value = responseData.pkg_count;
+                         $scope.timeDelayTextBox.value = responseData.delay_threshold;
+                         $scope.packetsLossTextBox.value = responseData.lossRate_threshold;
+                     },function(responseData){
+                         //showERRORMsg
+                         commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
+                     });
+                 };
+                function init()
+                {
+                    getVariableConfig();
+                }
+                init();
             }
         ]
 
