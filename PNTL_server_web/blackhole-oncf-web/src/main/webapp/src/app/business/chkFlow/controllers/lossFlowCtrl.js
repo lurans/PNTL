@@ -25,7 +25,7 @@ define(["language/chkFlow",
                 var width = 640,
                     height = 640;
                 var lossThreshold = [0, 5, 10, 20, 50, 100];
-                var colors = ['#79CD79', '#FFFF00', '#FFBB77','#FF8000', '#FF2D2D', '#750000'];
+                var colors = ['#92DD92', '#FFFF00', '#FFBB77','#FF8000', '#FF2D2D', '#750000'];
                 var legendElementWidth = width/lossThreshold.length;
                 function statusColor(lossRate)
                 {

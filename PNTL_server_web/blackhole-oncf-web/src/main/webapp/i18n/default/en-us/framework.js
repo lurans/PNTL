@@ -51,6 +51,7 @@ define([], function () {
         "chkFlow_term_timeout":"Session Timeout",
         "chkFlow_term_timeout_OK":"OK",
         "chkflow_term_config":"System Configuration",
+        "chkflow_term_config_ok":"Success to deploy!",
         "chkflow_term_config_error":"Failed to deploy Cascading.Please reconfigure Cascading layer OpenStack environment variable!"
 
     };

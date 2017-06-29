@@ -1,71 +1,85 @@
 <div>
+
+    <div id="deployCollapse">
+        <div class="collapse_head" ng-click="isDeployCollapsed = !isDeployCollapsed">
+            {{i18n.chkFlow_term_deploy}}
+        </div>
+        <div ng-show="isDeployCollapsed">
+            <div class="collapse-body">
+                <div class="alertLabel">
+                    <span>{{i18n.chkFlow_term_deploy_alert_label}}</span>
+                </div>
+                <div class="deploy_btn">
+                    <tiny-button id="deployBtn.id"
+                                 text="deployBtn.text"
+                                 click="deployBtnOK()"></tiny-button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="variableCollapse">
         <div class="collapse_head" ng-click="isVariableCollapsed = !isVariableCollapsed">
             {{i18n.chkFlow_term_variable_config}}
         </div>
         <div ng-show="isVariableCollapsed">
-        <div class="collapse-body">
+            <div class="collapse-body">
             <tiny-formfield>
-            <tiny-item label="variable.detectIntervalTime">
-                <tiny-textbox id="detectRoundTextBox.id"
-                              value="detectRoundTextBox.value"
-                              validate = "detectRoundTextBox.validate"></tiny-textbox>
-
-                <span>&nbsp;(</span>
-                {{i18n.chkFlow_term_unit}}
-                <span>:</span>
-                {{i18n.chkFlow_term_detect_interval_time_unit}}
-                <span>)</span>
-            </tiny-item>
-            <tiny-item label="variable.packetsNum">
-                <tiny-textbox id="packetsNumTextBox.id"
-                              value="packetsNumTextBox.value"
-                              validate = "packetsNumTextBox.validate"></tiny-textbox>
-                <span>&nbsp;(</span>
-                {{i18n.chkFlow_term_unit}}
-                <span>:</span>
-                {{i18n.chkFlow_term_packets_num_unit}}
-                <span>)</span>
-            </tiny-item>
-            <tiny-item label="variable.timeDelay" require="model.require">
-                <tiny-textbox id="timeDelayTextBox.id"
-                              value="timeDelayTextBox.value"
-                              validate = "timeDelayTextBox.validate"></tiny-textbox>
-                <span>&nbsp;(</span>
-                {{i18n.chkFlow_term_unit}}
-                <span>:</span>
-                {{i18n.chkFlow_term_max_time_delay_unit}}
-                <span>)</span>
-            </tiny-item>
-            <tiny-item label="variable.packetsLoss">
-                <tiny-textbox id="packetsLossTextBox.id"
-                              value="packetsLossTextBox.value"
-                              validate = "packetsLossTextBox.validate"></tiny-textbox>
-                <span>&nbsp;(</span>
-                {{i18n.chkFlow_term_unit}}
-                <span>:</span>
-                {{i18n.chkFlow_term_max_loss_rate_unit}}
-                <span>)</span>
-            </tiny-item>
+                <tiny-item label="variable.detectIntervalTime">
+                    <tiny-textbox id="detectRoundTextBox.id"
+                                  value="detectRoundTextBox.value"
+                                  validate = "detectRoundTextBox.validate"></tiny-textbox>
+                    <span>&nbsp;(</span>
+                    {{i18n.chkFlow_term_detect_interval_time_detail}}
+                    <span>)</span>
+                </tiny-item>
+                <tiny-item label="variable.packetsNum">
+                    <tiny-textbox id="packetsNumTextBox.id"
+                                  value="packetsNumTextBox.value"
+                                  validate = "packetsNumTextBox.validate"></tiny-textbox>
+                    <span>&nbsp;(</span>
+                    {{i18n.chkFlow_term_packets_num_detail}}
+                    <span>)</span>
+                </tiny-item>
+                <tiny-item label="variable.timeDelay" require="model.require">
+                    <tiny-textbox id="timeDelayTextBox.id"
+                                  value="timeDelayTextBox.value"
+                                  validate = "timeDelayTextBox.validate"></tiny-textbox>
+                    <span>&nbsp;(</span>
+                    {{i18n.chkFlow_term_max_time_delay_detail}}
+                    <span>)</span>
+                </tiny-item>
+                <tiny-item label="variable.packetsLoss">
+                    <tiny-textbox id="packetsLossTextBox.id"
+                                  value="packetsLossTextBox.value"
+                                  validate = "packetsLossTextBox.validate"></tiny-textbox>
+                    <span>&nbsp;(</span>
+                    {{i18n.chkFlow_term_max_loss_rate_detail}}
+                    <span>)</span>
+                </tiny-item>
             </tiny-formfield>
-        </div>
-        <div class="collapse_btn">
-            <tiny-button id="btn.id" text="btn.text"></tiny-button>
+            <div class="variable_btn">
+                <tiny-button id="variableBtn.id"
+                             text="variableBtn.text"
+                             click="variableBtnOK()"></tiny-button>
+            </div>
         </div>
         </div>
     </div>
 
-    <div id="collapseFile">
+
+    <div id="fileUploadCollapse">
         <div class="collapse_head" ng-click="isFileCollapsed = !isFileCollapsed">
             {{i18n.chkFlow_term_file_upload}}
         </div>
         <div ng-show="isFileCollapsed">
-        <div class="collapse-body">
-            <div id="fileupload">
-                <tiny-fileupload action="fileUpload.action" complete="fileUpload.completeDefa" multi="fileUpload.multi">
-                </tiny-fileupload>
+            <div class="collapse-body">
+                <div class="fileUpload">
+                    <tiny-fileupload action="fileUpload.action"
+                                     complete="fileUpload.completeDefa"
+                                     multi="fileUpload.multi">
+                    </tiny-fileupload>
+                </div>
             </div>
-        </div>
         </div>
     </div>
 </div>
