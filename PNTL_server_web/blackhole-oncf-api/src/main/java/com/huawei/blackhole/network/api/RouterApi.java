@@ -404,7 +404,7 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
-    @Path("/pntlConfig")
+    @Path("/pntlConf")
     @POST
     public Response setPntlConfig(PntlConfig config){
         Result<String> result = pntlConfigService.setPntlConfig(config);
@@ -420,7 +420,7 @@ public class RouterApi {
         return ResponseUtil.succ();
     }
 
-    @Path("/pntlConfig")
+    @Path("/pntlConf")
     @GET
     public Response getPntlConfig(){
         Result<PntlConfig> result = pntlConfigService.getPntlConfig();

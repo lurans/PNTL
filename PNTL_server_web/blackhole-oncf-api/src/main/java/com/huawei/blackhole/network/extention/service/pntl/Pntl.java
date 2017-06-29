@@ -121,7 +121,7 @@ public class Pntl {
      */
     public RestResp sendProbeInterval(String agentIp, ProbeInterval json)
             throws ClientException, JsonProcessingException {
-        LOG.info("start to send Probe");
+        LOG.info("start to send Probe time interval");
 
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
