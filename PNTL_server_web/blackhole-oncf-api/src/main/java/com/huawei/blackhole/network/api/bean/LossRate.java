@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -158,18 +159,19 @@ public class LossRate implements Serializable{
 
     public static void refleshLossRateWarning(){
         List<LossRateResult> resultList = getResult();
-        List<LossRateResult> delList = new ArrayList<>();
         if (resultList == null){
             LOG.error("lossRate is null");
             return;
         }
-        for (LossRateResult result : resultList){
-            Long intervalTime = System.currentTimeMillis()/1000 - result.getTimestamp();
-            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){//second
-                LOG.info("Remove warning:" + result.getSrcIp() +" -> " + result.getDstIp());
-                delList.add(result);
+
+        Iterator<LossRateResult> it = resultList.iterator();
+        while (it.hasNext()){
+            LossRateResult lossRate = it.next();
+            Long intervalTime = System.currentTimeMillis()/1000 - lossRate.getTimestamp();
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){
+                LOG.info("Remove warning:" + lossRate.getSrcIp() +" -> " + lossRate.getDstIp());
+                it.remove();
             }
         }
-        resultList.removeAll(delList);
     }
 }
