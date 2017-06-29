@@ -101,6 +101,7 @@ data =
 // POST 提交的key必须为ServerAntAgentName, 否则会返回错误.
 #define ServerAntAgentName          "ServerAntsAgent"
 #define ServerAntAgentAction        "ServerAntsAgentAction"
+#define ServerAntProbeAction        "ServerAntProbeAction"
 
 #if 1
 // 使用json格式反馈post操作结果
@@ -110,6 +111,8 @@ data =
 #define ResponcePageError "{\"" ServerAntAgentName "States\":\"failed\"}"
 // POST 收到不支持的key时返回的信息
 #define ResponcePageUnsupported  "{\"" ServerAntAgentName "States\":\"unsupported\"}"
+// POST 退出时返回的消息
+#define ResponseExitOk "{\"" ServerAntAgentName "States\":\"exit sucess\"}"
 #else
 // POST 处理成功时返回的信息
 #define ResponcePageOK "<html><head><title>"ServerAntAgentName"</title></head><body>Process Request Sucess</body></html>"
@@ -154,7 +157,11 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
 	{
         MSG_SERVER_INFO("Begin to handle flowmanager action");
         iRet = ProcessActionFlowFromServer(pcData, pcFlowManager);
-        if (iRet)
+		if (AGENT_EXIT == iRet)
+		{
+		     (* pstrResponce) = ResponseExitOk;
+		}
+        else if (iRet)
         {
             MSG_SERVER_ERROR("Process set interval to [%s] From Server failed[%d]", pcData, iRet);
             (* pstrResponce) = ResponcePageError;
@@ -164,6 +171,12 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
             (* pstrResponce) = ResponcePageOK;
         }
         return iRet;
+	}
+	else if (0 == sal_strcmp(pcKey, ServerAntProbeAction))
+	{
+	    SHOULD_PROBE = 1;
+		(* pstrResponce) = ResponcePageOK;
+		MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
 	}
     else
     {

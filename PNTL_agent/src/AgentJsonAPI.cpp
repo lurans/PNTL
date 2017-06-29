@@ -262,6 +262,37 @@ INT32 CreatProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * 
     return AGENT_OK;
 }
 
+INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData)
+{
+    INT32 iRet = AGENT_OK;
+
+    // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
+    try
+    {
+        stringstream ssJsonData;
+        ptree ptDataRoot;
+        
+        UINT32 uiIp;
+        iRet = pcCfg->GetAgentAddress(&uiIp, NULL);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("GetAgentAddress failed[%d]", iRet);
+            return iRet;
+        }
+        ptDataRoot.put("agent-ip", sal_inet_ntoa(uiIp));
+        
+        write_json(ssJsonData, ptDataRoot);
+        (*pssPostData) << ssJsonData.str();
+    }
+    catch (exception const & e)
+    {
+        JSON_PARSER_ERROR("Caught exception [%s] when CreatAgentIPRequestPostData.", e.what());
+        return AGENT_E_ERROR;
+    }
+
+    return AGENT_OK;
+}
+
 /*
 {
     "orgnizationSignature": "HuaweiDC3ServerAntsFull",

@@ -462,8 +462,6 @@ INT32 DetectWorker_C::InitSocket()
         return AGENT_E_PARA;
     }
         FLOW_MANAGER_INFO("InitSocket~~~~~~~~~~~~~~~~~~~~~~~~[%d]", uiDestPort);
-
-    // ÏÈÊÍ·Åsocket×ÊÔ´
     ReleaseSocket();
     
     // 根据协议类型, 创建对应socket.

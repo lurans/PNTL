@@ -25,4 +25,6 @@ extern INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stri
 
 extern INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
 
+extern INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData);
+
 #endif

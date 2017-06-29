@@ -10,6 +10,8 @@ using namespace std;
 #include "MessagePlatform.h"
 #include "MessagePlatformServer.h"
 #include "FlowManager.h"
+#include "MessagePlatformClient.h"
+#include "AgentCommon.h"
 
 void * MainTestTask(void * p)
 {
@@ -104,19 +106,6 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-    // 启动FlowManager对象
-    INIT_INFO("-------- Start FlowManager --------");
-    pcFlowManager = new FlowManager_C;
-    iRet = pcFlowManager->Init(pcCfg);
-    if (iRet)
-    {
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
-        
-        INIT_ERROR("FlowManager.init failed [%d]", iRet);
-        return iRet;
-    }
 
     // 启动MessagePlatformServer端服务, 用于响应外部推送消息.
     // INIT_INFO("-------- Start MessagePlatformServer --------");
@@ -134,6 +123,8 @@ INT32 ServerAntAgent()
         INIT_ERROR("GetAgentAddress  failed [%d]", iRet);
         return iRet;
     }
+	
+    pcFlowManager = new FlowManager_C;
     MessagePlatformServer_C * pcMsgServer = new MessagePlatformServer_C;
     iRet = pcMsgServer->Init(uiPort, pcFlowManager);
     if (iRet)
@@ -144,16 +135,45 @@ INT32 ServerAntAgent()
         if (pcCfg)
             delete pcCfg;
         pcCfg = NULL;
-        
         INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
     }
 
-    // 待所有对象的附属任务启动完成, 日志更有条理
-    //sal_usleep(50000);
-    
-    // 所有对象已经启动完成, 开始工作.
-    INIT_INFO("-------- Starting ServerAntAgent Complete --------");
+	INIT_INFO("Begin to report agent ip to server");
+	iRet = ReportAgentIPToServer(pcCfg);
+	int reportCount = 0;
+	while (iRet)
+	{
+	    INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
+		sleep(5);
+		INIT_ERROR("Retry to report Agent ip to Server, time [%d]", reportCount + 1);
+		iRet = ReportAgentIPToServer(pcCfg);
+		reportCount++;
+	}
 
+	if (AGENT_OK == iRet)
+	{
+	    SHOULD_PROBE = 0;
+		sleep(10);
+	}
+
+	// 启动FlowManager对象
+    INIT_INFO("-------- Start FlowManager --------");
+	iRet = pcFlowManager->Init(pcCfg);
+    if (iRet)
+    {
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("FlowManager.init failed [%d]", iRet);
+        return iRet;
+    }
+	// 所有对象已经启动完成, 开始工作.
+    INIT_INFO("-------- Starting ServerAntAgent Complete --------");
+	
+	
+
+	
 #if 0
     pthread_t thread;
     INT32 error;
@@ -186,6 +206,8 @@ INT32 ServerAntAgent()
 
     return AGENT_OK;
 }
+
+INT32 SHOULD_PROBE = 1;
 
 // 程序入口, 默认直接启动. 
 // 不带参数时直接启动
