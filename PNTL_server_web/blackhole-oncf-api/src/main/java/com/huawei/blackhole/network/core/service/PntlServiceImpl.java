@@ -47,6 +47,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "get host list failed:" + e.getMessage());
             return result;
         }
+        LOG.info("Get host list finish");
         /* 获取主机列表 */
         /*
         try {
@@ -109,6 +110,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "No host information");
             return result;
         }
+        LOG.info("Set probe interval:" + timeInterval);
         for (int i = 0; i < hostList.size(); i++){
             String agentIp = hostList.get(i).getIp();
             try {
@@ -311,6 +313,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         try{
             String token = identityWrapperService.getPntlAccessToken();
             resp = pntlRequest.installAgent(hostList, token);
+            if (resp.getStatusCode().isError()){
+                result.addError("", "install agent failed");
+            }
         } catch (ClientException e){
             LOG.error("Send ip list to agents failed, " + e.getMessage());
             result.addError("", e.toString());

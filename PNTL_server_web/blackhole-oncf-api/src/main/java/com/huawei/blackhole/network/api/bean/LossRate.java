@@ -124,13 +124,14 @@ public class LossRate implements Serializable{
         LossRateResult newData = new LossRateResult();
         float rate = Float.parseFloat(flow.getSt().getPacketDrops()) / Float.parseFloat(flow.getSt().getPacketSent());
         DecimalFormat df2 = new DecimalFormat("###.00");
+        String recvPkgs = String.valueOf(Integer.valueOf(flow.getSt().getPacketSent()) - Integer.valueOf(flow.getSt().getPacketDrops()));
 
         newData.setSrcIp(srcIp);
         newData.setDstIp(dstIp);
         newData.setSendLossRate(df2.format(rate*100)+"%");
         newData.setSendPkgs(flow.getSt().getPacketSent());
         newData.setRecvLossRate("0");///TODO:暂时设为0
-        newData.setRecvPkgs("0");
+        newData.setRecvPkgs(recvPkgs);
         newData.setTimestamp(System.currentTimeMillis()/1000);
 
         List<LossRateResult> resultList = LossRate.result;
