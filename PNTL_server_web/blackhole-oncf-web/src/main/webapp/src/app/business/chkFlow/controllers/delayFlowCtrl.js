@@ -24,7 +24,7 @@ define(["language/chkFlow",
                 var margin = {top: 10, right: 10, bottom: 50, left: 10};
                 var width = 640,
                     height = 640;
-                var colors = ['#750000','#79CD79', '#92DD92', '#FFED97', '#FF8000', '#FF2D2D'];
+                var colors = ['#750000','#92DD92', '#60EE97', '#FFBB77','#FF8000', '#FF2D2D'];
                 var delayTimeLevel = [-1, 0, 100, 200, 500, 1000];
                 var legendElementWidth = width/delayTimeLevel.length;
                 function statusColor(delayTime)
@@ -213,7 +213,6 @@ define(["language/chkFlow",
                         delay_info_chart();
                     },function(responseData){
                         //showERRORMsg
-
                     });
                 }
                 function getIpList(para)
@@ -224,7 +223,6 @@ define(["language/chkFlow",
                         getDelayLink();
                     },function(responseData){
                         //showERRORMsg
-
                     });
                 }
 

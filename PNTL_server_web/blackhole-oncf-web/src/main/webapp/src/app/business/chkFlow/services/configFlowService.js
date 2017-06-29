@@ -3,12 +3,24 @@ define([], function () {
     var configFlowService = function (exception, camel){
         var rest_prefix = window.rest_prefix;
 
-        this.getVariablesList = function(){
-            var uri = rest_prefix + "/v1/variables";
-            var promise = camel.get({
+        this.firstDeploy = function(data){
+            var uri = rest_prefix + "/chkflow/pntlInit";
+            var promise = camel.post({
                 "url": {
                     "s": uri
                 },
+                "params":data,
+                "timeout":60000
+            });
+            return promise;
+        };
+        this.firstDeploy = function(data){
+            var uri = rest_prefix + "/chkflow/pntlInit";
+            var promise = camel.post({
+                "url": {
+                    "s": uri
+                },
+                "params":data,
                 "timeout":60000
             });
             return promise;
