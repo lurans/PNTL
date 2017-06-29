@@ -1,5 +1,4 @@
 <div>
-
     <div id="deployCollapse">
         <div class="collapse_head" ng-click="isDeployCollapsed = !isDeployCollapsed">
             {{i18n.chkFlow_term_deploy}}
@@ -12,6 +11,7 @@
                 <div class="deploy_btn">
                     <tiny-button id="deployBtn.id"
                                  text="deployBtn.text"
+                                 disable="deployBtn.disable"
                                  click="deployBtnOK()"></tiny-button>
                 </div>
             </div>
@@ -65,8 +65,6 @@
         </div>
         </div>
     </div>
-
-
     <div id="fileUploadCollapse">
         <div class="collapse_head" ng-click="isFileCollapsed = !isFileCollapsed">
             {{i18n.chkFlow_term_file_upload}}

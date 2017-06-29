@@ -63,7 +63,7 @@ define(["language/chkFlow",
                 };
                 $scope.deployBtn = {
                     "id" : "deployBtnId",
-                    "text" : i18n.chkFlow_term_confirm,
+                    "text" : i18n.chkFlow_term_deploy_ok,
                     "disable":false,
                 };
                 $scope.variableBtn = {
@@ -79,42 +79,63 @@ define(["language/chkFlow",
                     id : "searchTip",
                     auto:false
                 });
+
+                /*function sleep (time) {
+                    return new Promise((resolve) => setTimeout(resolve, time));
+                }*/
+
+                var postFirstDeploy = function(para)
+                {
+                    var promise = configFlowServ.firstDeploy(para);
+                    promise.then(function(responseData){
+                        //OK
+                        commonException.showMsg(i18n.chkflow_term_deploy_ok);
+                        $scope.deployBtn.disable = false;
+                        //console.log('1');
+                    },function(responseData){
+                        //showERRORMsg
+                        commonException.showMsg(i18n.chkflow_term_deploy_err, "error");
+                        //$scope.deployBtn.disable = false;
+                    });
+                    //console.log('2');
+                }
                 $scope.deployBtnOK = function(){
                     $scope.deployBtn.disable = true;
                     var para={};
                     postFirstDeploy(para);
-                    $scope.deployBtn.disable = false;
+                    //console.log('3');
                 }
+                var postVariableConfig = function(para)
+                {
+                    var promise = configFlowServ.variableConfig(para);
+                    promise.then(function(responseData){
+                        commonException.showMsg(i18n.chkflow_term_config_ok);
+                        //sleep(5000).then(()=>{console.log('Do some thing');});
+                        $scope.variableBtn.disable = false;
 
+                    },function(responseData){
+                        //showERRORMsg
+                        commonException.showMsg(i18n.chkflow_term_config_err, "error");
+                        $scope.variableBtn.disable = false;
+                    });
+                }
                 function getParaFromInput(){
                     var detectRound = $scope.detectRoundTextBox.value;
                     var packetsNum = $scope.packetsNumTextBox.value;
                     var timeDelay = $scope.timeDelayTextBox.value;
                     var packetsLoss = $scope.packetsLossTextBox.value;
-                    var para = {"detect_round":detectRound, "packets_num":packetsNum,
-                                "time_delay":timeDelay,"packets_loss":packetsLoss};
+                    var para = {"probe_interval":detectRound, "pkg_count":packetsNum,
+                                "delay_threshold":timeDelay,"lossRate_threshold":packetsLoss};
                     return para;
                 }
-                var postFirstDeploy = function(para)
-                {
-                    var promise = configFlowServ.firstDeploy(para);
-                    promise.then(function(responseData){
-                    //if ( undefined != responseData.err_msg)
-                        commonException.showMsg(i18n.chkflow_term_config_ok);
-                    },function(responseData){
-                        //showERRORMsg
-                        commonException.showMsg(i18n.chkflow_term_config_error, "error");
-                    });
-                }
-
                 $scope.variableBtnOK = function()
                 {
                     $scope.variableBtn.disable = true;
                     var para = getParaFromInput();
-                    var detect_round=parseInt(para.detect_round)
+                    var detect_round=parseInt(para.probe_interval)
                     if(detect_round<60&&detect_round>0)
                     {
-                        postFirstDeploy(para);
+                        postVariableConfig(para);
                     }
                     else if(-1==detect_round||0==detect_round)
                     {
@@ -130,7 +151,7 @@ define(["language/chkFlow",
                                 focused : false,//默认焦点
                                 handler : function(event) {//点击回调函数
                                     //console.log("Event Triggered for the ok button");
-                                    postFirstDeploy(para);
+                                    postVariableConfig(para);
                                     win.destroy();
                                 }
                             }, {

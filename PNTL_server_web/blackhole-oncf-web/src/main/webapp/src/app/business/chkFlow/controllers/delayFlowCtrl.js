@@ -195,13 +195,13 @@ define(["language/chkFlow",
                         var dstIp = link['dst_ip'];
                         if(srcIp in $scope.ipSeq && dstIp in $scope.ipSeq)
                         {
-                            var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                            //var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                            //var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
                             var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
-                            var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
-                            $scope.delayMatrix[$scope.ipSeq[srcIp]][$scope.ipSeq[dstIp]].z = min < 0 ? -1 : max;
+                            //var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                            //var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
+                            //var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
+                            $scope.delayMatrix[$scope.ipSeq[srcIp]][$scope.ipSeq[dstIp]].z = sendRoundDelay < 0 ? -1 : sendRoundDelay;
                         }
                     });
                 }
