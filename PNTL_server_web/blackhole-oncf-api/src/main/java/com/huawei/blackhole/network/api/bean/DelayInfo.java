@@ -109,15 +109,15 @@ public class DelayInfo implements Serializable {
         String dstIp = flow.getDip();
         Long t1 = Long.valueOf(flow.getTime().getT1());
         Long t2 = Long.valueOf(flow.getTime().getT2());
-        Long t3 = Long.valueOf(flow.getTime().getT3());
-        Long t4 = Long.valueOf(flow.getTime().getT4());
+        Long t3 = Long.valueOf(flow.getTime().getT3());//对端接收到发送时间
+        Long t4 = Long.valueOf(flow.getTime().getT4());//本端发送到接收时间
         boolean hasData = false;
 
         DelayInfoResult newData = new DelayInfoResult();
         newData.setSrcIp(srcIp);
         newData.setDstIp(dstIp);
         newData.setSendDelay(String.valueOf(t2-t1));
-        newData.setRecvDelay(String.valueOf(t4-t3));
+        newData.setRecvDelay(String.valueOf(t3));
         newData.setSendRoundDelay(String.valueOf(t4));
         newData.setRecvRoundDelay("0");
         newData.setTimestamp(System.currentTimeMillis()/1000);
