@@ -80,9 +80,9 @@ define(["language/chkFlow",
                     auto:false
                 });
 
-                /*function sleep (time) {
+                function sleep (time) {
                     return new Promise((resolve) => setTimeout(resolve, time));
-                }*/
+                }
 
                 var postFirstDeploy = function(para)
                 {
@@ -110,9 +110,7 @@ define(["language/chkFlow",
                     var promise = configFlowServ.variableConfig(para);
                     promise.then(function(responseData){
                         commonException.showMsg(i18n.chkflow_term_config_ok);
-                        //sleep(5000).then(()=>{console.log('Do some thing');});
                         $scope.variableBtn.disable = false;
-
                     },function(responseData){
                         //showERRORMsg
                         commonException.showMsg(i18n.chkflow_term_config_err, "error");
@@ -171,6 +169,7 @@ define(["language/chkFlow",
                     { //tips:输入非法
                         divTip.option("content",$scope.i18n.chkFlow_term_input_valid);
                         divTip.show(3000);
+                        $scope.variableBtn.disable = false;
                         return;
                     }
                 }
