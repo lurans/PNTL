@@ -190,7 +190,7 @@ public class Pntl {
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
                     if (resp.getStatusCode().isError()){
-                        LOG.info("send file to agent failed" + resp.getRespBody().get("reason").toString());
+                        LOG.error("send file to agent failed" + resp.getRespBody().get("reason").toString());
                     }
                 } catch (ClientException | JSONException e){
                     LOG.error("Send script to suse os agent failed");
