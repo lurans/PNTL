@@ -6,7 +6,8 @@
         <div ng-show="isDeployCollapsed">
             <div class="collapse-body">
                 <div class="alertLabel">
-                    <span>{{i18n.chkFlow_term_deploy_alert_label}}</span>
+                    <h2 style="color:#ff9955;">{{i18n.chkFlow_term_alert_label}}</h2>
+                    <p>{{i18n.chkFlow_term_deploy_alert_label1}}</p>
                 </div>
                 <div class="deploy_btn">
                     <tiny-button id="deployBtn.id"
@@ -23,19 +24,25 @@
         </div>
         <div ng-show="isVariableCollapsed">
             <div class="collapse-body">
-            <tiny-formfield>
-                <tiny-item label="variable.detectIntervalTime">
-                    <tiny-textbox id="detectRoundTextBox.id"
-                                  value="detectRoundTextBox.value"
-                                  validate = "detectRoundTextBox.validate"></tiny-textbox>
-                    <span>&nbsp;(</span>
-                    {{i18n.chkFlow_term_detect_interval_time_detail}}
-                    <span>)</span>
-                </tiny-item>
+                <div class="alertLabel">
+                    <h2 style="color:#ff9955;">{{i18n.chkFlow_term_alert_label}}</h2>
+                    <b>{{i18n.chkFlow_term_variable_alert_label1}}</b>{{i18n.chkFlow_term_variable_alert_label2}}
+                </div>
+                <tiny-formfield>
+                    <tiny-item label="variable.probeIntervalTime">
+                        <tiny-textbox id="probeRoundTextBox.id"
+                                      value="probeRoundTextBox.value"
+                                      validate = "probeRoundTextBox.validate"
+                                      tooltip = "probeRoundTextBox.tooltip"></tiny-textbox>
+                        <span>&nbsp;(</span>
+                        {{i18n.chkFlow_term_probe_interval_time_detail}}
+                        <span>)</span>
+                    </tiny-item>
                 <tiny-item label="variable.packetsNum">
                     <tiny-textbox id="packetsNumTextBox.id"
                                   value="packetsNumTextBox.value"
-                                  validate = "packetsNumTextBox.validate"></tiny-textbox>
+                                  validate = "packetsNumTextBox.validate"
+                                  tooltip = "packetsNumTextBox.tooltip"></tiny-textbox>
                     <span>&nbsp;(</span>
                     {{i18n.chkFlow_term_packets_num_detail}}
                     <span>)</span>
@@ -43,7 +50,8 @@
                 <tiny-item label="variable.timeDelay" require="model.require">
                     <tiny-textbox id="timeDelayTextBox.id"
                                   value="timeDelayTextBox.value"
-                                  validate = "timeDelayTextBox.validate"></tiny-textbox>
+                                  validate = "timeDelayTextBox.validate"
+                                  tooltip = "timeDelayTextBox.tooltip"></tiny-textbox>
                     <span>&nbsp;(</span>
                     {{i18n.chkFlow_term_max_time_delay_detail}}
                     <span>)</span>
@@ -51,19 +59,20 @@
                 <tiny-item label="variable.packetsLoss">
                     <tiny-textbox id="packetsLossTextBox.id"
                                   value="packetsLossTextBox.value"
-                                  validate = "packetsLossTextBox.validate"></tiny-textbox>
+                                  validate = "packetsLossTextBox.validate"
+                                  tooltip = "packetsLossTextBox.tooltip"></tiny-textbox>
                     <span>&nbsp;(</span>
                     {{i18n.chkFlow_term_max_loss_rate_detail}}
                     <span>)</span>
                 </tiny-item>
             </tiny-formfield>
-            <div class="variable_btn">
-                <tiny-button id="variableBtn.id"
+                <div class="variable_btn">
+                    <tiny-button id="variableBtn.id"
                              text="variableBtn.text"
                              disable="variableBtn.disable"
                              click="variableBtnOK()"></tiny-button>
+                </div>
             </div>
-        </div>
         </div>
     </div>
     <div id="fileUploadCollapse">
