@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-
+#include <stdlib.h>
 using namespace std;
 
 #include "Sal.h"
@@ -67,15 +67,24 @@ void request_completed (void *cls, struct MHD_Connection *connection,
     if (NULL == con_info)
         return;
 
+    string response = "";
+	
     if (con_info->connectiontype == POST)
     {
         MHD_destroy_post_processor (con_info->postprocessor);
         if (con_info->answerstring)
+			response = * con_info->answerstring;
             delete con_info->answerstring;
     }
 
     delete con_info;
     *con_cls = NULL;
+	INT32 index = response.find("exit");
+	if (-1 != index)
+	{
+	    HTTP_DAEMON_WARNING("exit current process.");
+		exit(0);
+	}
 }
 
 // 业务处理, 每次处理一个key.

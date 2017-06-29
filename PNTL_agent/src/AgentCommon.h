@@ -12,7 +12,8 @@ enum
     AGENT_E_SOCKET      = -6,
     AGENT_E_THREAD      = -7,
     AGENT_E_HANDLER     = -8,
-    AGENT_E_EXIST       = -9
+    AGENT_E_EXIST       = -9,
+    AGENT_EXIT          = 10
 };
 
 #define AGENT_ENABLE                         1
