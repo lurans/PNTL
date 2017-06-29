@@ -14,17 +14,6 @@ define([], function () {
             });
             return promise;
         };
-        this.firstDeploy = function(data){
-            var uri = rest_prefix + "/chkflow/pntlInit";
-            var promise = camel.post({
-                "url": {
-                    "s": uri
-                },
-                "params":data,
-                "timeout":60000
-            });
-            return promise;
-        };
     };
 
     var configFlowModule = angular.module('common.config');
