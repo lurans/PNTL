@@ -140,6 +140,16 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         // 解析ServerAntAgent数据.
         ptDataTmp.clear();
         ptDataTmp = ptDataRoot.get_child("ServerAntAgent");
+		strTemp = ptDataTmp.get<string>("MgntIP");
+		
+		uiIp = sal_inet_aton(strTemp.c_str());
+        iRet = pcCfg->SetMgntIP(uiIp);
+		if (iRet)
+        {
+            JSON_PARSER_ERROR("SetMnMgntIPgtIP failed[%d]", iRet);
+            return iRet;
+        }
+		
         strTemp = ptDataTmp.get<string>("AgentIP");
         uiIp = sal_inet_aton(strTemp.c_str());
         uiPort = ptDataTmp.get<UINT32>("Port");
@@ -272,15 +282,19 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
         stringstream ssJsonData;
         ptree ptDataRoot;
         
-        UINT32 uiIp;
+        UINT32 uiIp, uiMgntIp;
         iRet = pcCfg->GetAgentAddress(&uiIp, NULL);
         if (iRet)
         {
             JSON_PARSER_ERROR("GetAgentAddress failed[%d]", iRet);
             return iRet;
         }
-        ptDataRoot.put("agent-ip", sal_inet_ntoa(uiIp));
-        
+
+		iRet = pcCfg->GetMgntIP(&uiMgntIp);
+		
+        ptDataRoot.put("vbond-ip", sal_inet_ntoa(uiIp));    // 数据面IP 
+		ptDataRoot.put("agent-ip", sal_inet_ntoa(uiMgntIp));
+		
         write_json(ssJsonData, ptDataRoot);
         (*pssPostData) << ssJsonData.str();
     }

@@ -50,7 +50,8 @@ private:
     CollectorProtocolType_E eCollectorProtocol; // 与Collector通讯协议类型, 见CollectorProtocolType_E.
     KafkaConnectInfo_S stCollectorKafkaInfo; // 当使用Kafka建立连接时需要的信息
     
-    UINT32 uiAgentIP;                 //  本Agent的IP地址, Server向Agent推送消息时使用.
+    UINT32 uiAgentIP;                 //  本Agent的数据面IP地址, Agent探测IP.
+    UINT32 uiMgntIP;                  // 本Agent的管理面IP地址，Server向Agent推送消息时使用.
     UINT32 uiAgentDestPort;           //  本Agent的端口地址, Server向Agent推送消息时使用.
     
     /* Agent 全局周期控制 */
@@ -89,6 +90,7 @@ public:
 
     INT32 GetAgentAddress(UINT32 * puiAgentIP, 
                      UINT32 * puiAgentDestPort);         // 查询ServerAntAgent地址信息.
+    INT32 GetMgntIP(UINT32* puiMgntIP);
     INT32 SetAgentAddress(UINT32 uiNewAgentIP, 
                     UINT32 uiNewAgentDestPort);          // 设置ServerAntAgent地址信息, 非0有效.
     
@@ -112,6 +114,13 @@ public:
     {
         return uiAgentIP;
     }
+
+	INT32 SetMgntIP(UINT32 uiNewMgntIP)         // 设定管理口ip
+    {
+        uiMgntIP = uiNewMgntIP;
+        return AGENT_OK;
+    }
+	
     UINT32 GetReportPeriod()                         // 查询Report周期
     {
         return uiAgentReportPeriod;

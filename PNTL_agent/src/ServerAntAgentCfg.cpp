@@ -131,6 +131,15 @@ INT32 ServerAntAgentCfg_C::GetAgentAddress(UINT32 * puiAgentIP,
     return AGENT_OK;
 }
 
+INT32 ServerAntAgentCfg_C::GetMgntIP(UINT32* puiMgntIP)
+{
+    if (puiMgntIP)
+    {
+        *puiMgntIP = uiMgntIP;
+    }
+	return AGENT_OK;
+}
+
 INT32 ServerAntAgentCfg_C::SetAgentAddress(UINT32 uiNewAgentIP, 
                     UINT32 uiNewAgentDestPort)             // 设置ServerAntAgent地址信息, 非0有效.
 {

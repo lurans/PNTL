@@ -152,7 +152,7 @@ INT32 ServerAntAgent()
 
 	if (AGENT_OK == iRet)
 	{
-	    SHOULD_PROBE = 0;
+	    SHOULD_PROBE = 1;
 		sleep(10);
 	}
 
@@ -207,7 +207,7 @@ INT32 ServerAntAgent()
     return AGENT_OK;
 }
 
-INT32 SHOULD_PROBE = 1;
+INT32 SHOULD_PROBE = 0;
 
 // 程序入口, 默认直接启动. 
 // 不带参数时直接启动
