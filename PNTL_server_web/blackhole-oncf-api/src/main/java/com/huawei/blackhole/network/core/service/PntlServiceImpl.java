@@ -427,8 +427,12 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             host.setOs((String)ipList.get(i).get("os"));
             host.setZoneId((String)ipList.get(i).get("az"));
             host.setPodId((String)ipList.get(i).get("pod"));
-            host.setAgentSN(Pntl.getAgentSnByIp(ip));
-            //host.setPingMeshList(host.getIp(), hostInfo.getHostsInfoList());
+            try{
+                String sn = Pntl.getAgentSnByIp(ip);
+                host.setAgentSN(sn);
+            } catch (Exception e){
+                LOG.error("Get sn fail, " + e.getMessage());
+            }
             host.setPingMeshList(host.getIp(), ipList);
 
             hostsList.add(host);

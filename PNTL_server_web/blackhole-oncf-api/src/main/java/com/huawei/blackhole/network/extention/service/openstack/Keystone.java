@@ -158,6 +158,8 @@ public class Keystone {
 
         header.put(PntlInfo.AUTH, BASIC_TOKEN);
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
+        header.put("user_name", "y00214328");
+        header.put("service_name", "pntl");
 
         List<NameValuePair> reqBody = new ArrayList<NameValuePair>();
         reqBody.add(new BasicNameValuePair(PntlInfo.GRANT_TYPE, "client_credentials"));
