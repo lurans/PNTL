@@ -486,7 +486,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             host.setZoneId((String)ipList.get(i).get("az"));
             host.setPodId((String)ipList.get(i).get("pod"));
             try{
-                String sn = null;//Pntl.getAgentSnByIp(ip);
+                String sn = Pntl.getAgentSnByIp(ip);
                 host.setAgentSN(sn);
             } catch (Exception e){
                 LOG.error("Get sn fail, " + e.getMessage());
