@@ -11,7 +11,9 @@ import java.util.Map;
 public class PntlHostContext {
     private String id;
 
-    private String ip;
+    private String agentIp;
+
+    private String vbondIp;
 
     private String os;
 
@@ -35,12 +37,20 @@ public class PntlHostContext {
         this.id = id;
     }
 
-    public String getIp() {
-        return ip;
+    public String getAgentIp() {
+        return agentIp;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setAgentIp(String agentIp) {
+        this.agentIp = agentIp;
+    }
+
+    public String getVbondIp() {
+        return vbondIp;
+    }
+
+    public void setVbondIp(String vbondIp) {
+        this.vbondIp = vbondIp;
     }
 
     public String getOs() {
@@ -99,34 +109,21 @@ public class PntlHostContext {
         this.pingMeshList = pingMeshList;
     }
 
-    /*
-    public void setPingMeshList(String srcIp, List<HostInfo.HostListInfo> hosts){
-        Map<String, List<String>> pingMeshList = new HashMap<>();
-        List<String> ipList = new ArrayList<>();
-        for (HostInfo.HostListInfo host : hosts){
-            if (srcIp.equals(host.getIp())){
-                continue;
-            }
-            ipList.add(host.getIp());
-        }
-        pingMeshList.put(srcIp, ipList);
-
-        setPingMeshList(pingMeshList);
-    }*/
-
-    public void setPingMeshList(String srcIp, List<Map<String, String>> ipList){
+    public void setPingMeshList(String srcIp, List<PntlHostContext> hostsList){
         Map<String, List<String>> pingMeshList = new HashMap<>();
         List<String> ips = new ArrayList<>();
-        for (int i = 0; i < ipList.size() ;i++) {
-            String ip = (String) ipList.get(i).get("ip");
-            if (srcIp.equals(ip)){
+        for (PntlHostContext host : hostsList){
+            if (srcIp.equals(host.getAgentIp())){
                 continue;
             }
-            ips.add(ip);
-
+            if (host.getVbondIp() != null) {
+                ips.add(host.getVbondIp());
+            }
+        }
+        if (ips == null || ips.isEmpty()){
+            return;
         }
         pingMeshList.put(srcIp, ips);
-
         setPingMeshList(pingMeshList);
     }
 }
