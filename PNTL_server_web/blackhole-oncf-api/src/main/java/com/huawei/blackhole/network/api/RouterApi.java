@@ -453,4 +453,14 @@ public class RouterApi {
         }
         return ResponseUtil.succ();
     }
+
+    @Path("/agentIp")
+    @POST
+    public Response recvAgentIp(AgentIp ip){
+        Result<String> result = pntlService.saveAgentIp(ip.getAgentIp(), ip.getVbondIp());
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
 }

@@ -136,6 +136,24 @@ public class Pntl {
         return RestClientExt.post(url, null, formBody,  header);
     }
 
+
+    /**
+     * 通知agent查询pingList
+     * @param agentIp
+     * @return
+     * @throws ClientException
+     */
+    public RestResp notifyAgentToGetPingList(String agentIp) throws ClientException{
+        LOG.info("Notify agent[" + agentIp + "] to get pingList");
+        Map<String, String> header = new HashMap<>();
+        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
+
+        String url = "http://" + agentIp + ":" + PORT;
+        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT_ACTION, ""));
+
+        return RestClientExt.post(url, null, formBody,  header);
+    }
     /**
      *  发送ants agent和脚本
      * @param pntlHostList
@@ -216,7 +234,7 @@ public class Pntl {
         RestResp resp = null;
         StringBuffer ipList = new StringBuffer();
         for (PntlHostContext host : pntlHostList){
-            ipList.append(host.getIp());
+            ipList.append(host.getVbondIp());
             if (pntlHostList.indexOf(host) != pntlHostList.size()-1){
                 ipList.append(" ");
             }
@@ -243,7 +261,7 @@ public class Pntl {
         ///todo
         resp = RestClientExt.post(url, null, null, null);
         if (resp.getStatusCode().isError()){
-            LOG.info("get traceroute result from " + host.getIp() + "failed");
+            LOG.info("get traceroute result from " + host.getVbondIp() + "failed");
         }
 
         return resp;
