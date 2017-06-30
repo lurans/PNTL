@@ -8,9 +8,9 @@ define(["language/chkFlow",
             function($scope, $rootScope, $state, $sce, $compile, $timeout, configFlowServ){
                 $scope.i18n = i18n;
                 //$scope.data = [{"name":1,"value":2,"updateTime":3,"description":4},{"name":1,"value":2,"updateTime":3,"description":4}];
-                $scope.isDeployCollapsed = true;
-                $scope.isVariableCollapsed = true;
                 $scope.isFileCollapsed = true;
+                $scope.isDeployCollapsed = true;
+                $scope.isVariableCollapsed = false;
                 $scope.variable = {
                     "probeIntervalTime" : i18n.chkFlow_term_probe_interval_time_name,
                     "packetsNum" : i18n.chkFlow_term_probe_packets_number_name,
@@ -47,8 +47,7 @@ define(["language/chkFlow",
                         {
                             "validFn" : "minValue",
                             "params" : 1,
-                        }
-                    ]
+                        }]
                 };
                 $scope.timeDelayTextBox = {
                     "id": "timeDelayTextBoxId",
@@ -106,6 +105,11 @@ define(["language/chkFlow",
                     width: 300,
                     id : "searchTip",
                     auto:false
+                });
+                var tabsLeft = new tinyWidget.Tabs({
+                    "id" : "myTabsLeft",
+                    "position" : "left",
+                    //"closable" : true
                 });
 
                 /*function sleep (time) {
@@ -191,6 +195,7 @@ define(["language/chkFlow",
                                 handler : function(event) {
                                     //console.log("Event triggered for the cancel button");
                                     win.destroy();
+                                    $scope.variableBtn.disable = false;
                                 }
                             }]
                         };
