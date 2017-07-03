@@ -158,7 +158,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         interval.setProbe_interval(timeInterval);
 
         if (hostList == null || hostList.size() == 0){
-            result.addError("", "No host information");
+            result.addError("", "No host ip information");
             return result;
         }
         LOG.info("Set probe interval:" + timeInterval);

@@ -16,20 +16,16 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.blackhole.network.api.bean.PntlConfig;
 import com.huawei.blackhole.network.common.constants.*;
 import com.huawei.blackhole.network.common.exception.CommonException;
 import com.huawei.blackhole.network.common.utils.MapUtils;
 import com.huawei.blackhole.network.common.utils.WccCrypter;
-import com.huawei.blackhole.network.common.utils.http.Parameter;
-import com.huawei.blackhole.network.extention.bean.openstack.keystone.PntlTokenResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -72,10 +68,7 @@ public class Keystone {
 
     private static final Object LOCK = new Object();
 
-    private static final String BASIC_TOKEN = "basic MGpfeG15Y2xNcmZ2U3ptTXJHRmRSYlRMZll" +
-            "JYTpnVFNNZlpXeDVibzN4SUx5NzU0dEl0VHA2TWNh";//beta
-    //private static final String BASIC_TOKEN = "basic ak5lSlB6MDZweld1cF80SVlmeFRCcmJ" +
-     //       "MdEJ3YTpDM19wcG5BcXkyWl9WcF9vaDNMdlBFR3lQbklh";//alpha
+    private static final String BASIC_TOKEN = PntlConfig.getBasicToken();
 
     private static final String GRANT_TYPE = "grant_type";
 
