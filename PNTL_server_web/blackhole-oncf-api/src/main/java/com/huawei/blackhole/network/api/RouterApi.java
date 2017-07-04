@@ -404,7 +404,7 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
-    @Path("/pntlConfig")
+    @Path("/pntlConf")
     @POST
     public Response setPntlConfig(PntlConfig config){
         Result<String> result = pntlConfigService.setPntlConfig(config);
@@ -420,7 +420,7 @@ public class RouterApi {
         return ResponseUtil.succ();
     }
 
-    @Path("/pntlConfig")
+    @Path("/pntlConf")
     @GET
     public Response getPntlConfig(){
         Result<PntlConfig> result = pntlConfigService.getPntlConfig();
@@ -448,6 +448,16 @@ public class RouterApi {
     @POST
     public Response stopProbe(){
         Result<String> result = pntlService.setProbeInterval("0");
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/agentIp")
+    @POST
+    public Response recvAgentIp(AgentIp ip){
+        Result<String> result = pntlService.saveAgentIp(ip.getAgentIp(), ip.getVbondIp());
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }

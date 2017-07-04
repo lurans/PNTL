@@ -5,10 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
+import com.huawei.blackhole.network.extention.service.pntl.Pntl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -16,7 +20,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LossRate implements Serializable{
     private static final long serialVersionUID = 7880158023453028072L;
-
+    private static final Logger LOG = LoggerFactory.getLogger(LossRate.class);
     @JsonProperty("result")
     private static List<LossRateResult> result = new ArrayList<LossRateResult>();
 
@@ -120,13 +124,14 @@ public class LossRate implements Serializable{
         LossRateResult newData = new LossRateResult();
         float rate = Float.parseFloat(flow.getSt().getPacketDrops()) / Float.parseFloat(flow.getSt().getPacketSent());
         DecimalFormat df2 = new DecimalFormat("###.00");
+        String recvPkgs = String.valueOf(Integer.valueOf(flow.getSt().getPacketSent()) - Integer.valueOf(flow.getSt().getPacketDrops()));
 
         newData.setSrcIp(srcIp);
         newData.setDstIp(dstIp);
         newData.setSendLossRate(df2.format(rate*100)+"%");
         newData.setSendPkgs(flow.getSt().getPacketSent());
         newData.setRecvLossRate("0");///TODO:暂时设为0
-        newData.setRecvPkgs("0");
+        newData.setRecvPkgs(recvPkgs);
         newData.setTimestamp(System.currentTimeMillis()/1000);
 
         List<LossRateResult> resultList = LossRate.result;
@@ -154,14 +159,20 @@ public class LossRate implements Serializable{
     }
 
     public static void refleshLossRateWarning(){
-        List<LossRateResult> resultList = LossRate.result;
-        List<LossRateResult> delList = new ArrayList<>();
-        for (LossRateResult result : resultList){
-            Long intervalTime = System.currentTimeMillis()/1000 - result.getTimestamp();
-            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){//second
-                delList.add(result);
+        List<LossRateResult> resultList = getResult();
+        if (resultList == null){
+            LOG.error("lossRate is null");
+            return;
+        }
+
+        Iterator<LossRateResult> it = resultList.iterator();
+        while (it.hasNext()){
+            LossRateResult lossRate = it.next();
+            Long intervalTime = System.currentTimeMillis()/1000 - lossRate.getTimestamp();
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){
+                LOG.info("Remove warning:" + lossRate.getSrcIp() +" -> " + lossRate.getDstIp());
+                it.remove();
             }
         }
-        resultList.removeAll(delList);
     }
 }

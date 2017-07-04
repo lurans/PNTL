@@ -15,4 +15,6 @@ public interface PntlService {
     Result<IpListJson> getIpListinfo(String azId, String podId);
 
     public Result<String> setProbeInterval(String timeInterval);
+
+    public Result<String> saveAgentIp(String agentIp, String vbondIp);
 }

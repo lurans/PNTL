@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.xml.ws.Response;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,6 +31,8 @@ import java.util.*;
 public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private static final Logger LOG = LoggerFactory.getLogger(PntlServiceImpl.class);
     private List<PntlHostContext> hostList = null;
+    private Map<String, String> agentIpMap = null;
+    private static boolean notifyAgentToGetPingList = false;
 
     /**
      * 首次启动
@@ -47,6 +50,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "get host list failed:" + e.getMessage());
             return result;
         }
+        LOG.info("Get host list finish");
         /* 获取主机列表 */
         /*
         try {
@@ -71,17 +75,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     public Result<AgentFlowsJson> getPingList(PingListRequest config){
         Result<AgentFlowsJson> result = new Result<>();
-
-        try {
-            hostList = readFileHostList();
-           // hostList = genProbeHostList();
-        } catch (Exception e){
-            LOG.error("get host list failed " + e.getMessage());
-            result.addError("", "get host list failed");
-            return result;
-        }
-
-        if (hostList == null){
+        if (agentIpMap == null){
             result.addError("", "No host info");
             return result;
         }
@@ -97,6 +91,64 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     /**
+     * 保存业务ip，生成pingMesh
+     * @param agentIp
+     * @param vbondIp
+     * @return
+     */
+    public Result<String> saveAgentIp(String agentIp, String vbondIp){
+        Result<String> result = new Result<>();
+        if (agentIpMap == null){
+            agentIpMap = new HashMap<>();
+        }
+
+        if (agentIpMap.get(agentIp) != null && agentIpMap.get(agentIp).equals(vbondIp)){
+            return result;
+        }
+        agentIpMap.put(agentIp, vbondIp);
+        addVbondIpToHostList(agentIp, vbondIp);
+
+        if (notifyAgentToGetPingList == false){
+            try {
+                Thread.sleep(PntlInfo.NOTIFY_AGENT_TO_GET_PINGLIST_TIME * 1000);//second
+            } catch(InterruptedException e){
+                result.addError("", "Sleep error " + e.getMessage());
+            }
+        }
+        try {
+            RestResp resp = pntlRequest.notifyAgentToGetPingList(agentIp);
+            if (resp.getStatusCode().isError()){
+                result.addError("", "Notify agent to get pingList failed");
+            } else{
+                notifyAgentToGetPingList = true;
+            }
+        } catch (ClientException e){
+            String errMsg = "Notify agent to get pingList failed:" + e.getMessage();
+            LOG.error(errMsg);
+            result.addError("", errMsg);
+        }
+        return result;
+    }
+
+    private void addVbondIpToHostList(String agentIp, String vbondIp){
+        if (hostList == null){
+            return;
+        }
+        for (PntlHostContext host : hostList){
+            if (host.getAgentIp().equals(agentIp)){
+                host.setVbondIp(vbondIp);
+                break;
+            }
+        }
+        updatePingMesh();
+    }
+
+    private void updatePingMesh(){
+        for (PntlHostContext host : hostList){
+            host.setPingMeshList(host.getAgentIp(), hostList);
+        }
+    }
+    /**
      * 设置探测时间间隔，若为0，则停止探测
      * @return
      */
@@ -109,8 +161,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "No host information");
             return result;
         }
+        LOG.info("Set probe interval:" + timeInterval);
         for (int i = 0; i < hostList.size(); i++){
-            String agentIp = hostList.get(i).getIp();
+            String agentIp = hostList.get(i).getAgentIp();
             try {
                 RestResp resp = pntlRequest.sendProbeInterval(agentIp, interval);
                 if (resp.getStatusCode().isError()){
@@ -150,12 +203,19 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         AgentFlowsJson agentFlowsJson = new AgentFlowsJson();
         Map<String, List<String>> pingMeshMap = null;
 
-        if (hostList == null){
+        if (agentIpMap == null){
             return null;
+        }
+        if (hostList == null){
+            try {
+                hostList = readFileHostList();
+            } catch (Exception e){
+                LOG.error("get host list failed:" + e.getMessage());
+            }
         }
         String agentIp = config.getContent().getAgentIp();
          for (PntlHostContext host : hostList){
-            if (host.getIp().equals(agentIp)){
+            if (host.getAgentIp().equals(agentIp)){
                 pingMeshMap = host.getPingMeshList();
             }
         }
@@ -290,7 +350,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private void monitorPntl(){
         while (true){
             LossRate.refleshLossRateWarning();
-            DelayInfo.reflesDelayInfoWarning();
+            DelayInfo.refleshDelayInfoWarning();
             try{
                 Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME * 1000);//second
             } catch (InterruptedException e) {
@@ -307,9 +367,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      */
     public Result<String> installAgent(List<PntlHostContext> pntlHostList) throws ClientException{
         Result<String> result = new Result<>();
+        RestResp resp = null;
         try{
             String token = identityWrapperService.getPntlAccessToken();
-            RestResp resp = pntlRequest.installAgent(hostList, token);
+            resp = pntlRequest.installAgent(hostList, token);
+            if (resp.getStatusCode().isError()){
+                result.addError("", "install agent failed");
+            }
         } catch (ClientException e){
             LOG.error("Send ip list to agents failed, " + e.getMessage());
             result.addError("", e.toString());
@@ -387,7 +451,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
             PntlHostContext hostContext = new PntlHostContext();
             hostContext.setId(host.getId());
-            hostContext.setIp(host.getIp());
+            hostContext.setAgentIp(host.getIp());
             hostContext.setAgentStatus(host.getAgentStatus());
             hostContext.setAgentSN(host.getAgentSN());
             hostContext.setOs(host.getOs());
@@ -417,18 +481,18 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         for (int i = 0; i < ipList.size(); i++) {
             PntlHostContext host = new PntlHostContext();
             String ip = (String)ipList.get(i).get("ip");
-            host.setIp(ip);
+            host.setAgentIp(ip);
             host.setOs((String)ipList.get(i).get("os"));
             host.setZoneId((String)ipList.get(i).get("az"));
             host.setPodId((String)ipList.get(i).get("pod"));
-            host.setAgentSN(Pntl.getAgentSnByIp(ip));
-            //host.setPingMeshList(host.getIp(), hostInfo.getHostsInfoList());
-            host.setPingMeshList(host.getIp(), ipList);
+            try{
+                String sn = Pntl.getAgentSnByIp(ip);
+                host.setAgentSN(sn);
+            } catch (Exception e){
+                LOG.error("Get sn fail, " + e.getMessage());
+            }
 
             hostsList.add(host);
-           System.out.println("ip:" + ip);
-
-
         }
         return hostsList;
     }
@@ -479,23 +543,15 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         IpListJson ipListInfo = new IpListJson();
         ipListInfo.setAzId(azId);
         ipListInfo.setPodId(podId);
-/*
-        try{
-            hostList = genProbeHostList();
-        } catch (ApplicationException | ClientException e){
-            LOG.error(e.getMessage());
-            result.setErrorMessage("get host list failed " + e.getMessage());
-        }
-*/
-        if (hostList == null || hostList.size() == 0){
-            result.setErrorMessage("no host list");
+        if (agentIpMap == null || agentIpMap.isEmpty()){
+            result.addError("", "no host list");
             return result;
         }
 
         List<IpListJson.IpList> ipList = new ArrayList<>();
-        for (PntlHostContext host : hostList){
+        for (String agentIp : agentIpMap.keySet()){
             IpListJson.IpList ip = new IpListJson.IpList();
-            ip.setIp(host.getIp());
+            ip.setIp(agentIpMap.get(agentIp));
             ipList.add(ip);
         }
 
@@ -504,5 +560,4 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
         return result;
     }
-
 }

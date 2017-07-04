@@ -4,15 +4,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DelayInfo implements Serializable {
     private static final long serialVersionUID = 5115688643432800494L;
+    private static final Logger LOG = LoggerFactory.getLogger(LossRate.class);
     @JsonProperty("result")
     private static List<DelayInfoResult> result = new ArrayList<DelayInfoResult>();
 
@@ -20,8 +24,8 @@ public class DelayInfo implements Serializable {
         return result;
     }
 
-    public void setResult(List<DelayInfoResult> result) {
-        this.result = result;
+    public static void setResult(List<DelayInfoResult> result) {
+        DelayInfo.result = result;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -42,7 +46,7 @@ public class DelayInfo implements Serializable {
         @JsonProperty("recv_round_delay")
         private String recvRoundDelay;
 
-        private Long   timestamp;
+        private Long timestamp;
         public String getSrcIp() {
             return srcIp;
         }
@@ -105,17 +109,18 @@ public class DelayInfo implements Serializable {
         String dstIp = flow.getDip();
         Long t1 = Long.valueOf(flow.getTime().getT1());
         Long t2 = Long.valueOf(flow.getTime().getT2());
-        Long t3 = Long.valueOf(flow.getTime().getT3());
-        Long t4 = Long.valueOf(flow.getTime().getT4());
+        Long t3 = Long.valueOf(flow.getTime().getT3());//对端接收到发送时间
+        Long t4 = Long.valueOf(flow.getTime().getT4());//本端发送到接收时间
         boolean hasData = false;
 
         DelayInfoResult newData = new DelayInfoResult();
         newData.setSrcIp(srcIp);
         newData.setDstIp(dstIp);
         newData.setSendDelay(String.valueOf(t2-t1));
-        newData.setRecvDelay(String.valueOf(t4-t3));
-        newData.setSendRoundDelay(String.valueOf(t4-t1));
+        newData.setRecvDelay(String.valueOf(t3));
+        newData.setSendRoundDelay(String.valueOf(t4));
         newData.setRecvRoundDelay("0");
+        newData.setTimestamp(System.currentTimeMillis()/1000);
 
         List<DelayInfoResult> resultList = getResult();
         for (DelayInfoResult result : resultList){
@@ -131,15 +136,21 @@ public class DelayInfo implements Serializable {
         }
     }
 
-    public static void reflesDelayInfoWarning(){
+    public static void refleshDelayInfoWarning(){
         List<DelayInfoResult> resultList = getResult();
-        List<DelayInfoResult> delList = new ArrayList<>();
-        for (DelayInfoResult result : resultList){
-            Long intervalTime = System.currentTimeMillis()/1000 - result.getTimestamp();
-            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){//second
-                delList.add(result);
+        if (resultList == null){
+            LOG.error("delayInfo is null");
+            return;
+        }
+
+        Iterator<DelayInfoResult> it = resultList.iterator();
+        while (it.hasNext()){
+            DelayInfoResult delayInfo = it.next();
+            Long intervalTime = System.currentTimeMillis()/1000 - delayInfo.getTimestamp();
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){
+                LOG.info("Remove warning:" + delayInfo.getSrcIp() +" -> " + delayInfo.getDstIp());
+                it.remove();
             }
         }
-        resultList.remove(delList);
     }
 }

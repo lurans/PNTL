@@ -24,7 +24,7 @@ define(["language/chkFlow",
                 var margin = {top: 10, right: 10, bottom: 50, left: 10};
                 var width = 640,
                     height = 640;
-                var colors = ['#750000','#79CD79', '#92DD92', '#FFED97', '#FF8000', '#FF2D2D'];
+                var colors = ['#750000','#92DD92', '#60EE97', '#FFBB77','#FF8000', '#FF2D2D'];
                 var delayTimeLevel = [-1, 0, 100, 200, 500, 1000];
                 var legendElementWidth = width/delayTimeLevel.length;
                 function statusColor(delayTime)
@@ -195,13 +195,13 @@ define(["language/chkFlow",
                         var dstIp = link['dst_ip'];
                         if(srcIp in $scope.ipSeq && dstIp in $scope.ipSeq)
                         {
-                            var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
-                            var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
-                            $scope.delayMatrix[$scope.ipSeq[srcIp]][$scope.ipSeq[dstIp]].z = min < 0 ? -1 : max;
+                            //var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
+                            //var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['recv_delay']);
+                            var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_round_delay']);
+                            //var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['recv_round_delay']);
+                            //var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
+                            //var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
+                            $scope.delayMatrix[$scope.ipSeq[srcIp]][$scope.ipSeq[dstIp]].z = sendRoundDelay < 0 ? -1 : sendRoundDelay;
                         }
                     });
                 }
@@ -213,7 +213,6 @@ define(["language/chkFlow",
                         delay_info_chart();
                     },function(responseData){
                         //showERRORMsg
-
                     });
                 }
                 function getIpList(para)
@@ -224,7 +223,6 @@ define(["language/chkFlow",
                         getDelayLink();
                     },function(responseData){
                         //showERRORMsg
-
                     });
                 }
 

@@ -121,7 +121,7 @@ public class Pntl {
      */
     public RestResp sendProbeInterval(String agentIp, ProbeInterval json)
             throws ClientException, JsonProcessingException {
-        LOG.info("start to send Probe");
+        LOG.info("start to send Probe time interval");
 
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
@@ -136,6 +136,24 @@ public class Pntl {
         return RestClientExt.post(url, null, formBody,  header);
     }
 
+
+    /**
+     * 通知agent查询pingList
+     * @param agentIp
+     * @return
+     * @throws ClientException
+     */
+    public RestResp notifyAgentToGetPingList(String agentIp) throws ClientException{
+        LOG.info("Notify agent[" + agentIp + "] to get pingList");
+        Map<String, String> header = new HashMap<>();
+        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
+
+        String url = "http://" + agentIp + ":" + PORT;
+        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT_ACTION, ""));
+
+        return RestClientExt.post(url, null, formBody,  header);
+    }
     /**
      *  发送ants agent和脚本
      * @param pntlHostList
@@ -180,7 +198,9 @@ public class Pntl {
 
                 body.get(key).setPath(PNTL_PATH);
                 body.get(key).setMode("644");
-                agentSnList.get(key).add(host.getAgentSN());
+                if (host.getAgentSN() != null) {
+                    agentSnList.get(key).add(host.getAgentSN());
+                }
             }
 
             for (String key : body.keySet()){
@@ -188,7 +208,7 @@ public class Pntl {
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
                     if (resp.getStatusCode().isError()){
-                        LOG.info("send file to agent failed" + resp.getRespBody().get("reason").toString());
+                        LOG.error("send file to agent failed" + resp.getRespBody().get("reason").toString());
                     }
                 } catch (ClientException | JSONException e){
                     LOG.error("Send script to suse os agent failed");
@@ -214,7 +234,7 @@ public class Pntl {
         RestResp resp = null;
         StringBuffer ipList = new StringBuffer();
         for (PntlHostContext host : pntlHostList){
-            ipList.append(host.getIp());
+            ipList.append(host.getVbondIp());
             if (pntlHostList.indexOf(host) != pntlHostList.size()-1){
                 ipList.append(" ");
             }
@@ -241,7 +261,7 @@ public class Pntl {
         ///todo
         resp = RestClientExt.post(url, null, null, null);
         if (resp.getStatusCode().isError()){
-            LOG.info("get traceroute result from " + host.getIp() + "failed");
+            LOG.info("get traceroute result from " + host.getVbondIp() + "failed");
         }
 
         return resp;
@@ -282,10 +302,11 @@ public class Pntl {
      * @throws ClientException
      */
     public RestResp installAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
-
         List<String> snList = new ArrayList<>();
         for (PntlHostContext host : pntlHostList){
-            snList.add(host.getAgentSN());
+            if (host.getAgentSN() != null) {
+                snList.add(host.getAgentSN());
+            }
         }
         final String command = "cd" + " " + PNTL_PATH + ";sh -x install_pntl.sh";
         return sendCommandToAgents(snList, token, command, "sync");

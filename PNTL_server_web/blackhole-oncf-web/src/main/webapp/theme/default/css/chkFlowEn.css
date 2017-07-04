@@ -452,30 +452,32 @@ text.text-hover {
     color: gray;
 }
 
-#collapseConfig{
-    width:80%
-    height:70%;
-    margin:30px;
-}
 .collapse_head{
     height:32px;
     font-size:16px;
     margin-top:10px;
     margin-bottom:10px;
-    border-bottom: 1px solid #E5E5E5;
+    padding-top:12px;
+    padding-left:10px;
+    border-bottom: 1px solid #E0E0E0;
     cursor: pointer;
 }
 .collapse-body{
     padding-left: 30px;
-    margin-bottom:10px;
-}
-.collapse_btn{
-    padding-left: 30px;
-    margin-bottom:30px;
+    margin-bottom:50px;
 }
 .collapse-content{
     height:auto;
     padding: 5px;
+}
+.alertLabel{
+    font-size:12px;
+    color:#5c5c5c;
+    padding: 10px;
+    margin-bottom:20px;
+    border: 1px dotted #ccc;
+    background-color: #f5f5f5;
+    /*background-color: #ecf0f3;*/
 }
 .tiny-file-multi-select{
     overflow:inherit;
