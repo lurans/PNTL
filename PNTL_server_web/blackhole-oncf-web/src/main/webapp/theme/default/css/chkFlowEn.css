@@ -451,6 +451,15 @@ text.text-hover {
 .grayWord{
     color: gray;
 }
+.tiny-btn-text{
+    width:60px;
+}
+.tiny-file-select{
+    width:150px;
+}
+.tiny-file-box{
+    width:118px;
+}
 .divCollapse{
     margin-left: 10px;
 }
