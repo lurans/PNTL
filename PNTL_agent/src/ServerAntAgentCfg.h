@@ -168,6 +168,7 @@ public:
     INT32 SetProtocolUDP(UINT32 uiSrcPortMin, 
                     UINT32 uiSrcPortMax, 
                     UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
+    INT32 SetNewServerCfg();
 };
 
 

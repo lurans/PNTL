@@ -102,6 +102,7 @@ data =
 #define ServerAntAgentName          "ServerAntsAgent"
 #define ServerAntAgentAction        "ServerAntsAgentAction"
 #define ServerAntsAgentIp        "ServerAntsAgentIp"
+#define ServerAntsAgentConf      "ServerAntsAgentConf"
 
 #if 1
 // 使用json格式反馈post操作结果
@@ -177,6 +178,25 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
 	    SHOULD_PROBE = 1;
 		(* pstrResponce) = ResponcePageOK;
 		MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
+	}
+	else if (0 == sal_strcmp(pcKey, ServerAntsAgentConf))
+	{
+	    MSG_SERVER_INFO("Begin to change flowmanager configure");
+        iRet = ProcessActionFlowFromServer(pcData, pcFlowManager);
+		if (AGENT_EXIT == iRet)
+		{
+		     (* pstrResponce) = ResponseExitOk;
+		}
+        else if (iRet)
+        {
+            MSG_SERVER_ERROR("Process set interval to [%s] From Server failed[%d]", pcData, iRet);
+            (* pstrResponce) = ResponcePageError;
+        }
+        else
+        {
+            (* pstrResponce) = ResponcePageOK;
+        }
+        return iRet;
 	}
     else
     {
