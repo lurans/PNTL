@@ -1,4 +1,19 @@
-<div>
+<div class="divCollapse">
+    <div id="fileUploadCollapse">
+        <div class="collapse_head" ng-click="isFileCollapsed = !isFileCollapsed">
+            {{i18n.chkFlow_term_file_upload}}
+        </div>
+        <div ng-show="isFileCollapsed">
+            <div class="collapse-body">
+                <div class="fileUpload" style=" overflow: hidden;zoom:1">
+                    <tiny-fileupload action="fileUpload.action"
+                                     multi="fileUpload.multi"
+                                     complete="fileUpload.completeDefa">
+                    </tiny-fileupload>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="deployCollapse">
         <div class="collapse_head" ng-click="isDeployCollapsed = !isDeployCollapsed">
             {{i18n.chkFlow_term_deploy}}
@@ -71,21 +86,6 @@
                              text="variableBtn.text"
                              disable="variableBtn.disable"
                              click="variableBtnOK()"></tiny-button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="fileUploadCollapse">
-        <div class="collapse_head" ng-click="isFileCollapsed = !isFileCollapsed">
-            {{i18n.chkFlow_term_file_upload}}
-        </div>
-        <div ng-show="isFileCollapsed">
-            <div class="collapse-body">
-                <div class="fileUpload">
-                    <tiny-fileupload action="fileUpload.action"
-                                     complete="fileUpload.completeDefa"
-                                     multi="fileUpload.multi">
-                    </tiny-fileupload>
                 </div>
             </div>
         </div>
