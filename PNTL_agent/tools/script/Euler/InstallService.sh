@@ -63,7 +63,7 @@ ConnectIP=$(ip address | grep -A 3  Mgnt-0 | grep 'inet[^6]' | awk -F ' ' '{prin
 ConnectIP=${ConnectIP%\/*}
 # 如果获取成功, 则刷新IP.
 if [ _${ConnectIP}_ != _""_  ]; then
-    ${ECHO} "Update MngtIP to [${ConnectIP}]"
+    ${ECHO} "Update MgntIP to [${ConnectIP}]"
     ${SED} -i "s/^.*\"MgntIP\".*$/\t\"MgntIP\"\t:\t\"${ConnectIP}\",/g" ${PROC_CFG_FILE}
 fi
 
@@ -74,6 +74,13 @@ ConnectIP=${ConnectIP%\/*}
 if [ _${ConnectIP}_ != _""_  ]; then
     ${ECHO} "Update AgentIP to [${ConnectIP}]"
     ${SED} -i "s/^.*\"AgentIP\".*$/\t\"AgentIP\"\t:\t\"${ConnectIP}\",/g" ${PROC_CFG_FILE}
+fi
+
+hostname=$(cat /etc/HOSTNAME)
+# 如果获取成功, 则刷新IP.
+if [ _${hostname}_ != _""_  ]; then
+    ${ECHO} "Update hostname to [${hostname}]"
+    ${SED} -i "s/^.*\"Hostname\".*$/\t\"Hostname\"\t:\t\"${hostname}\",/g" ${PROC_CFG_FILE}
 fi
 
 #更新Log目录配置

@@ -149,6 +149,14 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             JSON_PARSER_ERROR("SetMnMgntIPgtIP failed[%d]", iRet);
             return iRet;
         }
+
+        strTemp = ptDataTmp.get<string>("Hostname");
+		iRet = pcCfg->SetHostname(strTemp);
+		if (iRet)
+        {
+            JSON_PARSER_ERROR("SetHostname failed[%d]", iRet);
+            return iRet;
+        }
 		
         strTemp = ptDataTmp.get<string>("AgentIP");
         uiIp = sal_inet_aton(strTemp.c_str());
@@ -294,7 +302,7 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 		
         ptDataRoot.put("vbond-ip", sal_inet_ntoa(uiIp));    // 数据面IP 
 		ptDataRoot.put("agent-ip", sal_inet_ntoa(uiMgntIp));
-		
+		ptDataRoot.put("hostname", pcCfg->GetHostname().c_str());
         write_json(ssJsonData, ptDataRoot);
         (*pssPostData) << ssJsonData.str();
     }
@@ -942,8 +950,7 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
 */
 INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
 {
-	
-	// pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
+    // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
     stringstream ssStringData(pcJsonData);
 
     // boost::property_tree对象, 用于存储json格式数据.

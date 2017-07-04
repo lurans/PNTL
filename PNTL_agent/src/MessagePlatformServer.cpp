@@ -102,6 +102,7 @@ data =
 #define ServerAntAgentName          "ServerAntsAgent"
 #define ServerAntAgentAction        "ServerAntsAgentAction"
 #define ServerAntsAgentIp        "ServerAntsAgentIp"
+#define ServerAntsAgentConf      "ServerAntsAgentConf"
 
 #if 1
 // 使用json格式反馈post操作结果
