@@ -179,25 +179,6 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
 		(* pstrResponce) = ResponcePageOK;
 		MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
 	}
-	else if (0 == sal_strcmp(pcKey, ServerAntsAgentConf))
-	{
-	    MSG_SERVER_INFO("Begin to change flowmanager configure");
-        iRet = ProcessActionFlowFromServer(pcData, pcFlowManager);
-		if (AGENT_EXIT == iRet)
-		{
-		     (* pstrResponce) = ResponseExitOk;
-		}
-        else if (iRet)
-        {
-            MSG_SERVER_ERROR("Process set interval to [%s] From Server failed[%d]", pcData, iRet);
-            (* pstrResponce) = ResponcePageError;
-        }
-        else
-        {
-            (* pstrResponce) = ResponcePageOK;
-        }
-        return iRet;
-	}
     else
     {
         // 终止本次post处理, 忽略尚未处理的key/data值.

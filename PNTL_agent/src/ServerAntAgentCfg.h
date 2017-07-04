@@ -53,6 +53,7 @@ private:
     UINT32 uiAgentIP;                 //  本Agent的数据面IP地址, Agent探测IP.
     UINT32 uiMgntIP;                  // 本Agent的管理面IP地址，Server向Agent推送消息时使用.
     UINT32 uiAgentDestPort;           //  本Agent的端口地址, Server向Agent推送消息时使用.
+    string hostname;	                   // 本Ageng部署的节点主机名称
     
     /* Agent 全局周期控制 */
     UINT32 uiAgentPollingTimerPeriod; // Agent Polling周期, 单位为us, 默认100ms, 用于设定Agent定时器.    
@@ -169,6 +170,17 @@ public:
                     UINT32 uiSrcPortMax, 
                     UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
     INT32 SetNewServerCfg();
+
+	INT32 SetHostname(string newHostname)
+	{
+		hostname = newHostname;
+		return AGENT_OK;
+	}
+
+	string GetHostname()
+	{
+	    return hostname;
+	}
 };
 
 
