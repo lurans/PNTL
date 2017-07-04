@@ -22,6 +22,8 @@ enum
 #define AGENT_TRUE                          1
 #define AGENT_FALSE                         0
 
+extern INT32 SHOULD_PROBE;
+
 typedef enum  tagAgentDetectProtocolType
 {
     AGENT_DETECT_PROTOCOL_NULL = 0,   // Œ¥≈‰÷√

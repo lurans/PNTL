@@ -1496,13 +1496,17 @@ INT32 FlowManager_C::ThreadHandler()
         }
 
         // 当前周期是否该查询Server配置
-        if (QueryCheck(counter))
+        if (SHOULD_PROBE)
         {
             // 启动查询Server配置流程.
             iRet = DoQuery();
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query failed[%d]", iRet);
+            } 
+			else 
+            {
+                SHOULD_PROBE = 0;
             }
     	}
 

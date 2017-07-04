@@ -344,8 +344,59 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
 
 }
 
+INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
+{
+	INT32 iRet = AGENT_OK;
+    
+    // 用于提交的URL地址
+    stringstream ssUrl;
+    // 保存需要post的数据,json格式字符串, 由json模块生成.
+    stringstream ssPostData;
+    // 保存post的response(查询结果),json格式字符串, 后续交给json模块处理.
+    stringstream ssResponceData;
+    char * pcJsonData = NULL;
+
+    // 生成 URL
+    UINT32 uiServerIP = 0;
+    UINT32 uiServerPort = 0;
+    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+    if (iRet)
+    {
+        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
+        return iRet;
+    }
+	
+    ssUrl.clear();
+    ssUrl << "http://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << "/rest/chkflow/agentIp";
+    MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
 
 
+    // 生成post数据
+    ssPostData.clear();
+    ssPostData.str("");
+    iRet = CreatAgentIPRequestPostData(pcAgentCfg, &ssPostData);
+    if (iRet)
+    {
+        MSG_CLIENT_ERROR("Creat Report Agent IP Request Post Data failed[%d]", iRet);
+        return iRet;
+    }
+    MSG_CLIENT_INFO("PostData [%s]", ssPostData.str().c_str());
 
+    ssResponceData.clear();
+    ssResponceData.str("");
+    iRet = HttpPostData(&ssUrl, &ssPostData, &ssResponceData);
+    if (iRet)
+    {
+        MSG_CLIENT_ERROR("Http Post Data failed[%d]", iRet);
+        return iRet;
+    }
 
+    // 字符串格式转换.
+    string strResponceData = ssResponceData.str();
+    pcJsonData = (char *)strResponceData.c_str();
+
+   // 处理response数据
+    MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
+    return iRet;
+}
 

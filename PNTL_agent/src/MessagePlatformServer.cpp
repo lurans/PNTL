@@ -101,6 +101,7 @@ data =
 // POST 提交的key必须为ServerAntAgentName, 否则会返回错误.
 #define ServerAntAgentName          "ServerAntsAgent"
 #define ServerAntAgentAction        "ServerAntsAgentAction"
+#define ServerAntsAgentIp        "ServerAntsAgentIp"
 
 #if 1
 // 使用json格式反馈post操作结果
@@ -170,6 +171,12 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
             (* pstrResponce) = ResponcePageOK;
         }
         return iRet;
+	}
+	else if (0 == sal_strcmp(pcKey, ServerAntsAgentIp))
+	{
+	    SHOULD_PROBE = 1;
+		(* pstrResponce) = ResponcePageOK;
+		MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
 	}
     else
     {

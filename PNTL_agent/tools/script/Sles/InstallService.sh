@@ -58,19 +58,24 @@ ${SED} -i "s:^.*{:${LOG_DIR}/*.log ${PROC_INSTALL_DIR}/logs/*.log {:g" ${LOG_CFG
 # Sles 12 上logrotate会检查配置文件权限, 不会加载带执行权限的文件.
 ${CHMOD} 644 ${LOG_CFG_FILE}
 
-# 更新软件配置文件
-# 刷新 AgentIP
-# 从环境变量中获取当前连接IP
-# 先尝试Ansible下发的环境变量中查找 ServerAntAgentIP
-ConnectIP=${ServerAntAgentIP}
+# ip address 命令获取管理口IP
 ConnectIP=$(ip address | grep -A 3  Mgnt-0 | grep 'inet[^6]' | awk -F ' ' '{print $2}')
 ConnectIP=${ConnectIP%\/*}
+# 如果获取成功, 则刷新IP.
+if [ _${ConnectIP}_ != _""_  ]; then
+    ${ECHO} "Update MngtIP to [${ConnectIP}]"
+    ${SED} -i "s/^.*\"MgntIP\".*$/\t\"MgntIP\"\t:\t\"${ConnectIP}\",/g" ${PROC_CFG_FILE}
+fi
 
+# ip address 命令获取v-bond口IP，agent ip
+ConnectIP=$(ip address | grep -A 3  v_bond | grep 'inet[^6]' | awk -F ' ' '{print $2}')
+ConnectIP=${ConnectIP%\/*}
 # 如果获取成功, 则刷新IP.
 if [ _${ConnectIP}_ != _""_  ]; then
     ${ECHO} "Update AgentIP to [${ConnectIP}]"
     ${SED} -i "s/^.*\"AgentIP\".*$/\t\"AgentIP\"\t:\t\"${ConnectIP}\",/g" ${PROC_CFG_FILE}
 fi
+
 #更新Log目录配置
 ${SED} -i "s:^.*LOG_DIR.*:\t\t\"LOG_DIR\"\t\: \"${LOG_DIR}\":g" ${PROC_CFG_FILE}
 
