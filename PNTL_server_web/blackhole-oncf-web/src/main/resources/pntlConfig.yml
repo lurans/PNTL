@@ -1,7 +1,21 @@
+probe_period: 10
+
+port_count: 2
+
+report_period: 10
+
+pkg_count: 5
+
 delay_threshold: 10
 
 lossRate_threshold: 20
 
-probe_interval: 60
+dscp: 60
 
-pkg_count: 5
+lossPkg_timeout: 10
+
+ak: 0j_xmyclMrfvSzmMrGFdRbTLfYIa
+
+sk: gTSMfZWx5bo3xILy754tItTp6Mca
+
+basicToken: MGpfeG15Y2xNcmZ2U3ptTXJHRmRSYlRMZllJYTpnVFNNZlpXeDVibzN4SUx5NzU0dEl0VHA2TWNh

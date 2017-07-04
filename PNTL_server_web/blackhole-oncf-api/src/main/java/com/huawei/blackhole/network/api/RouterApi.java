@@ -412,7 +412,7 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
-        result = pntlService.setProbeInterval(config.getProbeInterval());
+        result = pntlService.setProbeInterval(config.getProbePeriod());
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
