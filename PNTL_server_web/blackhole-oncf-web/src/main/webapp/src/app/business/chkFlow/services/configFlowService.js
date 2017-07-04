@@ -35,6 +35,17 @@ define([], function () {
             });
             return promise;
         };
+        this.probeExit = function(data){
+            var uri = rest_prefix + "/chkflow/exitProbe";
+            var promise = camel.post({
+                "url": {
+                    "s": uri
+                },
+                "params":data,
+                "timeout":60000
+            });
+            return promise;
+        };
     };
 
     var configFlowModule = angular.module('common.config');
