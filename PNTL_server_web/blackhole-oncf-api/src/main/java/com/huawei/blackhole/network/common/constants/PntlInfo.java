@@ -14,6 +14,8 @@ public class PntlInfo {
 
     public static final String AGENT_INFO_BY_IP = "/CloudAgent/v1/api/info/agent/by/ip";
 
+    public static final String DFS_URL_SUFFIX = "/dfs/upload/sync";
+
     public static final String TOKEN_URL_SUFFIX = "/token";
     //this is beta environment's address
 
@@ -25,4 +27,17 @@ public class PntlInfo {
     public static final int    MONITOR_INTERVAL_TIME = 5*60;//second
     public static final int    NOTIFY_AGENT_TO_GET_PINGLIST_TIME = 1*10;
 
+    public static final String REPOURL = "http://8.15.4.10";//beta
+    //private static final String REPOURL = "http://192.168.212.16/";//alpha
+
+    public static final String USERNAME = "user_name";
+    public static final String SERVICENAME = "service_name";
+    public static final String BEARER = "Bearer";
+    public static final String OPS_USERNAME = "y00214328";
+    public static final String PNTL_SERVICENAME = "pntl";
+    public static final String PNTL_ROOT_NAME = "root";
+
+    public static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
+    public static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
+    public static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
 }

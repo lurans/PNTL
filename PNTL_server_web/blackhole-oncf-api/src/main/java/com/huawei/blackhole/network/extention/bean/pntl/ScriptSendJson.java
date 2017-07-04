@@ -3,13 +3,11 @@ package com.huawei.blackhole.network.extention.bean.pntl;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * Created by y00214328 on 2017/6/7.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ScriptSendJson implements Serializable{
@@ -61,9 +59,9 @@ public class ScriptSendJson implements Serializable{
         this.token = "123";
         this.agentListType = "0";
         this.groupType = "";
-        this.topic = "pntl";
-        this.tag = "pntl";
-        this.userName = "root";
+        this.topic = PntlInfo.PNTL_SERVICENAME;
+        this.tag = PntlInfo.PNTL_SERVICENAME;
+        this.userName = PntlInfo.PNTL_ROOT_NAME;
     }
 
     public String getFilename() {

@@ -39,29 +39,40 @@ public class Pntl {
     private static final String PAGESIZE = "pageSize";
     private static final String PAGEINDEX = "pageIndex";
     private static final String PORT = "1200";
-    private static final String USERNAME = "user_name";
-    private static final String SERVICENAME = "service_name";
-    private static final String BEARER = "Bearer";
-    private static final String REPOURL = "http://8.15.4.22/";//beta
-    //private static final String REPOURL = "http://192.168.212.16/";//alpha
     private static final String OS_SUSE = "SUSE";
     private static final String OS_EULER = "EULER";
+    private static final String FILETYPE_SCRIPT = "SCRIPT";
+    private static final String FILETYPE_AGENT = "AGENT";
     private static final String PNTL_PATH = "/root";
-    private static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
-    private static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
-    private static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
+
     private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
-        put(OS_SUSE, AGENT_SUSE);
-        put(OS_EULER, AGENT_EULER);
+        put(OS_SUSE, PntlInfo.AGENT_SUSE);
+        put(OS_EULER, PntlInfo.AGENT_EULER);
     }};
     private static final Map<String, String> SCRIPT_FILENAME= new HashMap<String, String>(){{
-        put(OS_SUSE, AGENT_INSTALL_FILENAME);
-        put(OS_EULER, AGENT_INSTALL_FILENAME);
+        put(OS_SUSE, PntlInfo.AGENT_INSTALL_FILENAME);
+        put(OS_EULER, PntlInfo.AGENT_INSTALL_FILENAME);
     }};
     private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){{
-        put("AGENT", AGENT_FILENAME);
-        put("SCRIPT", SCRIPT_FILENAME);
+        put(FILETYPE_AGENT, AGENT_FILENAME);
+        put(FILETYPE_SCRIPT, SCRIPT_FILENAME);
     }};
+
+    private static Map<String, String> DownloadUrl = new HashMap<>();
+
+    public static String getDownloadUrl(String key){
+        return DownloadUrl.get(key);
+    }
+
+    public static void setDownloadUrl(String downloadUrl){
+        if (downloadUrl.toUpperCase().contains(OS_EULER)) {
+            DownloadUrl.put(OS_EULER, downloadUrl);
+        } else if (downloadUrl.toUpperCase().contains("SLES"))  {
+            DownloadUrl.put(OS_SUSE, downloadUrl);
+        } else if (downloadUrl.endsWith(".sh")){
+            DownloadUrl.put(FILETYPE_SCRIPT, downloadUrl);
+        }
+    }
 
     /**
      * 从CMDB查询主机列表
@@ -79,7 +90,7 @@ public class Pntl {
         LOG.info("get cmdb Url={}", url);
 
         Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.AUTH, BEARER + " " +token);
+        header.put(PntlInfo.AUTH, PntlInfo.BEARER + " " +token);
 
         Parameter param = new Parameter();
         param.put(AGENTSTATUS, AGENT_STATUS);
@@ -189,12 +200,16 @@ public class Pntl {
                     continue;
                 }
                 String key = host.getOs().toUpperCase();
-                if (!key.equals(OS_SUSE) && !key.equals(OS_EULER)){
+                if (!key.equalsIgnoreCase(OS_SUSE) && !key.equalsIgnoreCase(OS_EULER)){
                     continue;
                 }
-
+                /*根据不同的文件，获取仓库地址*/
                 body.get(key).setFilename(file.get((key)));
-                body.get(key).setRepoUrl(REPOURL + file.get(key));
+                if (fileType.equals(FILETYPE_SCRIPT)){
+                     body.get(key).setRepoUrl(getDownloadUrl(FILETYPE_SCRIPT));
+                } else {
+                    body.get(key).setRepoUrl(getDownloadUrl(key));
+                }
 
                 body.get(key).setPath(PNTL_PATH);
                 body.get(key).setMode("644");
@@ -267,14 +282,14 @@ public class Pntl {
         return resp;
     }
 
-    private static void setCommonHeaderForAgent(Map<String, String> header, String token){
+    public static void setCommonHeaderForAgent(Map<String, String> header, String token){
         if (header == null){
             return;
         }
-        header.put(SERVICENAME, "pntl");
-        header.put(USERNAME, "y00214328");
+        header.put(PntlInfo.SERVICENAME, PntlInfo.PNTL_SERVICENAME);
+        header.put(PntlInfo.USERNAME, PntlInfo.OPS_USERNAME);
         if (token != null){
-            header.put(PntlInfo.AUTH, BEARER + " " + token);
+            header.put(PntlInfo.AUTH, PntlInfo.BEARER + " " + token);
         }
     }
 
@@ -285,11 +300,9 @@ public class Pntl {
         Map<String, String> header = new HashMap<>();
 
         reqBody.setCmdType(cmdType);
-        reqBody.setUserName("root");
+        reqBody.setUserName(PntlInfo.PNTL_ROOT_NAME);
         reqBody.setCmdSet(command);
         reqBody.setTimeout("5000");
-
-
         reqBody.setAgentSNList(snList);
 
         setCommonHeaderForAgent(header, token);

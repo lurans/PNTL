@@ -136,6 +136,7 @@ public class RestClientExt {
                 request.addHeader(entry.getKey(), entry.getValue());
             }
         }
+
         // common header
         request.addHeader("Accept", "application/json;charset=UTF-8");
         request.addHeader("Content-type", "application/json;charset=UTF-8");
@@ -283,6 +284,26 @@ public class RestClientExt {
                                 Map<String, String> header) throws ClientException{
 
         return pntlPost(url, para, reqBody, header);
+    }
+
+    public static RestResp post(String url, HttpEntity entity, Map<String, String> header)
+            throws ClientException
+    {
+        try {
+            // 指定url,和http方式
+            HttpPost httpPost = new HttpPost(buildUrl(url, null));
+            if (entity != null) {
+                httpPost.setEntity(entity);
+            }
+            configPntlHttpBaseRequest(httpPost, header);
+            RestResp response = send(httpPost);
+            if (response.getStatusCode().isError()) {
+                throw createHttpError(response);
+            }
+            return response;
+        } catch (IOException | GeneralSecurityException e) {
+            throw new ClientException(ExceptionType.SERVER_ERR, e.getLocalizedMessage());
+        }
     }
 
     public static RestResp post(String url, Parameter para, Object reqBody, Map<String, String> header)
