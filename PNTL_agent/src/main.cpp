@@ -138,7 +138,6 @@ INT32 ServerAntAgent()
         INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
     }
 
-	INIT_INFO("Begin to report agent ip to server");
 	iRet = ReportAgentIPToServer(pcCfg);
 	int reportCount = 0;
 	while (iRet)
@@ -153,7 +152,9 @@ INT32 ServerAntAgent()
 	if (AGENT_OK == iRet)
 	{
 	    SHOULD_PROBE = 1;
-		sleep(10);
+		UINT32 delayTime = 10 + rand() % 30;
+		INIT_INFO("Query pingList will be in [%u] seconds.");
+		sleep(delayTime);
 	}
 
 	// ∆Ù∂ØFlowManager∂‘œÛ

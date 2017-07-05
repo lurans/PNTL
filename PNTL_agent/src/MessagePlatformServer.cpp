@@ -7,13 +7,13 @@ using namespace std;
 #include "Log.h"
 #include "AgentJsonAPI.h"
 #include "MessagePlatformServer.h"
-    
+
 // 构造函数, 填充默认值.
 MessagePlatformServer_C::MessagePlatformServer_C()
 {
     MSG_SERVER_INFO("Creat a new MessagePlatformServer.");
-    pcFlowManager = NULL; 
-    
+    pcFlowManager = NULL;
+
 }
 
 // 析构函数, 释放必要资源.
@@ -22,7 +22,7 @@ MessagePlatformServer_C::~MessagePlatformServer_C()
     MSG_SERVER_INFO("Destroy an old MessagePlatformServer.");
 
     StopHttpDaemon();
-    pcFlowManager = NULL; 
+    pcFlowManager = NULL;
 }
 
 // 根据参数完成初始化
@@ -31,8 +31,8 @@ INT32 MessagePlatformServer_C::Init(UINT32 uiNewPort, FlowManager_C* pcNewFlowMa
     INT32 iRet = AGENT_OK;
 
     // 入参检查
-    if (   0 == uiNewPort 
-        || NULL == pcNewFlowManager)
+    if(0 == uiNewPort
+            || NULL == pcNewFlowManager)
     {
         MSG_SERVER_ERROR("Para Error: NewPort[%d], pcNewFlowManager[%u]", uiNewPort, pcNewFlowManager);
         return AGENT_E_PARA;
@@ -54,20 +54,20 @@ INT32 MessagePlatformServer_C::Init(UINT32 uiNewPort, FlowManager_C* pcNewFlowMa
 
 /*
 ServerAntServer 下发的紧急探测流格式
-post 
+post
 key = ServerAntAgent
-data = 
+data =
 {
     "orgnizationSignature": "HuaweiDC3ServerAntsProbelistIssue",
     "serverIP": "10.1.1.1",
     "action": "post",
     "content": "probe-list",
-    
+
     "flow": [
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -80,9 +80,9 @@ data =
         },
 
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -132,18 +132,18 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
     INT32 iRet = AGENT_OK;
 
     // 入参检查
-    if (NULL ==  pcKey || NULL == pcData || NULL ==  pstrResponce) 
+    if(NULL ==  pcKey || NULL == pcData || NULL ==  pstrResponce)
     {
-         MSG_SERVER_ERROR("NULL Pointer for String");
-         
-         (* pstrResponce) = ResponcePageError;
-         return AGENT_E_PARA;
+        MSG_SERVER_ERROR("NULL Pointer for String");
+
+        (* pstrResponce) = ResponcePageError;
+        return AGENT_E_PARA;
     }
-    
-    if (0 == sal_strcmp (pcKey, ServerAntAgentName))
-    {   
+
+    if(0 == sal_strcmp(pcKey, ServerAntAgentName))
+    {
         iRet = ProcessUrgentFlowFromServer(pcData, pcFlowManager);
-        if (iRet)
+        if(iRet)
         {
             MSG_SERVER_ERROR("Process Urgent Flow From Server failed[%d]", iRet);
             (* pstrResponce) = ResponcePageError;
@@ -154,15 +154,15 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
         }
         return iRet;
     }
-	else if (0 == sal_strcmp(pcKey, ServerAntAgentAction))
-	{
+    else if(0 == sal_strcmp(pcKey, ServerAntAgentAction))
+    {
         MSG_SERVER_INFO("Begin to handle flowmanager action");
         iRet = ProcessActionFlowFromServer(pcData, pcFlowManager);
-		if (AGENT_EXIT == iRet)
-		{
-		     (* pstrResponce) = ResponseExitOk;
-		}
-        else if (iRet)
+        if(AGENT_EXIT == iRet)
+        {
+            (* pstrResponce) = ResponseExitOk;
+        }
+        else if(iRet)
         {
             MSG_SERVER_ERROR("Process set interval to [%s] From Server failed[%d]", pcData, iRet);
             (* pstrResponce) = ResponcePageError;
@@ -172,13 +172,13 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
             (* pstrResponce) = ResponcePageOK;
         }
         return iRet;
-	}
-	else if (0 == sal_strcmp(pcKey, ServerAntsAgentIp))
-	{
-	    SHOULD_PROBE = 1;
-		(* pstrResponce) = ResponcePageOK;
-		MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
-	}
+    }
+    else if(0 == sal_strcmp(pcKey, ServerAntsAgentIp))
+    {
+        SHOULD_PROBE = 1;
+        (* pstrResponce) = ResponcePageOK;
+        MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
+    }
     else
     {
         // 终止本次post处理, 忽略尚未处理的key/data值.
@@ -186,7 +186,7 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
         (* pstrResponce) = ResponcePageUnsupported;
         return AGENT_E_ERROR;
     }
-}        
+}
 
 
 
