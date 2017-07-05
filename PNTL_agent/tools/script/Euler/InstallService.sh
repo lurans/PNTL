@@ -59,7 +59,7 @@ ${SED} -i "s:^.*{:${LOG_DIR}/*.log ${PROC_INSTALL_DIR}/logs/*.log {:g" ${LOG_CFG
 ${CHMOD} 644 ${LOG_CFG_FILE}
 
 # ip address 命令获取管理口IP
-ConnectIP=$(ip address | grep -A 3  Mgnt-0 | grep 'inet[^6]' | awk -F ' ' '{print $2}')
+ConnectIP=$(ip address | grep Mgnt-0 | grep inet[^6] | awk -F ' ' '{print $2}')
 ConnectIP=${ConnectIP%\/*}
 # 如果获取成功, 则刷新IP.
 if [ _${ConnectIP}_ != _""_  ]; then
@@ -68,7 +68,7 @@ if [ _${ConnectIP}_ != _""_  ]; then
 fi
 
 # ip address 命令获取v-bond口IP，agent ip
-ConnectIP=$(ip address | grep -A 3  v_bond | grep 'inet[^6]' | awk -F ' ' '{print $2}')
+ConnectIP=$(ip address | grep v_bond | grep inet[^6] | awk -F ' ' '{print $2}')
 ConnectIP=${ConnectIP%\/*}
 # 如果获取成功, 则刷新IP.
 if [ _${ConnectIP}_ != _""_  ]; then
