@@ -123,7 +123,7 @@ public class PntlConfig implements Serializable{
     }
 
     public static String getBasicToken() {
-        return basicToken;
+        return "basic" + " " + basicToken;
     }
 
     public void setBasicToken(String basicToken) {

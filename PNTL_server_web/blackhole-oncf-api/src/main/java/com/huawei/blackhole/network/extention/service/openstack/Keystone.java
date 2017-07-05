@@ -149,10 +149,10 @@ public class Keystone {
     public String getPntlAccessToken() throws ClientException{
         Map<String, String> header = new HashMap<>();
 
-        header.put(PntlInfo.AUTH, BASIC_TOKEN);
+        header.put(PntlInfo.AUTH, PntlConfig.getBasicToken());
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
-        header.put("user_name", "y00214328");
-        header.put("service_name", "pntl");
+        header.put(PntlInfo.USERNAME, PntlInfo.OPS_USERNAME);
+        header.put(PntlInfo.SERVICENAME, PntlInfo.PNTL_SERVICENAME);
 
         List<NameValuePair> reqBody = new ArrayList<NameValuePair>();
         reqBody.add(new BasicNameValuePair(PntlInfo.GRANT_TYPE, "client_credentials"));

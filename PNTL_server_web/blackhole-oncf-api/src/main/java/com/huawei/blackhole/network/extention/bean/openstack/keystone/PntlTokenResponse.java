@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
-/**
- * Created by y00214328 on 2017/5/26.
- */
 public class PntlTokenResponse implements Serializable{
     @JsonProperty("access_token")
     private String accessToken;

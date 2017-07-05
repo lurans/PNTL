@@ -8,9 +8,6 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * Created by y00214328 on 2017/5/27.
- */
 public class PntlNetworkMap implements Serializable {
     private static final long serialVersionUID = -7466223934978978053L;
 

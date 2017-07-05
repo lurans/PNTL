@@ -1,23 +1,40 @@
 package com.huawei.blackhole.network.extention.service.conf;
 
+import com.huawei.blackhole.network.api.bean.DelayInfo;
+import com.huawei.blackhole.network.api.bean.LossRate;
 import com.huawei.blackhole.network.api.bean.PntlConfig;
+import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.*;
 import com.huawei.blackhole.network.common.utils.ExceptionUtil;
+import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
+import com.huawei.blackhole.network.common.utils.http.RestClientExt;
+import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.Result;
+import com.huawei.blackhole.network.extention.service.openstack.Keystone;
+import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service("pntlConfigService")
 public class PntlConfigService {
     private static Logger LOGGER = LoggerFactory.getLogger(PntlConfigService.class);
+    @javax.annotation.Resource(name = "keystoneService")
+    protected Keystone identityWrapperService;
 
     public Result<PntlConfig> getPntlConfig() {
         Result<PntlConfig> result = new Result<PntlConfig>();
@@ -62,6 +79,11 @@ public class PntlConfigService {
         } catch (Exception e){
             result.addError("", "parameter is invalid");
         }
+
+        LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getLossRateThreshold()));
+        DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getDelayThreshold()));
+        LOGGER.info("Update pntlConfig success");
+
         return result;
     }
 
@@ -114,5 +136,156 @@ public class PntlConfigService {
         String str = ak + ":" + sk;
         byte[] encodeBasic64 = Base64.encodeBase64(str.getBytes());
         return new String(encodeBasic64);
+    }
+
+    private void validIpListAttachment(Attachment file) throws InvalidParamException, InvalidFormatException {
+        if (file == null) {
+            throw new InvalidParamException(ExceptionType.CLIENT_ERR, "invalid request to upload ipList file");
+        }
+        String contentDisposition = file.getHeader("Content-Disposition");
+        if ((contentDisposition == null) || (contentDisposition.indexOf("filename") == -1)) {
+            // 附件是否上传
+            throw new InvalidParamException(ExceptionType.CLIENT_ERR, "ipList file required");
+        }
+        String name = file.getDataHandler().getName();
+        if (!name.endsWith("yml")) {
+            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of ipList file, should be *.yml");
+        }
+
+        File tmpFile = new File(FileUtil.getResourceIpListPath() + name + UUID.randomUUID());
+        try {
+            file.transferTo(tmpFile);
+            if (tmpFile.length() > Constants.IPLIST_FILE_MAX_SIZE) {
+                String errMsg = "too large file [ max size : " + Constants.IPLIST_FILE_MAX_SIZE + "bytes ]";
+                throw new InvalidFormatException(ExceptionType.CLIENT_ERR, errMsg);
+            }
+            if (!FileUtil.isTxt(tmpFile)) {
+                String errMsg = "invalid format of ipList file : not a text file";
+                throw new InvalidFormatException(ExceptionType.CLIENT_ERR, errMsg);
+            }
+        } catch (IOException e) {
+            String errMsg = "fail to load ipList file to server" + e.getLocalizedMessage();
+            LOGGER.error(errMsg, e);
+        } finally {
+            tmpFile.delete();
+        }
+    }
+
+    private String getFileName(String fullname) {// 防止IE和火狐浏览器引起的上传名字问题不一致的问题
+        String file = fullname.substring(fullname.lastIndexOf('\\') + 1, fullname.length());
+        return FileUtil.getResourcePath() + file;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void deleteOldIpListFile() throws ApplicationException, ConfigLostException, InvalidFormatException, CommonException {
+        new File(FileUtil.getResourcePath() + Resource.PNTL_IPLIST_CONF).delete();
+    }
+    public Result<String> uploadIpListFile(Attachment file){
+        Result<String> result = new Result<String>();
+        try {
+            validIpListAttachment(file);
+        } catch (InvalidParamException | InvalidFormatException e) {
+            String errMsg = e.toString();
+            result.addError("", errMsg);
+            LOGGER.error(errMsg, e);
+            return result;
+        }
+
+        String name = file.getDataHandler().getName();
+        File destinationFile = new File(getFileName(name));
+        try {
+            deleteOldIpListFile();
+            file.transferTo(destinationFile);
+        } catch (IOException e) {
+            String errMsg = "file to load ipList file to server : " + e.getLocalizedMessage();
+            result.addError("", ExceptionUtil.prefix(ExceptionType.SERVER_ERR) + errMsg);
+            LOGGER.error(errMsg, e);
+            return result;
+        } catch (ApplicationException | ConfigLostException | InvalidFormatException | CommonException e) {
+            String errMsg = "file to load key file to server : " + e.getLocalizedMessage();
+            result.addError("", e.prefix() + errMsg);
+            LOGGER.error(errMsg, e);
+            return result;
+        }
+        return result;
+    }
+
+    private void validAgentPkgAttachment(Attachment file) throws InvalidParamException, InvalidFormatException {
+        if (file == null) {
+            throw new InvalidParamException(ExceptionType.CLIENT_ERR, "invalid request to upload agent file");
+        }
+        String contentDisposition = file.getHeader("Content-Disposition");
+        if ((contentDisposition == null) || (contentDisposition.indexOf("filename") == -1)) {
+            throw new InvalidParamException(ExceptionType.CLIENT_ERR, "agent file required");
+        }
+        String name = file.getDataHandler().getName();
+        if (!name.endsWith("tar.gz") && !name.endsWith("sh")) {
+            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of agent file, should be *.tar.gz");
+        }
+
+        if (!name.equalsIgnoreCase(PntlInfo.AGENT_EULER) && !name.equalsIgnoreCase(PntlInfo.AGENT_SUSE)
+                && !name.equalsIgnoreCase(PntlInfo.AGENT_INSTALL_FILENAME)){
+            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid filename:" + name);
+        }
+
+        if (new File(file.getDataHandler().getName()).length() > Constants.AGENT_FILE_MAX_SIZE){
+            String errMsg = "too large file [ max size : " + Constants.AGENT_FILE_MAX_SIZE + "bytes ]";
+            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, errMsg);
+        }
+    }
+
+    public Result<String> uploadAgentPkgFile(Attachment attachment)
+            throws UnsupportedEncodingException, FileNotFoundException {
+        final String BOUNDARY = "----WebKitFormBoundaryzOYdpFxbuIoovXYf";
+        Result<String> result = new Result<String>();
+        try {
+            validAgentPkgAttachment(attachment);
+        } catch (InvalidParamException | InvalidFormatException e) {
+            String errMsg = e.toString();
+            result.addError("", errMsg);
+            LOGGER.error(errMsg, e);
+            return result;
+        }
+
+        String token = null;
+        try {
+            token = identityWrapperService.getPntlAccessToken();
+        } catch (ClientException e) {
+            String errMsg = "get token failed:" + e.getMessage();
+            LOGGER.error("", errMsg);
+            result.addError("", errMsg);
+        }
+        String url = PntlInfo.REPOURL + PntlInfo.DFS_URL_SUFFIX;
+        Map<String, String> header = new HashMap<>();
+
+        Pntl.setCommonHeaderForAgent(header, token);
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        File f = new File(getFileName(attachment.getDataHandler().getName()));
+
+        builder.addBinaryBody("attachment", f);
+        builder.addTextBody("type", "0");
+        builder.addTextBody("uploader", PntlInfo.OPS_USERNAME);
+        builder.addTextBody("space", PntlInfo.PNTL_ROOT_NAME);
+        builder.addTextBody("override", "true");
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        HttpEntity entity = builder.build();
+
+        RestResp resp = null;
+        try{
+            resp = RestClientExt.post(url, entity, header);
+            if (resp.getStatusCode().isError()){
+                result.addError("", "upload file to dfs failed:" + resp.getStatusCode());
+            } else {
+               if (resp.getRespBody().getInt("code") == 0){
+                   String downloadUrl = resp.getRespBody().getJSONObject("data").getString("downloadUrl");
+                   Pntl.setDownloadUrl(downloadUrl);
+               } else {
+                   result.addError("", resp.getRespBody().getString("reason"));
+               }
+            }
+        } catch (ClientException e){
+            result.addError("", "upload file to dfs failed:" + e.getMessage());
+        }
+        return result;
     }
 }

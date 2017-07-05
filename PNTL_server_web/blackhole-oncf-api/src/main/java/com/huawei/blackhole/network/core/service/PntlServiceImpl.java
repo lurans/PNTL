@@ -15,6 +15,7 @@ import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
+import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,23 +35,14 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private Map<String, String> agentIpMap = null;
     private static boolean notifyAgentToGetPingList = false;
 
+    @javax.annotation.Resource(name = "pntlConfigService")
+    private PntlConfigService pntlConfigService;
     /**
      * 首次启动
      * @return
      */
     public Result<String> startPntl() {
         Result<String> result = new Result<>();
-        String errMsg = null;
-
-        /*临时方案，从配置文件获取iplist*/
-        try {
-            hostList = readFileHostList();
-        } catch (Exception e){
-            LOG.error("get host list failed:" + e.getMessage());
-            result.addError("", "get host list failed:" + e.getMessage());
-            return result;
-        }
-        LOG.info("Get host list finish");
         /* 获取主机列表 */
         /*
         try {
@@ -63,12 +55,28 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 */
         /* 初始化配置 */
         try {
-           result = initPntlConfig(hostList);
+           result = initPntlConfig();
         } catch (Exception e){
             LOG.error(e.getMessage());
             result.addError("", e.getMessage());
             return result;
         }
+
+        try {
+            result = installStartAgent();
+        } catch (ClientException e){
+            result.setErrorMessage("Install and start agent failed:" + e.getMessage());
+            LOG.error("Install and start agent failed: " + e.getMessage());
+        }
+
+          /* 启动轮询监控*/
+        Runnable monitorTask = new Runnable() {
+            @Override
+            public void run() {
+                monitorPntl();
+            }
+        };
+        resultService.execute(monitorTask);
 
         return result;
     }
@@ -158,8 +166,11 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         interval.setProbe_interval(timeInterval);
 
         if (hostList == null || hostList.size() == 0){
-            result.addError("", "No host ip information");
-            return result;
+            try {
+                hostList = readFileHostList();
+            } catch (Exception e){
+                LOG.error("get host list failed:" + e.getMessage());
+            }
         }
         LOG.info("Set probe interval:" + timeInterval);
         for (int i = 0; i < hostList.size(); i++){
@@ -293,31 +304,30 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
     /**
      * 初始化配置，下发脚本，学习网络拓扑
-     * @param hostList
      * @return
      * @throws ClientException
      */
-    private Result<String> initPntlConfig(List<PntlHostContext> hostList) throws ClientException {
+    private Result<String> initPntlConfig() throws ClientException {
         Result<String> result = new Result<String>();
-
         try {
-            result = installStartAgent();
-        } catch (ClientException e){
-            result.setErrorMessage("Install and start agent failed:" + e.getMessage());
-            LOG.error("Install and start agent failed: " + e.getMessage());
+            hostList = readFileHostList();
+        } catch (Exception e){
+            LOG.error("get host list failed:" + e.getMessage());
+            result.addError("", "get host list failed:" + e.getMessage());
+            return result;
         }
 
-        /*发送主机ip列表到agent，进行traceroute学习*/
-        /*
-        try{
-            pntlRequest.sendIpListToAgents(hostList);
-        } catch (ClientException e){
-            LOG.error("Send ip list to agents failed, " + e.getMessage());
-            result.addError("", e.toString());
-        }*/
-
+        Result<PntlConfig> pntlConfig = pntlConfigService.getPntlConfig();
+        if (!pntlConfig.isSuccess()){
+            LOG.error("get pntlConfig failed");
+            result.addError("", "get pntlConfig failed");
+            return result;
+        }
+        LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
+        DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
+        LOG.info("Init host list and pntlConfig success");
         /*通过traceroute获得网络拓扑*/
-        Runnable getNetworkMapTask = new Runnable() {
+        /*Runnable getNetworkMapTask = new Runnable() {
             @Override
             public void run() {
                 Result<String> result = new Result<String>();
@@ -330,17 +340,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 }
             }
         };
-       // resultService.execute(getNetworkMapTask);
-
-         /* 启动轮询监控*/
-        Runnable monitorTask = new Runnable() {
-            @Override
-            public void run() {
-                    monitorPntl();
-            }
-        };
-        resultService.execute(monitorTask);
-
+        resultService.execute(getNetworkMapTask);*/
         return  result;
     }
 

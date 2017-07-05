@@ -25,6 +25,7 @@ import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.pntl.PntlInfoService;
 import com.huawei.blackhole.network.extention.service.sso.SsoConfiger;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -44,6 +45,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.ws.WebServiceContext;
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -462,5 +467,58 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
         return ResponseUtil.succ();
+    }
+
+    @Path("/uploadAgentPkg")
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadAgentPkg(@Context HttpServletRequest request, MultipartBody body){
+        LOGGER.info("start to upload agent package file");
+
+        Attachment file = body.getAttachment(Constants.FORM_FILE);
+        if (file == null) {
+            String errMsg = ExceptionUtil.prefix(ExceptionType.CLIENT_ERR) + "invalid request";
+            LOGGER.error(errMsg);
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, errMsg);
+        }
+
+        List<Attachment> atts = body.getAllAttachments();
+        for (Attachment a : atts) {
+            ContentDisposition cd = a.getContentDisposition();
+            if (cd != null && Constants.FORM_FILE.equals(cd.getParameter("name"))) {
+                try {
+                    Result<String> result = pntlConfigService.uploadAgentPkgFile(a);
+                    if (!result.isSuccess()) {
+                        return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+                    }
+                } catch (UnsupportedEncodingException e){
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/uploadIpList")
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadIpList(@Context HttpServletRequest request, MultipartBody body){
+        LOGGER.info("start to upload ipList file");
+
+        Attachment file = body.getAttachment(Constants.FORM_FILE);
+        if (file == null) {
+            String errMsg = ExceptionUtil.prefix(ExceptionType.CLIENT_ERR) + "invalid request";
+            LOGGER.error(errMsg);
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, errMsg);
+        }
+
+        Result<String> result = pntlConfigService.uploadIpListFile(file);
+        if (result.isSuccess()) {
+            return ResponseUtil.succ();
+        } else {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
     }
 }

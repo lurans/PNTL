@@ -20,12 +20,22 @@ public class DelayInfo implements Serializable {
     @JsonProperty("result")
     private static List<DelayInfoResult> result = new ArrayList<DelayInfoResult>();
 
+    private static long delayThreshold = 0;
+
     public static List<DelayInfoResult> getResult() {
         return result;
     }
 
     public static void setResult(List<DelayInfoResult> result) {
         DelayInfo.result = result;
+    }
+
+    public static long getDelayThreshold() {
+        return delayThreshold;
+    }
+
+    public static void setDelayThreshold(long delayThreshold) {
+        DelayInfo.delayThreshold = delayThreshold;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -112,6 +122,10 @@ public class DelayInfo implements Serializable {
         Long t3 = Long.valueOf(flow.getTime().getT3());//对端接收到发送时间
         Long t4 = Long.valueOf(flow.getTime().getT4());//本端发送到接收时间
         boolean hasData = false;
+
+        if (t4 < DelayInfo.getDelayThreshold()){
+            return;
+        }
 
         DelayInfoResult newData = new DelayInfoResult();
         newData.setSrcIp(srcIp);

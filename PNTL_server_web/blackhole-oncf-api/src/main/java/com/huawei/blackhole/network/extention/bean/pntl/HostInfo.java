@@ -11,9 +11,6 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by y00214328 on 2017/5/19.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HostInfo implements Iterable<HostInfo.HostListInfo>, Serializable {

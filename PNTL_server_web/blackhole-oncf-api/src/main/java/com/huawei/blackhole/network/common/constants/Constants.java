@@ -92,4 +92,7 @@ public class Constants {
     public static final String TRUE = "true";
     public static final String FALSE = "false";
 
+    public static final long IPLIST_FILE_MAX_SIZE = 1000 * 1000; // 1Mb
+    public static final long AGENT_FILE_MAX_SIZE = 2000 * 1000; //2Mb
+
 }
