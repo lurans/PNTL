@@ -24,6 +24,8 @@ public class LossRate implements Serializable{
     @JsonProperty("result")
     private static List<LossRateResult> result = new ArrayList<LossRateResult>();
 
+    private static int lossRateThreshold = 0;
+
     public LossRate(){
         this.result = getResult();
     }
@@ -33,6 +35,14 @@ public class LossRate implements Serializable{
 
     public void setResult(List<LossRateResult> result) {
         this.result = result;
+    }
+
+    public static int getLossRateThreshold() {
+        return lossRateThreshold;
+    }
+
+    public static void setLossRateThreshold(int lossRateThreshold) {
+        LossRate.lossRateThreshold = lossRateThreshold;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -126,6 +136,9 @@ public class LossRate implements Serializable{
         DecimalFormat df2 = new DecimalFormat("###.00");
         String recvPkgs = String.valueOf(Integer.valueOf(flow.getSt().getPacketSent()) - Integer.valueOf(flow.getSt().getPacketDrops()));
 
+        if (Float.valueOf(rate*100).intValue() < LossRate.getLossRateThreshold()){
+            return;
+        }
         newData.setSrcIp(srcIp);
         newData.setDstIp(dstIp);
         newData.setSendLossRate(df2.format(rate*100)+"%");

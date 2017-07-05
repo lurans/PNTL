@@ -1,5 +1,7 @@
 package com.huawei.blackhole.network.extention.service.conf;
 
+import com.huawei.blackhole.network.api.bean.DelayInfo;
+import com.huawei.blackhole.network.api.bean.LossRate;
 import com.huawei.blackhole.network.api.bean.PntlConfig;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
@@ -77,6 +79,11 @@ public class PntlConfigService {
         } catch (Exception e){
             result.addError("", "parameter is invalid");
         }
+
+        LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getLossRateThreshold()));
+        DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getDelayThreshold()));
+        LOGGER.info("Update pntlConfig success");
+
         return result;
     }
 
