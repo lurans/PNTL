@@ -18,6 +18,7 @@ private:
                     const CHAR * pcData,
                     UINT32 uiDataSize,
                     string * pstrResponce);            // Http Server Daemon POST操作处理函数
+    void HandleResponse(INT32 iRet, string * pstrResponce);
 
 public:
     MessagePlatformServer_C();                               // 构造函数, 填充默认值.

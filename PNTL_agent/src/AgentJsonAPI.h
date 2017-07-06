@@ -27,4 +27,6 @@ extern INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C*
 
 extern INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData);
 
+extern INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
+
 #endif
