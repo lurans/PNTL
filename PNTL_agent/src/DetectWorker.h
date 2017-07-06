@@ -2,7 +2,7 @@
 #define __SRC_DetectWorker_H__
 
 #include <pthread.h>
-#include <vector> 
+#include <vector>
 #include <netinet/in.h>
 #include "ServerAntAgentCfg.h"
 
@@ -20,7 +20,7 @@ typedef struct tagServerTopo
     UINT32    uiSvid;             // the source ID. DeviceID(Level == 1) RegionID(Level >1)
     UINT32    uiDvid;             // the destination ID. DeviceID(Level == 1) RegionID(Level >1)
     UINT32    uiLevel;            // 1:Device, 2:Pod, 3:DC, 4:AZ ...
-    
+
     // 重载运算符, 方便进行key比较.
     bool operator == (const tagServerTopo & other) const
     {
@@ -32,7 +32,7 @@ typedef struct tagServerTopo
         else
             return AGENT_FALSE;
     }
-    
+
     bool operator != (const tagServerTopo & other) const
     {
         if (  (other.uiSvid != uiSvid)
@@ -70,14 +70,14 @@ typedef struct tagFlowKey
             &&(other.uiDestIP == uiDestIP)
             &&(other.uiSrcPort == uiSrcPort)
             &&(other.uiDestPort == uiDestPort)
-            &&(other.uiDscp == uiDscp)            
+            &&(other.uiDscp == uiDscp)
             &&(other.stServerTopo == stServerTopo)
             )
             return AGENT_TRUE;
         else
             return AGENT_FALSE;
     }
-    
+
     bool operator != (const tagFlowKey & other) const
     {
         if (  (other.uiAgentFlowTableIndex != uiAgentFlowTableIndex)
@@ -87,7 +87,7 @@ typedef struct tagFlowKey
             ||(other.uiDestIP != uiDestIP)
             ||(other.uiSrcPort != uiSrcPort)
             ||(other.uiDestPort != uiDestPort)
-            ||(other.uiDscp != uiDscp)            
+            ||(other.uiDscp != uiDscp)
             ||(other.stServerTopo != stServerTopo)
             )
             return AGENT_TRUE;
@@ -97,7 +97,7 @@ typedef struct tagFlowKey
 }FlowKey_S;
 
 // DetectWorkerSession_S.uiSessionState 会话状态机
-enum 
+enum
 {
     SESSION_STATE_INITED  = 1,    // 完成初始化,待发送探测报文.
     SESSION_STATE_SEND_FAIELD,    // 报文发送失败.
@@ -108,7 +108,7 @@ enum
 };
 
 // worker角色:sender(Client side), target(Server side)
-enum 
+enum
 {
     WORKER_ROLE_CLIENT  = 0,    // sender(Client side) 发送探测报文
     WORKER_ROLE_SERVER,         // target(Server side) 响应探测报文,发送应答报文
@@ -119,10 +119,10 @@ enum
 typedef struct tagPacketTime{
     UINT32   uiSec;           // 秒
     UINT32   uiUsec;          // 微秒
-    
+
     // 重载运算符, 方便进行时延计算
     INT64 operator - (const tagPacketTime & other) const
-    {   
+    {
         return (INT64)uiUsec - (INT64)(other.uiUsec) + ((INT64)uiSec - (INT64)(other.uiSec)) * SECOND_USEC;
     }
 } PacketTime_S;
@@ -143,7 +143,7 @@ typedef struct tagWorkerCfg
     AgentDetectProtocolType_E eProtocol;    // 协议类型, 见AgentDetectProtocolType_E, 创建socket时使用.
     UINT32  uiRole;
 
-    UINT32   uiListenPort;                // 探测源IP, 创建socket时使用.	
+    UINT32   uiListenPort;                // 探测源IP, 创建socket时使用.
     UINT32   uiSrcIP;                // 探测源IP, 创建socket时使用.
     UINT32   uiDestIP;               // 探测目的IP. 预留TCP扩展
     UINT32   uiSrcPort;              // 探测源端口号. 创建socket时使用
@@ -154,17 +154,17 @@ typedef struct tagWorkerCfg
 typedef struct tagDetectWorkerSession
 {
     /* 会话管理 */
-    UINT32   uiSessionState;     // 会话状态机: 待发送探测报文, 等待应答报文, 已收到应答报文, 报文超时.    
+    UINT32   uiSessionState;     // 会话状态机: 待发送探测报文, 等待应答报文, 已收到应答报文, 报文超时.
     UINT32   uiSequenceNumber;   // 本会话的序列号.
-    
+
     /* 流信息6元组 */
-    FlowKey_S   stFlowKey;    
-    
+    FlowKey_S   stFlowKey;
+
     /* 探测结果 */
     PacketTime_S    stT1;                //时间戳信息, 探测报文从Sender出发时间.
     PacketTime_S    stT2;                //时间戳信息, 探测报文到达Target的时间.
     PacketTime_S    stT3;                //时间戳信息, 应答报文从Target出发的时间.
-    PacketTime_S    stT4;                //时间戳信息, 应答报文到达Sender的时间.    
+    PacketTime_S    stT4;                //时间戳信息, 应答报文到达Sender的时间.
 } DetectWorkerSession_S;
 
 // DetectWorker类定义,负责探测报文发送和接收.
@@ -172,45 +172,44 @@ class DetectWorker_C : ThreadClass_C
 {
 private:
     /*  */
-   
+
     WorkerCfg_S stCfg;                              // 当前Worker配置的探测协议.
     UINT32   uiSequenceNumber;                // 本Worker的当前序列号,起始值为随机数.
     INT32 InitCfg(WorkerCfg_S stNewWorker);           // 初始化stCfg, 由Init()触发
 
     vector <DetectWorkerSession_S> SessionList;     // 会话列表, 保存尚未完成探测会话.
     sal_mutex_t WorkerSessionLock;                  // 会话互斥锁, 保护SessionList
-    
-    
+
+
     INT32 WorkerSocket;                               // 当前Worker使用的Socket.
-    INT32 ReleaseSocket();                            // 释放socket资源   
+    INT32 ReleaseSocket();                            // 释放socket资源
     INT32 InitSocket();                               // 根据stProtocol信息申请socket资源.
     INT32 GetSocket();                                // 获取当前socket
-    sal_mutex_t WorkerSocketLock;                   // Socket互斥锁, 保护WorkerSocket
     int test();
-    INT32 TxPacket(DetectWorkerSession_S* 
+    INT32 TxPacket(DetectWorkerSession_S*
                         pNewSession);               // 启动报文发送.PushSession()时触发.
-    INT32 TxUpdateSession(DetectWorkerSession_S* 
+    INT32 TxUpdateSession(DetectWorkerSession_S*
                         pNewSession);               // 报文发送完成后, 刷新会话状态.
 
     /* Thread 实现代码 */
-    INT32 ThreadHandler();                            // 任务主处理函数    
+    INT32 ThreadHandler();                            // 任务主处理函数
     INT32 PreStopHandler();                           // StopThread触发, 通知ThreadHandler主动退出.
     INT32 PreStartHandler();                          // StartThread触发, 通知ThreadHandler即将被调用.
-    
+
     UINT32 uiHandlerDefaultInterval;          // Handler状态刷新默认周期, 单位为us
     INT32 RxUpdateSession
         (PacketInfo_S * pstPakcet);                 // Rx任务收到应答报文后, 通知worker刷新会话列表, Rx任务使用
-    
+
 public:
     DetectWorker_C();                               // 构造函数, 填充默认值.
     ~DetectWorker_C();                              // 析构函数, 释放必要资源.
     ServerAntAgentCfg_C * pcAgentCfg;                   // agent_cfg
     INT32 Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAgentCfg);         // 根据入参完成对象初始化, FlowManage使用.
     INT32 PushSession(FlowKey_S stNewFlow);           // 添加探测任务, FlowManage使用.
-    INT32 PopSession(DetectWorkerSession_S* 
+    INT32 PopSession(DetectWorkerSession_S*
                         pOldSession);               // 查询探测结果, FlowManage使用.
 
-    
+
 };
 
 #endif

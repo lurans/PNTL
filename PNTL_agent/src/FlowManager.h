@@ -157,9 +157,9 @@ private:
         UINT32 uiAgentFlowTableNumber,
         ServerFlowTableEntry_S * pstServerFlowEntry);   // 向AgentFlowTable中添加Entry
     INT32 AgentRefreshFlowTable();                        // 刷新Agent流表, 由CommitServerCfgFlowTable()触发.
+    INT32 AgentFlowTableEntryAdjust();                    // 根据range调整下一个report周期打开哪些流.
     INT32 AgentFlowTableEntryClearResult
         (UINT32 uiAgentFlowIndex);                // 清空特定AgentFlow的探测结果
-    INT32 AgentFlowTableEntryAdjust();                    // 根据range调整下一个report周期打开哪些流.
 
 
     // Server下发的流表
@@ -188,9 +188,6 @@ private:
     INT32 GetDetectResult();                              // 启动收集流探测结果.
     INT32 DetectResultProcess(UINT32 uiFlowTableIndex); // 每一次探测完成后的后续处理.
     INT32 FlowDropNotice(UINT32 uiFlowTableIndex);      // 持续丢包, 触发丢包快速上报,同时启动追踪报文.
-    INT32 FlowUrgentNotice(UINT32 uiFlowTableIndex);    // Urgent流探测完成,触发快速上报.
-        
-
     UINT32 uiLastReportTimeCounter;               // 最近一次启动上报Collector的时间点
     INT32 ReportCheck(UINT32 counter);              // 检测此时是否该启动上报Collector流程.
     INT32 DoReport();                                     // 启动流上报.
@@ -210,9 +207,6 @@ private:
     INT32 GetFlowFromServer
             (ServerFlowKey_S * pstNewFlow);         // 从Server获取一条新的Flow.
 
-
-    KafkaClient_C *  pcKafkaClient;         // kafka客户端, 用于向Collector上报探测结果
-    
     /* Thread 实现代码 */
     INT32 ThreadHandler();                        // 任务主处理函数    
     INT32 PreStopHandler();                       // StopThread触发, 通知ThreadHandler主动退出.
@@ -229,10 +223,8 @@ public:
 
     INT32 ServerWorkingFlowTableAdd
             (ServerFlowKey_S stServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
-            
-    INT32 ServerCfgFlowTableAdd
-                (ServerFlowKey_S stServerFlowKey);   // 向ServerCfgFlowTable中添加非Urgent Entry, 由DoQuery()查询Server后触发.
-    INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
+
+    INT32 FlowManagerAction(UINT32 interval);	    // 根据参数启停FlowManager
 };
 
 #endif

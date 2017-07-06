@@ -28,18 +28,11 @@ using namespace std;
 #define SESSION_LOCK() \
         if (WorkerSessionLock) \
             sal_mutex_take(WorkerSessionLock, sal_mutex_FOREVER)
-            
+
 #define SESSION_UNLOCK() \
         if (WorkerSessionLock) \
             sal_mutex_give(WorkerSessionLock)
 
-#define SOCKET_LOCK() \
-        if (WorkerSocketLock) \
-            sal_mutex_take(WorkerSocketLock, sal_mutex_FOREVER)
-            
-#define SOCKET_UNLOCK() \
-        if (WorkerSocketLock) \
-            sal_mutex_give(WorkerSocketLock)
 
 //  默认1s响应周期, 影响CPU占用率.
 #define HANDELER_DEFAULT_INTERVAL (1000000)
@@ -78,7 +71,7 @@ void  PacketNtoH(PacketInfo_S * pstSendMsg)
 DetectWorker_C::DetectWorker_C()
 {
     struct timespec ts;
-    
+
     // DETECT_WORKER_INFO("Create a New Worker");
 
     sal_memset(&stCfg, 0, sizeof(stCfg));
@@ -96,35 +89,32 @@ DetectWorker_C::DetectWorker_C()
     uiHandlerDefaultInterval = HANDELER_DEFAULT_INTERVAL; //默认1s响应周期, 降低CPU占用率.
 
     SessionList.clear();
-    
+
     WorkerSessionLock = NULL;
-    WorkerSocketLock = NULL;
+
 }
 
 // 析构函数,释放资源
 DetectWorker_C::~DetectWorker_C()
 {
-    DETECT_WORKER_INFO("Destroy Old Worker,uiProtocol[%d], uiSrcIP[%s], uiSrcPort[%d], uiRole[%d]", 
+    DETECT_WORKER_INFO("Destroy Old Worker,uiProtocol[%d], uiSrcIP[%s], uiSrcPort[%d], uiRole[%d]",
                 stCfg.eProtocol, sal_inet_ntoa(stCfg.uiSrcIP), stCfg.uiSrcPort, stCfg.uiRole);
-    
+
     SESSION_LOCK();
     SessionList.clear(); //清空会话链表.
     SESSION_UNLOCK();
-    
-    // 停止任务 
+
+    // 停止任务
     StopThread();
-    
+
     // 释放socket.
-    ReleaseSocket();    
-    
+    ReleaseSocket();
+
     // 释放互斥锁.
-    if(WorkerSessionLock)  
-        sal_mutex_destroy(WorkerSessionLock);    
+    if(WorkerSessionLock)
+        sal_mutex_destroy(WorkerSessionLock);
     WorkerSessionLock = NULL;
-    
-    if(WorkerSocketLock)  
-        sal_mutex_destroy(WorkerSocketLock);
-    WorkerSocketLock = NULL;
+
 }
 
 // Thread回调函数.
@@ -132,11 +122,11 @@ DetectWorker_C::~DetectWorker_C()
 INT32 DetectWorker_C::ThreadHandler()
 {
     INT32             iSockFd = 0;    // 本任务使用的socket描述符
-    
+
     INT32 iTos = 1;   // 保存接收的报文的tos值. 初始写成1是因为后续要配置socket回传tos信息
     INT32 iRet = 0;
-    
-    struct timeval tm;      // 缓存当前时间.    
+
+    struct timeval tm;      // 缓存当前时间.
     struct sockaddr_in stPrtnerAddr;    // 对端socket地址信息
     char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// 保存报文所有附加信息的buffer, 当前只预留了tos值空间.
     PacketInfo_S stSendMsg;    // 保存报文payload信息的buffer, 当前只缓存一个报文.
@@ -144,7 +134,7 @@ INT32 DetectWorker_C::ThreadHandler()
     struct msghdr msg;      // 描述报文信息, socket收发包使用.
     struct cmsghdr *cmsg;   // 用于遍历 msg.msg_control中所有报文附加信息, 目前是tos值.
     struct iovec iov[1];    // 用于保存报文payload buffer的结构体.参见msg.msg_iov. 当前只使用一个缓冲区.
-    
+
 
     // 检查对象的socket是否已经初始化成功.
     while ((!GetSocket()) && GetCurrentInterval())
@@ -169,7 +159,7 @@ INT32 DetectWorker_C::ThreadHandler()
 
         // 填充 msg
         sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
-        
+
         // 对端socket地址
         msg.msg_name = &stPrtnerAddr;
         msg.msg_namelen = sizeof(stPrtnerAddr);
@@ -179,16 +169,16 @@ INT32 DetectWorker_C::ThreadHandler()
         iov[0].iov_len  = sizeof(PacketInfo_S);
         msg.msg_iov = iov;
         msg.msg_iovlen = 1;
-        
+
         // 报文附加信息buffer
         msg.msg_control = acCmsgBuf;
         msg.msg_controllen = sizeof(acCmsgBuf);
-        
+
         // 清空flag
         msg.msg_flags = 0;
 
         // 通知socket接收报文时回传报文tos信息.
-        iRet = setsockopt(iSockFd, SOL_IP, IP_RECVTOS, &iTos, sizeof(iTos)); 
+        iRet = setsockopt(iSockFd, SOL_IP, IP_RECVTOS, &iTos, sizeof(iTos));
         if( 0 > iRet )
         {
             DETECT_WORKER_ERROR("RX: Setsockopt IP_RECVTOS failed[%d]: %s [%d]", iRet, strerror(errno), errno);
@@ -209,7 +199,7 @@ INT32 DetectWorker_C::ThreadHandler()
                     sal_memset(acCmsgBuf, 0, sizeof(acCmsgBuf));
                     iTos = 0;
 
-                    /* 
+                    /*
                        老版本的Linux kernel, sendmsg时不支持设定tos, recvmsg支持获取tos.
                        为了兼容老版本, sendmsg时去除msg_control信息, recvmsg时添加msg_control信息.
                     */
@@ -219,14 +209,14 @@ INT32 DetectWorker_C::ThreadHandler()
 
                     // 接收报文
                     iRet = recvmsg(iSockFd, &msg, 0);
-                    if (iRet == sizeof(PacketInfo_S))                    
+                    if (iRet == sizeof(PacketInfo_S))
                     {
                         sal_memset(&tm, 0, sizeof(tm));
-                        gettimeofday(&tm,NULL); //获取当前时间                        
+                        gettimeofday(&tm,NULL); //获取当前时间
 
                         // 获取报文中附带的tos信息.
                         cmsg = CMSG_FIRSTHDR(&msg);
-                        if (cmsg == NULL) 
+                        if (cmsg == NULL)
                         {
                             DETECT_WORKER_WARNING("RX: Socket can not get cmsg\n");
                             continue;
@@ -239,7 +229,7 @@ INT32 DetectWorker_C::ThreadHandler()
                             continue;
                         }
                         iTos = ((INT32 *) CMSG_DATA(cmsg))[0];
-                        
+
                         PacketNtoH(&stSendMsg); // 报文payload网络序转主机序
 
                         if(WORKER_ROLE_SERVER == stSendMsg.uiRole)
@@ -248,7 +238,7 @@ INT32 DetectWorker_C::ThreadHandler()
                             DETECT_WORKER_INFO("RX: Get reply packet from socket[%d], Len[%d], TOS[%d]",
                                     iSockFd, iRet, iTos);
                             */
-                                                        
+
                             stSendMsg.stT4.uiSec = tm.tv_sec;
                             stSendMsg.stT4.uiUsec = tm.tv_usec;
                             iRet = RxUpdateSession(&stSendMsg); //刷新sender的会话列表
@@ -261,7 +251,7 @@ INT32 DetectWorker_C::ThreadHandler()
                             stSendMsg.stT2.uiSec = tm.tv_sec;
                             stSendMsg.stT2.uiUsec = tm.tv_usec;
 
-                            /* 
+                            /*
                                老版本的Linux kernel, sendmsg时不支持设定tos, recvmsg支持获取tos.
                                为了兼容老版本, sendmsg时去除msg_control信息, recvmsg时添加msg_control信息.
                             */
@@ -378,9 +368,9 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAg
         DETECT_WORKER_ERROR("Do not reinit this worker");
         return AGENT_E_ERROR;
     }
-	
-	pcAgentCfg = pcNewAgentCfg;
-    
+
+    pcAgentCfg = pcNewAgentCfg;
+
     // 根据worker角色不同, 初始化stCfg, 同时进行入参检查
     switch (stNewWorker.uiRole)
     {
@@ -401,13 +391,6 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAg
     // 申请互斥锁资源
     WorkerSessionLock = sal_mutex_create("DetectWorker_SESSION");
     if( NULL == WorkerSessionLock )
-    {
-        DETECT_WORKER_ERROR("Create mutex failed");
-        return AGENT_E_MEMORY;
-    }
-    
-    WorkerSocketLock = sal_mutex_create("DetectWorker_SOCKET");
-    if( NULL == WorkerSocketLock )
     {
         DETECT_WORKER_ERROR("Create mutex failed");
         return AGENT_E_MEMORY;
@@ -437,13 +420,11 @@ INT32 DetectWorker_C::ReleaseSocket()
 {
     if(WorkerSocket)
         DETECT_WORKER_INFO("Release a socket [%d]", WorkerSocket);
-    
-    SOCKET_LOCK();
-    if(WorkerSocket)
+
+     if(WorkerSocket)
         close(WorkerSocket);
     WorkerSocket = 0;
-    SOCKET_UNLOCK();
-    
+
     return AGENT_OK;
 }
 
@@ -497,10 +478,7 @@ INT32 DetectWorker_C::InitSocket()
             return AGENT_E_PARA;
     }
 
-    
-    SOCKET_LOCK();
-    WorkerSocket = SocketTmp;
-    SOCKET_UNLOCK();
+     WorkerSocket = SocketTmp;
 
     DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", WorkerSocket,uiDestPort,servaddr.sin_addr.s_addr);
 
@@ -512,11 +490,9 @@ INT32 DetectWorker_C::InitSocket()
 INT32 DetectWorker_C::GetSocket()
 {
     INT32 SocketTmp;
-    
-    SOCKET_LOCK();
+
     SocketTmp = WorkerSocket;
-    SOCKET_UNLOCK();
-    
+
     return SocketTmp;
 }
 
@@ -575,28 +551,22 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
 {
     INT32 iRet = AGENT_OK;
     struct timeval tm;
-    PacketInfo_S * pstSendMsg = NULL;
+    PacketInfo_S stSendMsg;
     struct sockaddr_in servaddr;
     INT32 tos = 0;
 
     sal_memset(&servaddr, 0, sizeof(servaddr));
 
-    pstSendMsg = new PacketInfo_S;
-    if (NULL == pstSendMsg)
-    {
-        DETECT_WORKER_ERROR("No enough memory"); 
-        return AGENT_E_MEMORY;
-    }
-    sal_memset(pstSendMsg, 0, sizeof(PacketInfo_S));
+    sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
 
-    pstSendMsg->uiSequenceNumber = pNewSession->uiSequenceNumber;
+    stSendMsg.uiSequenceNumber = pNewSession->uiSequenceNumber;
     sal_memset(&tm, 0, sizeof(tm));
     gettimeofday(&tm,NULL); //获取当前时间
-    pstSendMsg->stT1.uiSec = tm.tv_sec;
-    pstSendMsg->stT1.uiUsec = tm.tv_usec;
-    pstSendMsg->uiRole = WORKER_ROLE_CLIENT;
+    stSendMsg.stT1.uiSec = tm.tv_sec;
+    stSendMsg.stT1.uiUsec = tm.tv_usec;
+    stSendMsg.uiRole = WORKER_ROLE_CLIENT;
 
-    pNewSession->stT1 = pstSendMsg->stT1; //保存T1时间 
+    pNewSession->stT1 = stSendMsg.stT1; //保存T1时间
 
     // 检查socket是否已经ready
     if( 0 == GetSocket()) 
@@ -605,13 +575,9 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
         if(iRet)
         {
             DETECT_WORKER_WARNING("Init Socket failed again[%d]", iRet);
-            delete pstSendMsg;
-            pstSendMsg = NULL;
             return iRet;
         }
     }
-
-    SOCKET_LOCK(); //同一时间只允许一个任务通过该socket发包. 
 
     switch (pNewSession->stFlowKey.eProtocol)
     {
@@ -630,9 +596,9 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
                 iRet = AGENT_E_PARA;
                 break;
             }
-            
-            PacketHtoN(pstSendMsg);// 主机序转网络序            
-            iRet = sendto(GetSocket(), pstSendMsg, sizeof(PacketInfo_S), 0, (sockaddr *)&servaddr, sizeof(servaddr));            
+
+            PacketHtoN(&stSendMsg);// 主机序转网络序
+            iRet = sendto(GetSocket(), &stSendMsg, sizeof(PacketInfo_S), 0, (sockaddr *)&servaddr, sizeof(servaddr));
             if (sizeof(PacketInfo_S) == iRet) //发送成功.
             {
                 pNewSession->uiSessionState = SESSION_STATE_WAITING_REPLY;
@@ -654,10 +620,6 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
             DETECT_WORKER_ERROR("Unsupported Protocol[%d]", pNewSession->stFlowKey.eProtocol);
             iRet = AGENT_E_PARA;
     }
-    SOCKET_UNLOCK();
-
-    delete pstSendMsg;
-    pstSendMsg = NULL;
 
     return iRet;
 }
@@ -741,8 +703,7 @@ INT32 DetectWorker_C::PushSession(FlowKey_S stNewFlow)
 }
 
 // 查询探测结果, FlowManage使用.
-INT32 DetectWorker_C::PopSession(DetectWorkerSession_S* 
-                        pOldSession)
+INT32 DetectWorker_C::PopSession(DetectWorkerSession_S* pOldSession)
 {
     INT32 iRet = AGENT_E_NOT_FOUND;
 

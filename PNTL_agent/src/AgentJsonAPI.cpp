@@ -79,62 +79,6 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         ptDataTmp = ptDataRoot.get_child("ServerAntCollector");
         
         strTemp = ptDataTmp.get<string>("Protocol");
-        if ("Kafka" == strTemp)
-        {
-            ptree ptEntry;
-            ptree ptArray;
-            KafkaConnectInfo_S stKafkaConnectInfo;
-
-            // 读取 topic
-            ptDataTmp.clear();
-            ptDataTmp = ptDataRoot.get_child("ServerAntCollector.KafkaInfo");
-            stKafkaConnectInfo.strTopic = ptDataTmp.get<string>("Topic");
-
-            // 读取 BrokerList
-            ptArray.clear();
-            ptArray = ptDataRoot.get_child("ServerAntCollector.KafkaInfo.BrokerList");
-            // 遍历ptArray, 逐个添加Broker
-            for (ptree::iterator itFlow = ptArray.begin(); itFlow != ptArray.end(); itFlow++)
-            {
-                ptEntry = itFlow->second; // first为空, boost格式
-                strTemp = ptEntry.data();
-
-                // 检查是否有重复的Broker服务器信息
-                vector<string>::iterator pstrKafkaBrokerInfo;
-                for( pstrKafkaBrokerInfo = stKafkaConnectInfo.KafkaBrokerList.begin(); 
-                     pstrKafkaBrokerInfo != stKafkaConnectInfo.KafkaBrokerList.end(); 
-                     pstrKafkaBrokerInfo++ )
-                {
-                    if (strTemp == *pstrKafkaBrokerInfo)
-                    {
-                        MSG_CLIENT_INFO("Find Same Broker server address[%s] in cfg file", strTemp.c_str());
-                        return AGENT_E_PARA;
-                    }
-                }
-                stKafkaConnectInfo.KafkaBrokerList.push_back(strTemp);
-            }
-
-            // 保存kafka配置信息
-            iRet = pcCfg->SetCollectorKafkaInfo(&stKafkaConnectInfo);
-            if (iRet)
-            {
-                    JSON_PARSER_ERROR("SetCollectorKafkaInfo failed[%d]", iRet);
-                    return iRet;
-            }
-
-            // 刷新 Collector 配置
-            iRet = pcCfg->SetCollectorProtocol(COLLECTOR_PROTOCOL_KAFKA);
-            if (iRet)
-            {
-                    JSON_PARSER_ERROR("SetCollectorKafkaInfo failed[%d]", iRet);
-                    return iRet;
-            }
-        }
-        else
-        {
-            JSON_PARSER_ERROR("Unknown Server Ants Collector Protocol[%s] In Cfg info", strTemp.c_str());
-            return AGENT_E_PARA;
-        }
         
 
         // 解析ServerAntAgent数据.
@@ -764,41 +708,7 @@ INT32 ProcessUrgentFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         read_json(ssStringData, ptDataRoot);
 
         // 检查pt中的解析结果
-#if 0
-        // 检查Signature
-        string strSignature =   ptDataRoot.get<string>("MessageSignature");
-        
-        // 校验签名
-        if (0 == strSignature.compare(UrgentFlowIssueSignature))
-        {
-            string strAction    =   ptDataRoot.get<string>("Action");
-            
-            // 校验action和content
-            if( (0 != strAction.compare(UrgentFlowIssueAction)) )
-            {
-                JSON_PARSER_WARNING("Unsupported Action[%s].", strAction.c_str());
-                // 校验失败
-                return AGENT_E_ERROR;
-            }
-            
-            // 从data中解析数据,填充stServerFlowKey, 然后调用FlowManager接口添加探测流.
-            ptFlowArray.clear();
-            ptFlowArray = ptDataRoot.get_child("flows");
-            iRet = IssueFlowFromJsonFlowArray(ptFlowArray, pcFlowManager, AGENT_TRUE);
-            if (iRet)
-            {
-                JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]", iRet);
-                return iRet;
-            }
-                    
-            return iRet;
-        }
-        else
-        {
-            JSON_PARSER_WARNING("Unsupported Signature:[%s]", strSignature.c_str());        
-            return AGENT_E_PARA;
-        }
-#else
+
         ptFlowArray.clear();
         ptFlowArray = ptDataRoot.get_child("flows");
         iRet = IssueFlowFromJsonFlowArray(ptFlowArray, pcFlowManager, AGENT_TRUE);
@@ -807,7 +717,6 @@ INT32 ProcessUrgentFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d], Flow info[%s]", iRet, pcJsonData);
             return iRet;
         }
-#endif
     }
     catch (exception const & e)
     {
