@@ -125,6 +125,19 @@ INT32 ServerAntAgent()
     }
 	
     pcFlowManager = new FlowManager_C;
+	// 启动FlowManager对象
+    INIT_INFO("-------- Start FlowManager --------");
+	iRet = pcFlowManager->Init(pcCfg);
+    if (iRet)
+    {
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+        
+        INIT_ERROR("FlowManager.init failed [%d]", iRet);
+        return iRet;
+    }
+	
     MessagePlatformServer_C * pcMsgServer = new MessagePlatformServer_C;
     iRet = pcMsgServer->Init(uiPort, pcFlowManager);
     if (iRet)
@@ -151,24 +164,12 @@ INT32 ServerAntAgent()
 
 	if (AGENT_OK == iRet)
 	{
-	    SHOULD_PROBE = 1;
-		UINT32 delayTime = 10 + rand() % 30;
-		INIT_INFO("Query pingList will be in [%u] seconds.");
+		UINT32 delayTime = 10000 + rand() % 30;
+		INIT_INFO("Query pingList will be in [%u] seconds.", delayTime);
 		sleep(delayTime);
+		SHOULD_PROBE = 1;
 	}
 
-	// 启动FlowManager对象
-    INIT_INFO("-------- Start FlowManager --------");
-	iRet = pcFlowManager->Init(pcCfg);
-    if (iRet)
-    {
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
-        
-        INIT_ERROR("FlowManager.init failed [%d]", iRet);
-        return iRet;
-    }
 	// 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
 	

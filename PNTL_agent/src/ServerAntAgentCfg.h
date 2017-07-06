@@ -7,6 +7,19 @@
 #include "AgentCommon.h"
 #include <vector>
 
+const UINT32 MIN_PROBE_PERIOD = 60;
+const UINT32 MAX_PROBE_PERIOD = 60 * 30;
+const UINT32 MIN_REPORT_PERIOD = 60;
+const UINT32 MAX_REPORT_PERIOD = 60 * 30;
+const UINT32 MIN_PORT_COUNT = 1;
+const UINT32 MAX_PORT_COUNT = 100;
+const UINT32 MIN_DSCP = 0;
+const UINT32 MAX_DSCP = 63;
+const UINT32 MIN_LOSS_TIMEOUT = 1;
+const UINT32 MAX_LOSS_TIMEOUT = 5;
+const UINT32 MIN_BIG_PACKAGE_RATE = 0;
+const UINT32 MAX_BIG_PACKAGE_RATE = 100;
+
 /*
 向ServerAntsCollector上报探测结果时的数据通道, 当前支持kafka, 未来可扩充.
 */
@@ -64,6 +77,10 @@ private:
     UINT32 uiAgentDetectPeriod;       // Agent探测其他Agent周期, 单位Polling周期, 默认20(2s).
     UINT32 uiAgentDetectTimeout;      // Agent探测报文超时时间, 单位Polling周期, 默认10(1s).
     UINT32 uiAgentDetectDropThresh;   // Agent探测报文丢包门限, 单位为报文个数, 默认5(即连续5个探测报文超时即认为链接出现丢包).
+    UINT32 uiPortCount;               // Agent探测报文的源端口范围
+    UINT32 uiDscp;                    // Agent探测报文的Dscp值
+    UINT32 uiBigPkgRate;              // Agent探测报文中大包占用的比例
+    UINT32 uiMaxDelay;                // 最大时延，低于此值的数据不上报
 
     /* Detect 协议控制参数 */
     ServerAntAgentProtocolUDP_S stProtocolUDP; // UDP 探测报文全局设定,包括源端口范围及目的端口信息.
@@ -107,6 +124,10 @@ public:
     }
     INT32 SetDetectPeriod(UINT32 uiNewPeriod)         // 设定Detect周期
     {
+        if (MIN_PROBE_PERIOD > uiNewPeriod || MAX_PROBE_PERIOD < uiNewPeriod)
+        {
+        	return AGENT_E_ERROR;
+        }
         uiAgentDetectPeriod = uiNewPeriod;
         return AGENT_OK;
     }
@@ -128,6 +149,10 @@ public:
     }
     INT32 SetReportPeriod(UINT32 uiNewPeriod)         // 设定Report周期
     {
+        if (MIN_REPORT_PERIOD > uiNewPeriod || MAX_REPORT_PERIOD < uiNewPeriod || uiNewPeriod < GetDetectPeriod())
+        {
+        	return AGENT_E_ERROR;
+        }
         uiAgentReportPeriod = uiNewPeriod;
         return AGENT_OK;
     }
@@ -148,6 +173,10 @@ public:
     }
     INT32 SetDetectTimeout(UINT32 uiNewPeriod)         // 设定Detect报文超时时间
     {
+        if (MIN_LOSS_TIMEOUT > uiNewPeriod || MAX_LOSS_TIMEOUT < uiNewPeriod)
+        	{
+        	return AGENT_E_ERROR;
+        	}
         uiAgentDetectTimeout = uiNewPeriod;
         return AGENT_OK;
     }
@@ -180,7 +209,61 @@ public:
 	string GetHostname()
 	{
 	    return hostname;
-	}
+	}    
+
+	UINT32 GetPortCount()
+		{
+		return uiPortCount;
+		}
+	
+	INT32 SetPortCount(UINT32 newPortCount)
+		{
+		if (MIN_PORT_COUNT > newPortCount || MAX_PORT_COUNT < newPortCount)
+			{
+			return AGENT_E_ERROR;
+			}
+		uiPortCount = newPortCount;
+		return AGENT_OK;
+		}
+	UINT32 getDscp()
+		{
+		return uiDscp;
+		}
+
+	INT32 SetDscp(UINT32 newDscp)
+		{
+		if (MIN_DSCP > newDscp || MAX_DSCP < newDscp)
+			{
+			return AGENT_E_ERROR;
+			}
+		uiDscp = newDscp;
+		return AGENT_OK;
+		}
+	UINT32 GetBigPkgRate()
+			{
+			return uiBigPkgRate;
+			}
+
+	INT32 SetBigPkgRate(UINT32 newRate)
+		{
+		if (MIN_BIG_PACKAGE_RATE > newRate || MAX_BIG_PACKAGE_RATE < newRate)
+			{
+			return AGENT_E_ERROR;
+			}
+		uiBigPkgRate = newRate;
+		return AGENT_OK;
+		}
+
+	UINT32 GetMaxDelay() 
+		{
+		return uiMaxDelay;
+		}
+
+	INT32 SetMaxDelay(UINT32 newMaxDelay)
+		{
+		uiMaxDelay = newMaxDelay;
+		return AGENT_OK;
+		}
 };
 
 

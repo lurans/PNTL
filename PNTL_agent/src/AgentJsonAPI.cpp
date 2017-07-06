@@ -178,7 +178,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         iRet = pcCfg->SetReportPeriod(uiData);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetReportPeriod failed[%d]", iRet);
+            JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u]", uiData, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD);
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("QueryPeriod");
@@ -192,14 +192,14 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         iRet = pcCfg->SetDetectPeriod(uiData);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectPeriod failed[%d]", iRet);
+            JSON_PARSER_ERROR("set detect period[%u] faild[%d], range should be in [%u, %u]", uiData, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("DetectTimeoutPeriod");
         iRet = pcCfg->SetDetectTimeout(uiData);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectTimeout failed[%d]", iRet);
+            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", uiData, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("DetectDropThresh");
@@ -971,4 +971,97 @@ INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 	INT32 iRet = pcFlowManager -> FlowManagerAction(interval);
 	return iRet;
 }
+
+/*
+	接收从Server端下发的配置参数
+	格式为
+	{
+		"probe_period":"0",
+		"port_count" : "5",
+		"report_period" : "",
+		"delay_threshold":"",
+		"dscp":"",
+		"lossPkg_timeout":"",
+		"package_rate":""
+		
+		
+	}
+*/
+INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
+{
+    // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
+    stringstream ssStringData(pcJsonData);
+
+    // boost::property_tree对象, 用于存储json格式数据.
+    ptree ptDataRoot;
+	UINT32 interval;
+	INT32 iRet = AGENT_OK;
+    try 
+	{
+        // 防止Json消息体不规范
+        read_json(ssStringData, ptDataRoot);
+        interval = ptDataRoot.get<UINT32>("probe_period");
+		iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
+		    return AGENT_E_ERROR;
+		}
+		
+		interval = ptDataRoot.get<UINT32>("port_count");
+		iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetPortCount[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PORT_COUNT, MAX_PORT_COUNT);
+		    return AGENT_E_ERROR;
+		}
+
+		interval = ptDataRoot.get<UINT32>("report_period");
+		iRet = pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u] and >= than detectPeriod[%u]", interval, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD, pcFlowManager->pcAgentCfg->GetDetectPeriod());
+		    return AGENT_E_ERROR;
+		}
+
+		interval = ptDataRoot.get<UINT32>("delay_threshold");
+		iRet = pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetMaxDelay[%u] failed[%d]");
+		    return AGENT_E_ERROR;
+		}
+		
+		interval = ptDataRoot.get<UINT32>("dscp");
+		iRet = pcFlowManager->pcAgentCfg->SetDscp(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetDscp[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_DSCP, MAX_DSCP);
+		    return AGENT_E_ERROR;
+		}
+
+		interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
+		iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
+		    return AGENT_E_ERROR;
+		}
+
+		interval = ptDataRoot.get<UINT32>("package_rate");
+		iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
+		    return AGENT_E_ERROR;
+		}
+    }
+	catch (exception const & e)
+	{
+        JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
+        return AGENT_E_ERROR;
+	}
+	return AGENT_OK;
+}
+
 

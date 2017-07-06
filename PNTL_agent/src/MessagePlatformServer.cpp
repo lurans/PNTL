@@ -143,34 +143,14 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
     if(0 == sal_strcmp(pcKey, ServerAntAgentName))
     {
         iRet = ProcessUrgentFlowFromServer(pcData, pcFlowManager);
-        if(iRet)
-        {
-            MSG_SERVER_ERROR("Process Urgent Flow From Server failed[%d]", iRet);
-            (* pstrResponce) = ResponcePageError;
-        }
-        else
-        {
-            (* pstrResponce) = ResponcePageOK;
-        }
+        HandleResponse(iRet, pstrResponce);
         return iRet;
     }
     else if(0 == sal_strcmp(pcKey, ServerAntAgentAction))
     {
         MSG_SERVER_INFO("Begin to handle flowmanager action");
         iRet = ProcessActionFlowFromServer(pcData, pcFlowManager);
-        if(AGENT_EXIT == iRet)
-        {
-            (* pstrResponce) = ResponseExitOk;
-        }
-        else if(iRet)
-        {
-            MSG_SERVER_ERROR("Process set interval to [%s] From Server failed[%d]", pcData, iRet);
-            (* pstrResponce) = ResponcePageError;
-        }
-        else
-        {
-            (* pstrResponce) = ResponcePageOK;
-        }
+        HandleResponse(iRet, pstrResponce);
         return iRet;
     }
     else if(0 == sal_strcmp(pcKey, ServerAntsAgentIp))
@@ -179,6 +159,11 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
         (* pstrResponce) = ResponcePageOK;
         MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
     }
+	else if (0 == sal_strcmp(pcKey, ServerAntsAgentConf))
+	{
+	    iRet = ProcessConfigFlowFromServer(pcData, pcFlowManager);
+		HandleResponse(iRet, pstrResponce);
+	}
     else
     {
         // 终止本次post处理, 忽略尚未处理的key/data值.
@@ -188,5 +173,21 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
     }
 }
 
+
+void MessagePlatformServer_C::HandleResponse(INT32 iRet, string * pstrResponce)
+{
+    if(AGENT_EXIT == iRet)
+        {
+            (* pstrResponce) = ResponseExitOk;
+        }
+        else if(iRet)
+        {
+            (* pstrResponce) = ResponcePageError;
+        }
+        else
+        {
+            (* pstrResponce) = ResponcePageOK;
+        }
+}
 
 
