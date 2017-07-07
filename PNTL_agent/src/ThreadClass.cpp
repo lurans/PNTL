@@ -9,7 +9,7 @@ using namespace std;
 
 #include "ThreadClass.h"
 
-enum 
+enum
 {
     THREAD_STATE_STOPED  = 0,  // 任务未启动或已经停止
     THREAD_STATE_WORKING,      // 任务正在工作
@@ -34,7 +34,7 @@ void * ThreadFun(void * p)
     {
         THREAD_CLASS_ERROR("Thread Update State To WORKING failed[%d]", iRet);
         pthread_exit(NULL);
-        
+
     }
     //THREAD_CLASS_INFO("Thread start working.");
 
@@ -43,11 +43,11 @@ void * ThreadFun(void * p)
     {
         THREAD_CLASS_WARNING("Thread Handler Return Faile[%d]", iRet);
     }
-    
+
     iRet = pcThread->ThreadUpdateState(THREAD_STATE_STOPED);
     if(iRet)
     {
-        THREAD_CLASS_WARNING("Thread Update State To STOP failed[%d]", iRet);     
+        THREAD_CLASS_WARNING("Thread Update State To STOP failed[%d]", iRet);
     }
     THREAD_CLASS_INFO("Thread exiting.");
 }
@@ -76,16 +76,16 @@ ThreadClass_C::~ThreadClass_C()
 INT32 ThreadClass_C::SetNewInterval(UINT32 uiNewInterval)
 {
     INT32 iRet = AGENT_OK;
-    
+
     //THREAD_CLASS_INFO("Set Thread Update Interval to [%d] us", uiNewInterval);
     uiThreadUpdateInterval = uiNewInterval;
-    
+
     return iRet;
 }
 
 // 查询当前任务间隔
 UINT32 ThreadClass_C::GetCurrentInterval()
-{ 
+{
     return uiThreadUpdateInterval;
 }
 
@@ -93,34 +93,34 @@ UINT32 ThreadClass_C::GetCurrentInterval()
 INT32 ThreadClass_C::StartThread()
 {
     INT32 iRet = AGENT_OK;
-    
+
     if (ThreadFd)   // 先停止任务.
         StopThread();
-    
+
     //THREAD_CLASS_INFO("Start a Thread with ThreadUpdateInterval [%d]us", uiThreadUpdateInterval);
 
     iRet = ThreadUpdateState(THREAD_STATE_STOPED); // 恢复任务默认状态
     if(iRet)
     {
-          THREAD_CLASS_ERROR("Thread Update State failed[%d]", iRet); 
-          ThreadFd = 0;
-          return iRet;
+        THREAD_CLASS_ERROR("Thread Update State failed[%d]", iRet);
+        ThreadFd = 0;
+        return iRet;
     }
 
     iRet = PreStartHandler();
     if(iRet)
     {
-          THREAD_CLASS_ERROR("Pre Start Handler failed[%d]", iRet); 
-          ThreadFd = 0;
-          return AGENT_E_HANDLER;
+        THREAD_CLASS_ERROR("Pre Start Handler failed[%d]", iRet);
+        ThreadFd = 0;
+        return AGENT_E_HANDLER;
     }
-    
+
     iRet = pthread_create(&ThreadFd, NULL, ThreadFun, this);  //启动任务
     if(iRet)    // 任务启动失败
     {
-          THREAD_CLASS_ERROR("Create Thread failed[%d]: %s [%d]", iRet, strerror(errno), errno); 
-          ThreadFd = 0;
-          return AGENT_E_THREAD;
+        THREAD_CLASS_ERROR("Create Thread failed[%d]: %s [%d]", iRet, strerror(errno), errno);
+        ThreadFd = 0;
+        return AGENT_E_THREAD;
     }
     return iRet;
 }
@@ -134,41 +134,42 @@ INT32 ThreadClass_C::StopThread()
 
     if (ThreadFd)
     {
-        THREAD_CLASS_INFO("Stop Thread. Waiting handler's exit. Check Every [%d]us", uiInterval); 
-        
+        THREAD_CLASS_INFO("Stop Thread. Waiting handler's exit. Check Every [%d]us", uiInterval);
+
         iRet = PreStopHandler();// 通知Handler主动退出.
         if(iRet)
         {
-              THREAD_CLASS_WARNING("Pre Stop Handler failed[%d]", iRet);
+            THREAD_CLASS_WARNING("Pre Stop Handler failed[%d]", iRet);
         }
-        
+
         do
         {
-            sal_usleep(uiInterval); 
+            sal_usleep(uiInterval);
             uiStopCounter --;
-        } while ( uiThreadState && uiStopCounter);    // 等待任务主动停止
+        }
+        while ( uiThreadState && uiStopCounter);      // 等待任务主动停止
 
         if (0 == uiStopCounter)  //任务没有主动停止, 尝试强制退出.
         {
             THREAD_CLASS_WARNING("Stop Thread failed after [%d]us, Force Stop ...", uiInterval * THREAD_STOP_COUNTER);
             iRet = pthread_cancel(ThreadFd);
-            if (iRet) 
+            if (iRet)
             {
                 THREAD_CLASS_ERROR("Force Stop Thread failed[%d]: %s [%d]", iRet, strerror(errno), errno);
                 iRet = AGENT_E_ERROR;
             }
-            
+
             iRet = ThreadUpdateState(THREAD_STATE_STOPED); // 恢复任务默认状态
             if(iRet)
             {
-                  THREAD_CLASS_ERROR("Thread Update State failed[%d]", iRet); 
-                  ThreadFd = 0;
+                THREAD_CLASS_ERROR("Thread Update State failed[%d]", iRet);
+                ThreadFd = 0;
             }
             THREAD_CLASS_WARNING("Force Stop Thread Sucess");
         }
         else
         {
-            THREAD_CLASS_INFO("Stop Thread Sucess. Counter cost [%d]", THREAD_STOP_COUNTER - uiStopCounter); 
+            THREAD_CLASS_INFO("Stop Thread Sucess. Counter cost [%d]", THREAD_STOP_COUNTER - uiStopCounter);
         }
     }
     ThreadFd = 0;
@@ -180,12 +181,12 @@ INT32 ThreadClass_C::ThreadUpdateState(UINT32 uiNewState)
 {
     if (THREAD_STATE_MAX <= uiNewState)
     {
-        THREAD_CLASS_ERROR("Thread update to State [%d] failed", 
-            uiNewState);
+        THREAD_CLASS_ERROR("Thread update to State [%d] failed",
+                           uiNewState);
         return AGENT_E_PARA;
     }
     uiThreadState = uiNewState;
-    
+
     return AGENT_OK;
 }
 

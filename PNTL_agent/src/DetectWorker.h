@@ -25,9 +25,9 @@ typedef struct tagServerTopo
     bool operator == (const tagServerTopo & other) const
     {
         if (  (other.uiSvid == uiSvid)
-            &&(other.uiDvid == uiDvid)
-            &&(other.uiLevel == uiLevel)
-            )
+                &&(other.uiDvid == uiDvid)
+                &&(other.uiLevel == uiLevel)
+           )
             return AGENT_TRUE;
         else
             return AGENT_FALSE;
@@ -36,9 +36,9 @@ typedef struct tagServerTopo
     bool operator != (const tagServerTopo & other) const
     {
         if (  (other.uiSvid != uiSvid)
-            ||(other.uiDvid != uiDvid)
-            ||(other.uiLevel != uiLevel)
-            )
+                ||(other.uiDvid != uiDvid)
+                ||(other.uiLevel != uiLevel)
+           )
             return AGENT_TRUE;
         else
             return AGENT_FALSE;
@@ -64,15 +64,15 @@ typedef struct tagFlowKey
     bool operator == (const tagFlowKey & other) const
     {
         if (  (other.uiAgentFlowTableIndex == uiAgentFlowTableIndex)
-            &&(other.uiUrgentFlow == uiUrgentFlow)
-            &&(other.eProtocol == eProtocol)
-            &&(other.uiSrcIP == uiSrcIP)
-            &&(other.uiDestIP == uiDestIP)
-            &&(other.uiSrcPort == uiSrcPort)
-            &&(other.uiDestPort == uiDestPort)
-            &&(other.uiDscp == uiDscp)
-            &&(other.stServerTopo == stServerTopo)
-            )
+                &&(other.uiUrgentFlow == uiUrgentFlow)
+                &&(other.eProtocol == eProtocol)
+                &&(other.uiSrcIP == uiSrcIP)
+                &&(other.uiDestIP == uiDestIP)
+                &&(other.uiSrcPort == uiSrcPort)
+                &&(other.uiDestPort == uiDestPort)
+                &&(other.uiDscp == uiDscp)
+                &&(other.stServerTopo == stServerTopo)
+           )
             return AGENT_TRUE;
         else
             return AGENT_FALSE;
@@ -81,20 +81,20 @@ typedef struct tagFlowKey
     bool operator != (const tagFlowKey & other) const
     {
         if (  (other.uiAgentFlowTableIndex != uiAgentFlowTableIndex)
-            ||(other.uiUrgentFlow != uiUrgentFlow)
-            ||(other.eProtocol != eProtocol)
-            ||(other.uiSrcIP != uiSrcIP)
-            ||(other.uiDestIP != uiDestIP)
-            ||(other.uiSrcPort != uiSrcPort)
-            ||(other.uiDestPort != uiDestPort)
-            ||(other.uiDscp != uiDscp)
-            ||(other.stServerTopo != stServerTopo)
-            )
+                ||(other.uiUrgentFlow != uiUrgentFlow)
+                ||(other.eProtocol != eProtocol)
+                ||(other.uiSrcIP != uiSrcIP)
+                ||(other.uiDestIP != uiDestIP)
+                ||(other.uiSrcPort != uiSrcPort)
+                ||(other.uiDestPort != uiDestPort)
+                ||(other.uiDscp != uiDscp)
+                ||(other.stServerTopo != stServerTopo)
+           )
             return AGENT_TRUE;
         else
             return AGENT_FALSE;
     }
-}FlowKey_S;
+} FlowKey_S;
 
 // DetectWorkerSession_S.uiSessionState 会话状态机
 enum
@@ -116,7 +116,8 @@ enum
 };
 
 // 时间戳信息. 不直接使用timeval是因为字节序转换接口(htonl)当前只支持32位INT32.
-typedef struct tagPacketTime{
+typedef struct tagPacketTime
+{
     UINT32   uiSec;           // 秒
     UINT32   uiUsec;          // 微秒
 
@@ -128,7 +129,8 @@ typedef struct tagPacketTime{
 } PacketTime_S;
 
 // 探测报文格式 修改该结构时务必同步修改PacketHtoN()和PacketNtoH()函数
-typedef struct tagPacketInfo{
+typedef struct tagPacketInfo
+{
     UINT32   uiSequenceNumber;    // 报文序列号,sender发送报文的时候生成.
     UINT32   uiRole;
     PacketTime_S    stT1;               // sender发出报文的时间
@@ -148,7 +150,7 @@ typedef struct tagWorkerCfg
     UINT32   uiDestIP;               // 探测目的IP. 预留TCP扩展
     UINT32   uiSrcPort;              // 探测源端口号. 创建socket时使用
     UINT32   uiDestPort;             // 探测目的端口号. 预留TCP扩展.
-}WorkerCfg_S;
+} WorkerCfg_S;
 
 // DetectWorker 会话信息
 typedef struct tagDetectWorkerSession
@@ -187,9 +189,9 @@ private:
     INT32 GetSocket();                                // 获取当前socket
     int test();
     INT32 TxPacket(DetectWorkerSession_S*
-                        pNewSession);               // 启动报文发送.PushSession()时触发.
+                   pNewSession);               // 启动报文发送.PushSession()时触发.
     INT32 TxUpdateSession(DetectWorkerSession_S*
-                        pNewSession);               // 报文发送完成后, 刷新会话状态.
+                          pNewSession);               // 报文发送完成后, 刷新会话状态.
 
     /* Thread 实现代码 */
     INT32 ThreadHandler();                            // 任务主处理函数
@@ -198,7 +200,7 @@ private:
 
     UINT32 uiHandlerDefaultInterval;          // Handler状态刷新默认周期, 单位为us
     INT32 RxUpdateSession
-        (PacketInfo_S * pstPakcet);                 // Rx任务收到应答报文后, 通知worker刷新会话列表, Rx任务使用
+    (PacketInfo_S * pstPakcet);                 // Rx任务收到应答报文后, 通知worker刷新会话列表, Rx任务使用
 
 public:
     DetectWorker_C();                               // 构造函数, 填充默认值.
@@ -207,7 +209,7 @@ public:
     INT32 Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAgentCfg);         // 根据入参完成对象初始化, FlowManage使用.
     INT32 PushSession(FlowKey_S stNewFlow);           // 添加探测任务, FlowManage使用.
     INT32 PopSession(DetectWorkerSession_S*
-                        pOldSession);               // 查询探测结果, FlowManage使用.
+                     pOldSession);               // 查询探测结果, FlowManage使用.
 
 
 };

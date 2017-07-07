@@ -51,8 +51,8 @@ typedef struct tagAgentFlowTableEntry
     FlowKey_S   stFlowKey;
 
     UINT32 uiFlowState;   // 当前流状态, 丢包/普通, 追踪/普通, enable/disable.
-                                // Urgent流探测完成后启动上报并disable, 不能删除, 否则index会错乱.
-                                // 每次由普通状态切换成丢包状态时触发丢包上报.
+    // Urgent流探测完成后启动上报并disable, 不能删除, 否则index会错乱.
+    // 每次由普通状态切换成丢包状态时触发丢包上报.
 
     /* 原始探测结果 */
     vector <DetectResultPkt_S> vFlowDetectResultPkt;
@@ -84,16 +84,16 @@ typedef struct tagServerFlowKey
     bool operator == (const tagServerFlowKey & other) const
     {
         if (  (other.uiUrgentFlow == uiUrgentFlow)
-            &&(other.eProtocol == eProtocol)
-            &&(other.uiDestPort == uiDestPort)
-            &&(other.uiSrcIP == uiSrcIP)
-            &&(other.uiDestIP == uiDestIP)
-            &&(other.uiDscp == uiDscp)
-            &&(other.uiSrcPortMin == uiSrcPortMin)
-            &&(other.uiSrcPortMax == uiSrcPortMax)
-            &&(other.uiSrcPortRange == uiSrcPortRange)
-            &&(other.stServerTopo == stServerTopo)
-            )
+                &&(other.eProtocol == eProtocol)
+                &&(other.uiDestPort == uiDestPort)
+                &&(other.uiSrcIP == uiSrcIP)
+                &&(other.uiDestIP == uiDestIP)
+                &&(other.uiDscp == uiDscp)
+                &&(other.uiSrcPortMin == uiSrcPortMin)
+                &&(other.uiSrcPortMax == uiSrcPortMax)
+                &&(other.uiSrcPortRange == uiSrcPortRange)
+                &&(other.stServerTopo == stServerTopo)
+           )
             return AGENT_TRUE;
         else
             return AGENT_FALSE;
@@ -102,21 +102,21 @@ typedef struct tagServerFlowKey
     bool operator != (const tagServerFlowKey & other) const
     {
         if (  (other.uiUrgentFlow != uiUrgentFlow)
-            ||(other.eProtocol != eProtocol)
-            ||(other.uiDestPort != uiDestPort)
-            ||(other.uiSrcIP != uiSrcIP)
-            ||(other.uiDestIP != uiDestIP)
-            ||(other.uiDscp != uiDscp)
-            ||(other.uiSrcPortMin != uiSrcPortMin)
-            ||(other.uiSrcPortMax != uiSrcPortMax)
-            ||(other.uiSrcPortRange != uiSrcPortRange)
-            ||(other.stServerTopo != stServerTopo)
-            )
+                ||(other.eProtocol != eProtocol)
+                ||(other.uiDestPort != uiDestPort)
+                ||(other.uiSrcIP != uiSrcIP)
+                ||(other.uiDestIP != uiDestIP)
+                ||(other.uiDscp != uiDscp)
+                ||(other.uiSrcPortMin != uiSrcPortMin)
+                ||(other.uiSrcPortMax != uiSrcPortMax)
+                ||(other.uiSrcPortRange != uiSrcPortRange)
+                ||(other.stServerTopo != stServerTopo)
+           )
             return AGENT_TRUE;
         else
             return AGENT_FALSE;
     }
-}ServerFlowKey_S;
+} ServerFlowKey_S;
 
 // ServerFlowTable 支持添加, 不支持删除(会导致index错乱)
 typedef struct tagServerFlowTableEntry
@@ -159,7 +159,7 @@ private:
     INT32 AgentRefreshFlowTable();                        // 刷新Agent流表, 由CommitServerCfgFlowTable()触发.
     INT32 AgentFlowTableEntryAdjust();                    // 根据range调整下一个report周期打开哪些流.
     INT32 AgentFlowTableEntryClearResult
-        (UINT32 uiAgentFlowIndex);                // 清空特定AgentFlow的探测结果
+    (UINT32 uiAgentFlowIndex);                // 清空特定AgentFlow的探测结果
 
 
     // Server下发的流表
@@ -176,7 +176,7 @@ private:
         ServerFlowTableEntry_S * pstNewServerFlowEntry);    // 向ServerFlowTable中添加Entry前的预处理, 包括入参检查及参数初始化
 
     INT32 ServerCommitCfgFlowTable();                         // 提交配置流表, 由DoQuery()触发.
-                                                            // 将配置流表与工作流表倒换, 配置生效, 并将刷新Agent流表.
+    // 将配置流表与工作流表倒换, 配置生效, 并将刷新Agent流表.
 
     // 业务处理流程
     UINT32 uiNeedCheckResult;                     // 是否有未收集探测结果的流?
@@ -205,7 +205,7 @@ private:
     INT32 QueryCheck(UINT32 counter);           // 检测此时是否该启动查询Server配置流程.
     INT32 DoQuery();                                  // 启动从Server刷新配置流程.
     INT32 GetFlowFromServer
-            (ServerFlowKey_S * pstNewFlow);         // 从Server获取一条新的Flow.
+    (ServerFlowKey_S * pstNewFlow);         // 从Server获取一条新的Flow.
 
     /* Thread 实现代码 */
     INT32 ThreadHandler();                        // 任务主处理函数
@@ -222,7 +222,7 @@ public:
     INT32 Init(ServerAntAgentCfg_C * pcNewAgentCfg);   // 初始化函数
 
     INT32 ServerWorkingFlowTableAdd
-            (ServerFlowKey_S stServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
+    (ServerFlowKey_S stServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
 
     INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
 };
