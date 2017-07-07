@@ -159,11 +159,11 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
         (* pstrResponce) = ResponcePageOK;
         MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
     }
-	else if (0 == sal_strcmp(pcKey, ServerAntsAgentConf))
-	{
-	    iRet = ProcessConfigFlowFromServer(pcData, pcFlowManager);
-		HandleResponse(iRet, pstrResponce);
-	}
+    else if (0 == sal_strcmp(pcKey, ServerAntsAgentConf))
+    {
+        iRet = ProcessConfigFlowFromServer(pcData, pcFlowManager);
+        HandleResponse(iRet, pstrResponce);
+    }
     else
     {
         // 终止本次post处理, 忽略尚未处理的key/data值.
@@ -177,17 +177,17 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
 void MessagePlatformServer_C::HandleResponse(INT32 iRet, string * pstrResponce)
 {
     if(AGENT_EXIT == iRet)
-        {
-            (* pstrResponce) = ResponseExitOk;
-        }
-        else if(iRet)
-        {
-            (* pstrResponce) = ResponcePageError;
-        }
-        else
-        {
-            (* pstrResponce) = ResponcePageOK;
-        }
+    {
+        (* pstrResponce) = ResponseExitOk;
+    }
+    else if(iRet)
+    {
+        (* pstrResponce) = ResponcePageError;
+    }
+    else
+    {
+        (* pstrResponce) = ResponcePageOK;
+    }
 }
 
 

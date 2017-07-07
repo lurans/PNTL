@@ -15,20 +15,20 @@ using namespace std;
 #define AGENT_REQUEST_TIMEOUT 5
 /*
 ServerAntServer 下发的紧急探测流格式
-post 
+post
 key = ServerAntAgent
-data = 
+data =
 {
     "orgnizationSignature": "HuaweiDC3ServerAntsProbelistIssue",
     "serverIP": "10.1.1.1",
     "action": "post",
     "content": "probe-list",
-    
+
     "flow": [
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -41,9 +41,9 @@ data =
         },
 
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -65,40 +65,41 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
 {
     char * pStr = (char *)ptr;
 
-	if (strlen(pStr) != (nmemb + 2))
-	{
-              MSG_CLIENT_WARNING("ReceiveResponce.............wrong&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&.....");
+    if (strlen(pStr) != (nmemb + 2))
+    {
+        MSG_CLIENT_WARNING("ReceiveResponce.............wrong&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&.....");
 
-	}
+    }
 
-	char* newPStr = (char*)malloc(size * nmemb + 1);
-	if (NULL == newPStr) {
-		MSG_CLIENT_ERROR("Apply for size [%d] memory fail.", size * nmemb + 1);
-		return 0;
-	}
-	sal_memset(newPStr, 0, size * nmemb + 1);
-	memcpy(newPStr, pStr, size * nmemb);
+    char* newPStr = (char*)malloc(size * nmemb + 1);
+    if (NULL == newPStr)
+    {
+        MSG_CLIENT_ERROR("Apply for size [%d] memory fail.", size * nmemb + 1);
+        return 0;
+    }
+    sal_memset(newPStr, 0, size * nmemb + 1);
+    memcpy(newPStr, pStr, size * nmemb);
     (*pssResponce) << newPStr;
     MSG_CLIENT_WARNING("ReceiveResponce..................strlen[%d].........................data:'%s'         nmemb:%d",
-					strlen(newPStr), newPStr, nmemb);
-	free(newPStr);
-	
+                       strlen(newPStr), newPStr, nmemb);
+    free(newPStr);
+
     return size*nmemb;
 }
 
-    
+
 // 通过http post操作提交数据
 INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstream *pssResponceData)
 {
     INT32 iRet = AGENT_OK;
     string strTemp;
-    
+
     CURL *curl;
     CURLcode res;
     char error_msg[CURL_ERROR_SIZE];
     struct curl_slist *headers = NULL;
     curl_global_init(CURL_GLOBAL_ALL);
-    
+
     // 创建一个curl句柄
     curl = curl_easy_init();
     if (curl)
@@ -141,10 +142,10 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         // http中 "\n" 有特殊含义, 字符串中的换行符全部要替换掉.
         string strOld = "\n";
         string strNew = " ";
-        
+
         // 设定URL
         strTemp.clear();
-        strTemp = pssUrl->str();        
+        strTemp = pssUrl->str();
         sal_string_replace(&strTemp, &strOld, &strNew);
         MSG_CLIENT_INFO("URL:[%s]", strTemp.c_str());
         res = curl_easy_setopt(curl, CURLOPT_URL, strTemp.c_str());
@@ -171,7 +172,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
-        
+
         // 设定接收response的函数
         res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ReceiveResponce);
         if(CURLE_OK != res)
@@ -223,7 +224,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
 INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
 {
     INT32 iRet = AGENT_OK;
-    
+
     // 用于提交的URL地址
     stringstream ssUrl;
     // 保存需要post的数据,json格式字符串, 由json模块生成.
@@ -274,9 +275,9 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     string strResponceData = ssResponceData.str();
     pcJsonData = (char *)strResponceData.c_str();
 
-   // 处理response数据
+    // 处理response数据
     //MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
-    
+
     iRet = ProcessNormalFlowFromServer( pcJsonData, pcFlowManager);
     if (iRet)
     {
@@ -284,9 +285,9 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
         return iRet;
     }
     return iRet;
-    
+
 }
-    
+
 
 // 向ServerAnrServer请求新的probe列表
 INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrReportData, string strUrl)
@@ -336,7 +337,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
     string strResponceData = ssResponceData.str();
     pcJsonData = strResponceData.c_str();
 
-   // 处理response数据
+    // 处理response数据
     MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
 
 
@@ -346,8 +347,8 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
 
 INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
 {
-	INT32 iRet = AGENT_OK;
-    
+    INT32 iRet = AGENT_OK;
+
     // 用于提交的URL地址
     stringstream ssUrl;
     // 保存需要post的数据,json格式字符串, 由json模块生成.
@@ -365,7 +366,7 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
         MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
         return iRet;
     }
-	
+
     ssUrl.clear();
     ssUrl << "http://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << "/rest/chkflow/agentIp";
     MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
@@ -395,7 +396,7 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
     string strResponceData = ssResponceData.str();
     pcJsonData = (char *)strResponceData.c_str();
 
-   // 处理response数据
+    // 处理response数据
     MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
     return iRet;
 }

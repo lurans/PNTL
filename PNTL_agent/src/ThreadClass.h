@@ -22,10 +22,10 @@ class ThreadClass_C
 private:
     /*  */
     UINT32   uiThreadUpdateInterval;  // 单位us. Thread状态机刷新时间.StopCallBack()下发后,最长ThreadUpdateInterval us内
-                                            // ThreadHandler()应该返回, 否则Thread会被强制终止.
+    // ThreadHandler()应该返回, 否则Thread会被强制终止.
     UINT32   uiThreadState;           // Thread状态机
     pthread_t ThreadFd;                     // Thread句柄.
-    
+
 public:
     ThreadClass_C();                        // 构造函数, 填充默认值.
     ~ThreadClass_C();                       // 析构函数, 释放必要资源.
@@ -35,13 +35,13 @@ public:
 
     INT32 SetNewInterval(UINT32 uiNewInterval);     // 设定新定时器间隔
     UINT32 GetCurrentInterval();                  // 查询当前定时器间隔
-    
+
     INT32 ThreadUpdateState(UINT32 uiNewState);     // 刷新任务状态机
 
-    virtual INT32 ThreadHandler();                        // 任务主处理函数    
+    virtual INT32 ThreadHandler();                        // 任务主处理函数
     virtual INT32 PreStopHandler();                       // StopThread触发, 通知ThreadHandler主动退出.
     virtual INT32 PreStartHandler();                      // StartThread触发, 通知ThreadHandler即将被调用.
-    
+
 };
 
 #endif

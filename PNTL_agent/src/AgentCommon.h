@@ -1,11 +1,11 @@
 #ifndef __SRC_AgentCommon_H__
 #define __SRC_AgentCommon_H__
 
-enum 
+enum
 {
     AGENT_OK            = 0,
     AGENT_E_ERROR       = -1,
-    AGENT_E_PARA        = -2,    
+    AGENT_E_PARA        = -2,
     AGENT_E_NOT_FOUND   = -3,
     AGENT_E_MEMORY      = -4,
     AGENT_E_TIMER       = -5,
@@ -31,6 +31,6 @@ typedef enum  tagAgentDetectProtocolType
     AGENT_DETECT_PROTOCOL_UDP,        // UDP, 支持
     AGENT_DETECT_PROTOCOL_TCP,        // TCP,暂不支持
     AGENT_DETECT_PROTOCOL_MAX
-}AgentDetectProtocolType_E;
+} AgentDetectProtocolType_E;
 
 #endif

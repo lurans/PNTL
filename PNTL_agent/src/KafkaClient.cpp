@@ -15,11 +15,11 @@ using namespace std;
 #define KAFKA_LOCK() \
         if (stKafkaLock) \
             sal_mutex_take(stKafkaLock, sal_mutex_FOREVER)
-            
+
 #define KAFKA_UNLOCK() \
         if (stKafkaLock) \
             sal_mutex_give(stKafkaLock)
-            
+
 // kafka log Level
 #define LOG_EMERG   0
 #define LOG_ALERT   1
@@ -32,22 +32,22 @@ using namespace std;
 
 // kafka 日志回调, 用于接管kafka日志
 void KafkaLogger (const rd_kafka_t *pstKafka, INT32 iLevel,
-    const char *pcFac, const char *pcBuf) 
+                  const char *pcFac, const char *pcBuf)
 {
     if (iLevel <= LOG_ERR)
     {
         KAFKA_CLIENT_ERROR("RDKAFKA-[%i]-[%s]: [%s]: [%s]",
-            iLevel, pcFac, pstKafka ? rd_kafka_name(pstKafka) : NULL, pcBuf);
+                           iLevel, pcFac, pstKafka ? rd_kafka_name(pstKafka) : NULL, pcBuf);
     }
     else if (iLevel <= LOG_WARNING)
     {
         KAFKA_CLIENT_WARNING("RDKAFKA-[%i]-[%s]: [%s]: [%s]",
-            iLevel, pcFac, pstKafka ? rd_kafka_name(pstKafka) : NULL, pcBuf);
+                             iLevel, pcFac, pstKafka ? rd_kafka_name(pstKafka) : NULL, pcBuf);
     }
     else
     {
         KAFKA_CLIENT_INFO("RDKAFKA-[%i]-[%s]: [%s]: [%s]",
-            iLevel, pcFac, pstKafka ? rd_kafka_name(pstKafka) : NULL, pcBuf);
+                          iLevel, pcFac, pstKafka ? rd_kafka_name(pstKafka) : NULL, pcBuf);
     }
 }
 
@@ -58,31 +58,31 @@ void KafkaLogger (const rd_kafka_t *pstKafka, INT32 iLevel,
  * See rdkafka.h for more information.
  */
 void KafkaDeliveredReport(rd_kafka_t *rk,
-                void *payload, size_t len,
-                rd_kafka_resp_err_t error_code,
-                void *opaque, void *msg_opaque) 
+                          void *payload, size_t len,
+                          rd_kafka_resp_err_t error_code,
+                          void *opaque, void *msg_opaque)
 {
     if (error_code)
     {
         // 消息发送失败
-        
-        char *  pacLogBuffer = NULL; 
+
+        char *  pacLogBuffer = NULL;
         pacLogBuffer = new char[len + 1];
         if (pacLogBuffer)
         {
             sal_memset(pacLogBuffer, 0, (len + 1));
             // 确保访问不越界
             strncpy(pacLogBuffer, (const char*)payload, len);
-            
-            KAFKA_CLIENT_WARNING("Message delivery failed[%s], Payload[%u][%s]", 
-                rd_kafka_err2str(error_code), len, pacLogBuffer);
+
+            KAFKA_CLIENT_WARNING("Message delivery failed[%s], Payload[%u][%s]",
+                                 rd_kafka_err2str(error_code), len, pacLogBuffer);
 
             delete [] pacLogBuffer;
             pacLogBuffer = NULL;
         }
         else
             KAFKA_CLIENT_WARNING("Message delivery failed[%s], Payload len[%u], and No Enough Memory",
-                rd_kafka_err2str(error_code), len);
+                                 rd_kafka_err2str(error_code), len);
     }
 }
 
@@ -90,7 +90,7 @@ void KafkaDeliveredReport(rd_kafka_t *rk,
 KafkaClient_C::KafkaClient_C()
 {
     KAFKA_CLIENT_INFO("Creat a new KafkaClient");
-    
+
     // 互斥锁保护
     stKafkaLock = NULL;
     // kafka句柄
@@ -100,7 +100,7 @@ KafkaClient_C::KafkaClient_C()
 
     // Broker List
     KafkaBrokerList.clear();
-    
+
     // kafka topic句柄, 一个topic属于特定kafka实例.
     KafkaTopicList.clear();
 
@@ -118,7 +118,7 @@ KafkaClient_C::KafkaClient_C()
 KafkaClient_C::~KafkaClient_C()
 {
     KAFKA_CLIENT_INFO("Destroy an old KafkaClient");
-    
+
     StopKafkaClient();
 
     if (stKafkaLock)
@@ -129,15 +129,15 @@ KafkaClient_C::~KafkaClient_C()
 // 添加broker服务器地址信息.
 INT32 KafkaClient_C::AddBrokerAddress(string strNewBrokerInfo)
 {
-    
-    
+
+
     // kafka client 已经启动, 不允许修改配置
     if (pstKafka)
     {
         KAFKA_CLIENT_ERROR("Can't add broker server when kafka client is running");
         return AGENT_E_PARA;
     }
-    
+
     // 添加broker会在init前调用, 申请互斥锁.
     if (NULL == stKafkaLock)
     {
@@ -164,7 +164,7 @@ INT32 KafkaClient_C::AddBrokerAddress(string strNewBrokerInfo)
     }
     KafkaBrokerList.push_back(strNewBrokerInfo);
     KAFKA_UNLOCK();
-    
+
     return AGENT_OK;
 }
 
@@ -173,24 +173,24 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
 {
     INT32 iRet = AGENT_OK;
     char acKafkaErr[512];
-    
+
     rd_kafka_type_t eKafkaType;
     switch (eNewClientType)
     {
-        case KAFAKA_CLIENT_TYPE_PRODUCER:
-            eKafkaType = RD_KAFKA_PRODUCER;
-            break;
-            
-        case KAFAKA_CLIENT_TYPE_CONSUMER:
-            eKafkaType = RD_KAFKA_CONSUMER;
-            break;
-            
-        default:
-            KAFKA_CLIENT_ERROR("Unknown client type[%d]", eNewClientType);
-            return AGENT_E_PARA;
+    case KAFAKA_CLIENT_TYPE_PRODUCER:
+        eKafkaType = RD_KAFKA_PRODUCER;
+        break;
+
+    case KAFAKA_CLIENT_TYPE_CONSUMER:
+        eKafkaType = RD_KAFKA_CONSUMER;
+        break;
+
+    default:
+        KAFKA_CLIENT_ERROR("Unknown client type[%d]", eNewClientType);
+        return AGENT_E_PARA;
     }
 
-    
+
     if (0 == KafkaBrokerList.size())
     {
         KAFKA_CLIENT_ERROR("Broker list is empty, call AddBrokerAddress first");
@@ -206,13 +206,13 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
         rd_kafka_conf_res_t stKafkaConfRet;
         // kafka句柄配置
         rd_kafka_conf_t *pstKafkaConf = NULL;
-        
+
         // 参数中可识别的Broker数量
         UINT32 uiBrokerNumber = 0;
-        
-        // Kafka configuration 
+
+        // Kafka configuration
         pstKafkaConf = rd_kafka_conf_new();
-        if (NULL == pstKafkaConf) 
+        if (NULL == pstKafkaConf)
         {
             KAFKA_UNLOCK();
             KAFKA_CLIENT_ERROR("Failed to create new Kafka configuration");
@@ -225,7 +225,7 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
             // 消息最大缓存时间到达后, 即使只有一个消息也立刻启动发送, 控制最大时延.
             // 默认5分钟(基于topic的message.timeout.ms设定)内未发送成功的,会触发发送失败, 回调发送报告(DR)
             stKafkaConfRet = rd_kafka_conf_set(pstKafkaConf, "queue.buffering.max.ms", "500",
-                        acKafkaErr, sizeof(acKafkaErr));
+                                               acKafkaErr, sizeof(acKafkaErr));
             if ( RD_KAFKA_CONF_OK != stKafkaConfRet)
             {
                 rd_kafka_conf_destroy(pstKafkaConf);
@@ -242,7 +242,7 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
             // 0.9版本以上Broker服务器, 默认 10 分钟无连接则端口连接, 连接断开后客户端会重新连接, 业务不会受损.
             // 此选项可以关闭连接断开时记录日志功能.
             stKafkaConfRet = rd_kafka_conf_set(pstKafkaConf, "log.connection.close", "0",
-                        acKafkaErr, sizeof(acKafkaErr));
+                                               acKafkaErr, sizeof(acKafkaErr));
             if ( RD_KAFKA_CONF_OK != stKafkaConfRet)
             {
                 rd_kafka_conf_destroy(pstKafkaConf);
@@ -257,7 +257,7 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
             // producer发送队列长度(消息个数), 默认值100000个, 取值范围1 - 10000000个;
             // 超过上限后新增消息时会返回full错误.
             stKafkaConfRet = rd_kafka_conf_set(pstKafkaConf, "queue.buffering.max.messages", "100",
-                        acKafkaErr, sizeof(acKafkaErr));
+                                               acKafkaErr, sizeof(acKafkaErr));
             if ( RD_KAFKA_CONF_OK != stKafkaConfRet)
             {
                 rd_kafka_conf_destroy(pstKafkaConf);
@@ -267,11 +267,11 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
                 KAFKA_CLIENT_ERROR("Failed to set new queue.buffering.max.messages, type[%d],err[%s]", eNewClientType, acKafkaErr);
                 return AGENT_E_ERROR;
             }
-            
+
             // producer错误消息发送失败后最大重试次数, 默认值2次, 取值范围0 - 10000000 次.
             // How many times to retry sending a failing MessageSet.
             stKafkaConfRet = rd_kafka_conf_set(pstKafkaConf, "message.send.max.retries", "5",
-                        acKafkaErr, sizeof(acKafkaErr));
+                                               acKafkaErr, sizeof(acKafkaErr));
             if ( RD_KAFKA_CONF_OK != stKafkaConfRet)
             {
                 rd_kafka_conf_destroy(pstKafkaConf);
@@ -286,7 +286,7 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
             // The backoff time in milliseconds before retrying a message send.
 
             stKafkaConfRet = rd_kafka_conf_set(pstKafkaConf, "retry.backoff.ms", "500",
-                        acKafkaErr, sizeof(acKafkaErr));
+                                               acKafkaErr, sizeof(acKafkaErr));
             if ( RD_KAFKA_CONF_OK != stKafkaConfRet)
             {
                 rd_kafka_conf_destroy(pstKafkaConf);
@@ -306,14 +306,14 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
         // 错误回调使用log记录.
         //If no error_cb is registered then the errors will be logged instead.
         //rd_kafka_conf_set_error_cb(pstKafkaConf, error_cb);
-        
+
         // 接管kafka日志
         rd_kafka_conf_set_log_cb(pstKafkaConf, KafkaLogger);
-        
+
         // 使用配置信息创建kafka.
         pstKafka = rd_kafka_new(eKafkaType, pstKafkaConf, acKafkaErr, sizeof(acKafkaErr));
-        if (NULL == pstKafka) 
-        {   
+        if (NULL == pstKafka)
+        {
             rd_kafka_conf_destroy(pstKafkaConf);
             pstKafkaConf = NULL;
 
@@ -326,7 +326,7 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
 
         // 打印详细信息
         rd_kafka_set_log_level(pstKafka, LOG_DEBUG);
-        
+
         // 添加broker
         stringstream ssStringBrokerList;
         // 遍历broker list
@@ -335,7 +335,7 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
         {
             ssStringBrokerList << pstrKafkaBrokerInfo->c_str() <<",";
         }
-        
+
         uiBrokerNumber = rd_kafka_brokers_add(pstKafka, ssStringBrokerList.str().c_str());
         if (0 == uiBrokerNumber)
         {
@@ -353,7 +353,7 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
         KAFKA_CLIENT_ERROR("kafka client is running and don't restart this client");
         return AGENT_E_PARA;
     }
-    
+
     KAFKA_UNLOCK();
     iRet = StartThread();
     if(iRet)
@@ -370,10 +370,10 @@ INT32 KafkaClient_C::StopKafkaClient()
     INT32 iRet = AGENT_OK;
 
     KAFKA_CLIENT_INFO("Stop a [%s(%d)] kafka client", (eClientType ? "CONSUMER":"PRODUCER"), eClientType);
-    
+
     KAFKA_LOCK();
-    
-    // Destroy topic 
+
+    // Destroy topic
     vector<KafakTopicEntry_S>::iterator pcKafakTopicEntry;
     for(pcKafakTopicEntry = KafkaTopicList.begin(); pcKafakTopicEntry != KafkaTopicList.end(); pcKafakTopicEntry++)
     {
@@ -392,7 +392,7 @@ INT32 KafkaClient_C::StopKafkaClient()
         KAFKA_CLIENT_ERROR("StopThread failed[%d]", iRet);
         return iRet;
     }
-    
+
     // Destroy kafka handle
     if (pstKafka)
         rd_kafka_destroy(pstKafka);
@@ -424,11 +424,11 @@ INT32 KafkaClient_C::AddNewTopic(string * pstrTopicName, rd_kafka_topic_t ** pps
     {
         // topic句柄配置
         rd_kafka_topic_conf_t *pstTopicConf = NULL;
-        
+
         // Topic configuration
         pstTopicConf = rd_kafka_topic_conf_new();
-        if (NULL == pstTopicConf) 
-        { 
+        if (NULL == pstTopicConf)
+        {
             KAFKA_CLIENT_ERROR("Failed to create new Topic configuration");
             return AGENT_E_ERROR;
         }
@@ -438,18 +438,18 @@ INT32 KafkaClient_C::AddNewTopic(string * pstrTopicName, rd_kafka_topic_t ** pps
         {
             rd_kafka_conf_res_t stKafkaConfRet;
             char acKafkaErr[512];
-            
+
             // producer消息本地老化时间(基于topic配置), 单位ms, 默认值5分钟, 取值范围0 - 900*1000ms. 0表示无限制
             // 超时后会将消息从发送队列中移除,并触发发送失败
             stKafkaConfRet = rd_kafka_topic_conf_set(pstTopicConf, "message.timeout.ms", "60000",
-                        acKafkaErr, sizeof(acKafkaErr));
+                             acKafkaErr, sizeof(acKafkaErr));
             if ( RD_KAFKA_CONF_OK != stKafkaConfRet)
             {
                 rd_kafka_topic_conf_destroy(pstTopicConf);
                 pstTopicConf = NULL;
-                
-                KAFKA_CLIENT_ERROR("Failed to set new message.timeout.ms for topic[%s], err[%s]", 
-                    stKafkaTopicEntry.strTopicName.c_str(), acKafkaErr);
+
+                KAFKA_CLIENT_ERROR("Failed to set new message.timeout.ms for topic[%s], err[%s]",
+                                   stKafkaTopicEntry.strTopicName.c_str(), acKafkaErr);
                 return AGENT_E_ERROR;
             }
         }
@@ -461,18 +461,18 @@ INT32 KafkaClient_C::AddNewTopic(string * pstrTopicName, rd_kafka_topic_t ** pps
         {
             rd_kafka_topic_conf_destroy(pstTopicConf);
             pstTopicConf = NULL;
-            
+
             KAFKA_CLIENT_ERROR("Failed to create new topic: [%s]", stKafkaTopicEntry.strTopicName.c_str());
             return AGENT_E_ERROR;
         }
         // topic 创建成功, conf对象已经被使用(实际上是copy后销毁), 不可再次使用.
         pstTopicConf = NULL;
     }
-        
+
     KafkaTopicList.push_back(stKafkaTopicEntry);
-    
+
     *ppstKafkaTopic = stKafkaTopicEntry.pstKafkaTopic;
-    
+
     return AGENT_OK;
 }
 
@@ -480,12 +480,12 @@ INT32 KafkaClient_C::AddNewTopic(string * pstrTopicName, rd_kafka_topic_t ** pps
 INT32 KafkaClient_C::SearchTopicList(string * pstrTopicName, rd_kafka_topic_t ** ppstKafkaTopic)
 {
     * ppstKafkaTopic = NULL;
-    
+
     vector<KafakTopicEntry_S>::iterator pcKafakTopicEntry;
     for(pcKafakTopicEntry = KafkaTopicList.begin(); pcKafakTopicEntry != KafkaTopicList.end(); pcKafakTopicEntry++)
     {
         if (   ((pcKafakTopicEntry->strTopicName) == (*pstrTopicName))
-            && (pcKafakTopicEntry->pstKafkaTopic))
+                && (pcKafakTopicEntry->pstKafkaTopic))
         {
             * ppstKafkaTopic = pcKafakTopicEntry->pstKafkaTopic;
             return AGENT_OK;
@@ -499,9 +499,9 @@ INT32 KafkaClient_C::SearchTopicList(string * pstrTopicName, rd_kafka_topic_t **
 INT32 KafkaClient_C::GetTopic(string * pstrTopicName, rd_kafka_topic_t ** ppstKafkaTopic)
 {
     INT32 iRet = AGENT_E_NOT_FOUND;
-    
+
     * ppstKafkaTopic = NULL;
-    
+
     // 根据topic name查找对应topic 句柄
     iRet = SearchTopicList(pstrTopicName, ppstKafkaTopic);
     if (AGENT_E_NOT_FOUND == iRet)
@@ -534,7 +534,7 @@ INT32 KafkaClient_C::ProduceKafkaMsg(string* pstrTopicName, string* pstrMsg)
         KAFKA_CLIENT_ERROR("Kafka client type is[%d], can't produce msg", eClientType);
         return AGENT_E_PARA;
     }
-   
+
     //KAFKA_CLIENT_INFO("Produce Data:[%s]", pstrMsg->c_str());
 
     KAFKA_LOCK();
@@ -547,40 +547,40 @@ INT32 KafkaClient_C::ProduceKafkaMsg(string* pstrTopicName, string* pstrMsg)
     }
 
     // 加入信息与发送信息默认是异步的, 使用互斥锁保护对性能影响应该不大.
-    iRet = rd_kafka_produce(pstKafkaTopic, iDefaultPartition, 
-                    RD_KAFKA_MSG_F_COPY, 
-                    /* Payload and length */
-                    (void *)(pstrMsg->c_str()), pstrMsg->size(),
-                    /* Optional key and its length */
-                    NULL, 0,
-                    /* Message opaque, provided in
-                    * delivery report callback as
-                    * msg_opaque. */
-                    NULL);
+    iRet = rd_kafka_produce(pstKafkaTopic, iDefaultPartition,
+                            RD_KAFKA_MSG_F_COPY,
+                            /* Payload and length */
+                            (void *)(pstrMsg->c_str()), pstrMsg->size(),
+                            /* Optional key and its length */
+                            NULL, 0,
+                            /* Message opaque, provided in
+                            * delivery report callback as
+                            * msg_opaque. */
+                            NULL);
     if (iRet)
     {
         /* Poll to handle delivery reports */
         rd_kafka_poll(pstKafka, 0);
-        
+
         KAFKA_UNLOCK();
         KAFKA_CLIENT_ERROR("Failed to produce to topic[%s], partition [%i]: %s",
-            rd_kafka_topic_name(pstKafkaTopic), iDefaultPartition,
-            rd_kafka_err2str(rd_kafka_last_error()));
+                           rd_kafka_topic_name(pstKafkaTopic), iDefaultPartition,
+                           rd_kafka_err2str(rd_kafka_last_error()));
         return AGENT_E_ERROR;
     }
 
     /* Poll to handle delivery reports */
     rd_kafka_poll(pstKafka, 0);
-    
+
     KAFKA_UNLOCK();
-    
+
     return AGENT_OK;
 }
 
 // 从kafka接收消息, 待实现
 INT32 KafkaClient_C::ConsumeKafkaMsg(string* pstrTopicName, string* pstrMsg)
 {
-    
+
     if (NULL == pstKafka)
     {
         KAFKA_CLIENT_ERROR("Should Init Kafka First");
@@ -594,7 +594,7 @@ INT32 KafkaClient_C::ConsumeKafkaMsg(string* pstrTopicName, string* pstrMsg)
     KAFKA_LOCK();
     /* 待实现 */
     KAFKA_UNLOCK();
-    
+
     KAFKA_CLIENT_ERROR("ConsumeKafkaMsg not available now");
     return AGENT_E_ERROR;
 }
@@ -609,7 +609,7 @@ INT32 KafkaClient_C::ThreadHandler()
     while (GetCurrentInterval())
     {
         if (   pstKafka
-            && (0 < rd_kafka_outq_len(pstKafka)))
+                && (0 < rd_kafka_outq_len(pstKafka)))
         {
             // 快速触发dr等回调函数, 时间单位为ms
             /* Poll to handle delivery reports */
@@ -625,7 +625,7 @@ INT32 KafkaClient_C::ThreadHandler()
 // Thread即将启动, 通知ThreadHandler做好准备.
 INT32 KafkaClient_C::PreStartHandler()
 {
-    
+
     return AGENT_OK;
 }
 
