@@ -409,7 +409,7 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
-    @Path("/pntlConf")
+    @Path("/pntlVariableConf")
     @POST
     public Response setPntlConfig(PntlConfig config){
         Result<String> result = pntlConfigService.setPntlConfig(config);
@@ -435,6 +435,17 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
+    @Path("/pntlAkSkConf")
+    @POST
+    public Response setPntlAkSkConf(PntlConfig config){
+        Result<String> result = pntlConfigService.setPntlAkSkConfig(config);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ();
+    }
+
     @Path("/ipList")
     @POST
     public Response getIpList(IpListRequest req){
@@ -453,6 +464,16 @@ public class RouterApi {
     @POST
     public Response stopProbe(){
         Result<String> result = pntlService.setProbeInterval("0");
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/exitProbe")
+    @POST
+    public Response exitProbe(){
+        Result<String> result = pntlService.setProbeInterval("-1");
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }

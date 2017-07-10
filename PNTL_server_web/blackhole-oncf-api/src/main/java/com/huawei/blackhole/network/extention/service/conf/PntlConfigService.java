@@ -64,10 +64,40 @@ public class PntlConfigService {
         }
         return result;
     }
+    public Result<String> setPntlAkSkConfig(PntlConfig pntlConfig) {
+        //Get PntlConfig
+        Result<String> result = new Result<String>();
+        try{
+
+            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_CONF);
+            dataObj.put("ak",pntlConfig.getAk());
+            dataObj.put("sk",pntlConfig.getSk());
+            pntlConfig.setByMap(dataObj);
+
+            validPntlConfig(pntlConfig);
+            pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
+            Map<String, Object> data = pntlConfig.convertToMap();
+            YamlUtil.setConf(data, Resource.PNTL_CONF);
+        }catch (ApplicationException | InvalidParamException e) {
+            String errMsg = "set config [" + Resource.NAME_CONF + "] failed : " + e.getLocalizedMessage();
+            LOGGER.error(errMsg, e);
+            result.addError("", e.prefix() + errMsg);
+        } catch (Exception e){
+            result.addError("", "parameter is invalid");
+        }
+
+        LOGGER.info("Update pntlConfig success");
+
+        return result;
+    }
 
     public Result<String> setPntlConfig(PntlConfig pntlConfig) {
         Result<String> result = new Result<String>();
         try {
+            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_CONF);
+            pntlConfig.setAk((String) dataObj.get("ak"));
+            pntlConfig.setSk((String) dataObj.get("sk"));
+
             validPntlConfig(pntlConfig);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
             Map<String, Object> data = pntlConfig.convertToMap();
