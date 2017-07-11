@@ -4,6 +4,7 @@ import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.api.resource.ResultPool;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.BaseException;
 import com.huawei.blackhole.network.common.exception.ClientException;
@@ -469,12 +470,12 @@ public class RouterApi {
         return ResponseUtil.succ();
     }
 
-    @Path("/uploadAgentPkg")
+    @Path("/uploadFiles")
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadAgentPkg(@Context HttpServletRequest request, MultipartBody body){
         LOGGER.info("start to upload agent package file");
-
+        Result<String> result = null;
         Attachment file = body.getAttachment(Constants.FORM_FILE);
         if (file == null) {
             String errMsg = ExceptionUtil.prefix(ExceptionType.CLIENT_ERR) + "invalid request";
@@ -486,39 +487,19 @@ public class RouterApi {
         for (Attachment a : atts) {
             ContentDisposition cd = a.getContentDisposition();
             if (cd != null && Constants.FORM_FILE.equals(cd.getParameter("name"))) {
-                try {
-                    Result<String> result = pntlConfigService.uploadAgentPkgFile(a);
+                if (a.getDataHandler().getName().equalsIgnoreCase(PntlInfo.PNTL_IPLIST_CONF)) {
+                    result = pntlConfigService.uploadIpListFile(a);
                     if (!result.isSuccess()) {
                         return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
                     }
-                } catch (UnsupportedEncodingException e){
-
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                } else {
+                    result = pntlConfigService.uploadAgentPkgFile(a);
+                    if (!result.isSuccess()) {
+                        return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+                    }
                 }
             }
         }
         return ResponseUtil.succ();
-    }
-
-    @Path("/uploadIpList")
-    @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadIpList(@Context HttpServletRequest request, MultipartBody body){
-        LOGGER.info("start to upload ipList file");
-
-        Attachment file = body.getAttachment(Constants.FORM_FILE);
-        if (file == null) {
-            String errMsg = ExceptionUtil.prefix(ExceptionType.CLIENT_ERR) + "invalid request";
-            LOGGER.error(errMsg);
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, errMsg);
-        }
-
-        Result<String> result = pntlConfigService.uploadIpListFile(file);
-        if (result.isSuccess()) {
-            return ResponseUtil.succ();
-        } else {
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
-        }
     }
 }

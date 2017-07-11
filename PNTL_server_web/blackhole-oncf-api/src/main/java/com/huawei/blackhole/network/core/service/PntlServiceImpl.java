@@ -476,7 +476,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private List<PntlHostContext> readFileHostList() throws Exception{
         List<PntlHostContext> hostsList = new ArrayList<PntlHostContext>();
 
-        Map<String, PntlHostInfo> data = (Map<String, PntlHostInfo>) YamlUtil.getConf(Resource.PNTL_IPLIST_CONF);
+        Map<String, PntlHostInfo> data = (Map<String, PntlHostInfo>) YamlUtil.getConf(PntlInfo.PNTL_IPLIST_CONF);
         List<Map<String, String>> ipList = (List<Map<String, String>>) data.get("host");
         for (int i = 0; i < ipList.size(); i++) {
             PntlHostContext host = new PntlHostContext();
