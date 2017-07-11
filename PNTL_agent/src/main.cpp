@@ -17,8 +17,8 @@ void * MainTestTask(void * p)
 {
     INT32 iRet = AGENT_OK;
     FlowManager_C * pcFlowManager = (FlowManager_C *)p;
-    
-    ServerFlowKey_S stNewServerFlowKey;  
+
+    ServerFlowKey_S stNewServerFlowKey;
     sal_memset(&stNewServerFlowKey, 0, sizeof(ServerFlowKey_S));
 
     stNewServerFlowKey.eProtocol = AGENT_DETECT_PROTOCOL_UDP;
@@ -29,36 +29,37 @@ void * MainTestTask(void * p)
     stNewServerFlowKey.uiSrcPortRange = 16;
     stNewServerFlowKey.uiDscp = 10;
     stNewServerFlowKey.uiUrgentFlow = AGENT_TRUE;
-    
+
     stNewServerFlowKey.stServerTopo.uiLevel = 1;
     stNewServerFlowKey.stServerTopo.uiSvid = 9;
     stNewServerFlowKey.stServerTopo.uiDvid = 11;
 
-    
-    
+
+
     do
     {
         // 模拟Server下发紧急探测流
-        #if 0
+#if 0
         iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
-        if (iRet)        
+        if (iRet)
             INIT_ERROR("FlowManager.ServerWorkingFlowTableAdd failed [%d]", iRet);
-        #endif
+#endif
 
         // 模拟向ServerAntServer请求Server
-        #if 0
+#if 0
         iRet = RequestProbeListFromServer(pcFlowManager);
-        if (iRet)        
+        if (iRet)
             INIT_ERROR("RequestProbeListFromServer failed [%d]", iRet);
-        #endif
+#endif
         sal_sleep(120);
-        
-    } while(1);
+
+    }
+    while(1);
 }
 
 // 启动ServerAntAgent业务
 INT32 ServerAntAgent()
-{  
+{
     INT32 iRet = 0;
     FlowManager_C * pcFlowManager = NULL;
 
@@ -75,7 +76,7 @@ INT32 ServerAntAgent()
         if (pcCfg)
             delete pcCfg;
         pcCfg = NULL;
-        
+
         INIT_ERROR("GetLocalCfg failed [%d]", iRet);
         return iRet;
     }
@@ -88,7 +89,7 @@ INT32 ServerAntAgent()
         if (pcCfg)
             delete pcCfg;
         pcCfg = NULL;
-        
+
         INIT_ERROR("ReportToServer failed [%d]", iRet);
         return iRet;
     }
@@ -101,7 +102,7 @@ INT32 ServerAntAgent()
         if (pcCfg)
             delete pcCfg;
         pcCfg = NULL;
-        
+
         INIT_ERROR("GetCfgFromServer failed [%d]", iRet);
         return iRet;
     }
@@ -119,12 +120,25 @@ INT32 ServerAntAgent()
         if (pcCfg)
             delete pcCfg;
         pcCfg = NULL;
-        
+
         INIT_ERROR("GetAgentAddress  failed [%d]", iRet);
         return iRet;
     }
-	
+
     pcFlowManager = new FlowManager_C;
+    // 启动FlowManager对象
+    INIT_INFO("-------- Start FlowManager --------");
+    iRet = pcFlowManager->Init(pcCfg);
+    if (iRet)
+    {
+        if (pcCfg)
+            delete pcCfg;
+        pcCfg = NULL;
+
+        INIT_ERROR("FlowManager.init failed [%d]", iRet);
+        return iRet;
+    }
+
     MessagePlatformServer_C * pcMsgServer = new MessagePlatformServer_C;
     iRet = pcMsgServer->Init(uiPort, pcFlowManager);
     if (iRet)
@@ -138,54 +152,42 @@ INT32 ServerAntAgent()
         INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
     }
 
-	iRet = ReportAgentIPToServer(pcCfg);
-	int reportCount = 0;
-	while (iRet)
-	{
-	    INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
-		sleep(5);
-		INIT_ERROR("Retry to report Agent ip to Server, time [%d]", reportCount + 1);
-		iRet = ReportAgentIPToServer(pcCfg);
-		reportCount++;
-	}
-
-	if (AGENT_OK == iRet)
-	{
-	    SHOULD_PROBE = 1;
-		UINT32 delayTime = 10 + rand() % 30;
-		INIT_INFO("Query pingList will be in [%u] seconds.");
-		sleep(delayTime);
-	}
-
-	// 启动FlowManager对象
-    INIT_INFO("-------- Start FlowManager --------");
-	iRet = pcFlowManager->Init(pcCfg);
-    if (iRet)
+    iRet = ReportAgentIPToServer(pcCfg);
+    int reportCount = 0;
+    while (iRet)
     {
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
-        
-        INIT_ERROR("FlowManager.init failed [%d]", iRet);
-        return iRet;
+        INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
+        sleep(5);
+        INIT_ERROR("Retry to report Agent ip to Server, time [%d]", reportCount + 1);
+        iRet = ReportAgentIPToServer(pcCfg);
+        reportCount++;
     }
-	// 所有对象已经启动完成, 开始工作.
-    INIT_INFO("-------- Starting ServerAntAgent Complete --------");
-	
-	
 
-	
+    if (AGENT_OK == iRet)
+    {
+        UINT32 delayTime = 10000 + rand() % 30;
+        INIT_INFO("Query pingList will be in [%u] seconds.", delayTime);
+        sleep(delayTime);
+        SHOULD_PROBE = 1;
+    }
+
+    // 所有对象已经启动完成, 开始工作.
+    INIT_INFO("-------- Starting ServerAntAgent Complete --------");
+
+
+
+
 #if 0
     pthread_t thread;
     INT32 error;
     error = pthread_create(&thread, NULL, MainTestTask, pcFlowManager);
     if(error)
     {
-          INIT_ERROR("Create Thread failed[%d]: %s [%d]", iRet, strerror(errno), errno); 
+        INIT_ERROR("Create Thread failed[%d]: %s [%d]", iRet, strerror(errno), errno);
     }
     sal_sleep(2);
 #endif
-    
+
     while(1)
     {
         sal_sleep(10);
@@ -210,7 +212,7 @@ INT32 ServerAntAgent()
 
 INT32 SHOULD_PROBE = 0;
 
-// 程序入口, 默认直接启动. 
+// 程序入口, 默认直接启动.
 // 不带参数时直接启动
 // -d 作为守护进程启动
 INT32 main (INT32 argc, char **argv)
@@ -218,7 +220,7 @@ INT32 main (INT32 argc, char **argv)
     INT32 iRet = AGENT_OK;
     // 软件启动模式
     INT32 iStartAsDaemon = AGENT_FALSE;
-    
+
     pid_t pid;
 
     SetNewLogMode(AGENT_LOG_MODE_NORMAL);
@@ -242,7 +244,7 @@ INT32 main (INT32 argc, char **argv)
             }
         }
     }
-    
+
     if (iStartAsDaemon)
     {
         // 以守护进程的形式启动
@@ -267,7 +269,7 @@ INT32 main (INT32 argc, char **argv)
 
             // 2. 子进程创建新会话, 不再受父进程会话影响.
             setsid();
-            
+
             // 3. 改变子进程工作目录为指定目录
             // chdir("/");
 
@@ -276,12 +278,12 @@ INT32 main (INT32 argc, char **argv)
 
             //5. 休眠2s, 等启动脚本配置cgroup等信息.
             sleep(2);
-            
+
             // 6. 启动守护业务.
             iRet = ServerAntAgent();
 
             // 7. 业务处理完成,准备退出.
-           
+
         }
     }
     else
@@ -289,7 +291,7 @@ INT32 main (INT32 argc, char **argv)
         // 直接启动
         iRet = ServerAntAgent();
     }
-    
+
     if(iRet)
         exit(-1);
     else

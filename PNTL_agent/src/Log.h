@@ -10,17 +10,17 @@ typedef enum tagAgentModule
     AGENT_MODULE_TIMER,             // TIMER 适配模块
     AGENT_MODULE_INIT,              // 初始化功能,main函数等
     AGENT_MODULE_COMMON,            // 公共模块
-    AGENT_MODULE_THREAD_CLASS ,     // THREAD_CLASS 类
+    AGENT_MODULE_THREAD_CLASS,      // THREAD_CLASS 类
     AGENT_MODULE_HTTP_DAEMON,       // HTTP_DAEMON 类
-    AGENT_MODULE_KAFKA_CLIENT,      // HTTP_DAEMON 类 
-    AGENT_MODULE_AGENT_CFG ,        // ServerAntAgentCfg 类
-    AGENT_MODULE_DETECT_WORKER ,    // DetectWorker 类
-    AGENT_MODULE_FLOW_MANAGER ,     // FlowMananger 类
+    AGENT_MODULE_KAFKA_CLIENT,      // HTTP_DAEMON 类
+    AGENT_MODULE_AGENT_CFG,         // ServerAntAgentCfg 类
+    AGENT_MODULE_DETECT_WORKER,     // DetectWorker 类
+    AGENT_MODULE_FLOW_MANAGER,      // FlowMananger 类
     AGENT_MODULE_MSG_SERVER,        // MessagePlatformServer 类
     AGENT_MODULE_MSG_CLIENT,        // MSG_CLIENT 模块
     AGENT_MODULE_JSON_PARSER,       // JSON_PARSER 模块(AgentJsonAPI)
     AGENT_MODULE_MAX
-}AgentModule_E;
+} AgentModule_E;
 
 typedef enum tagAgentLogType
 {
@@ -28,14 +28,14 @@ typedef enum tagAgentLogType
     AGENT_LOG_TYPE_WARNING,     // 告警
     AGENT_LOG_TYPE_ERROR,       // 错误
     AGENT_LOG_TYPE_MAX
-}AgentLogType_E;
+} AgentLogType_E;
 
 typedef enum  tagAgentLogMode
 {
     AGENT_LOG_MODE_NORMAL = 0,   // 日志直接打印到终端,且在调用程序的当前目录创建日志文件.
     AGENT_LOG_MODE_DAEMON,       // 日志不打印到终端,直接记录到syslog.
     AGENT_LOG_MODE_MAX
-}AgentLogMode_E;
+} AgentLogMode_E;
 
 extern INT32 SetNewLogMode(AgentLogMode_E eNewLogMode);
 extern INT32 SetNewLogDir(string strNewDirPath);

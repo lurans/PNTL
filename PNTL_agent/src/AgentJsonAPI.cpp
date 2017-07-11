@@ -13,17 +13,17 @@ using namespace boost::property_tree;
 {
 "ServerAntServer" :
     {
-        "IP"    : "127.0.0.1", 
+        "IP"    : "127.0.0.1",
         "Port"  : "2400"
     },
 "ServerAntCollector" :
     {
-        "IP"    : "127.0.0.1", 
+        "IP"    : "127.0.0.1",
         "Port"  : "2400"
     },
 "ServerAntAgent" :
     {
-        "IP"    : "10.78.221.45", 
+        "IP"    : "10.78.221.45",
         "Port"  : "2400"
     }
 }
@@ -32,21 +32,21 @@ using namespace boost::property_tree;
 INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 {
     INT32 iRet = AGENT_OK;
-    
+
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
     {
         UINT32 uiIp, uiPort, uiData;
         string strTemp;
-        
+
         // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
         stringstream ssStringData(pcJsonData);
 
         // boost::property_tree对象, 用于存储json格式数据.
         ptree ptDataRoot, ptDataTmp;
-        
+
         read_json(ssStringData, ptDataRoot);
-        
+
         // 解析LogCfg数据.
         ptDataTmp.clear();
         ptDataTmp = ptDataRoot.get_child("LogCfg");
@@ -57,7 +57,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             JSON_PARSER_ERROR("SetNewLogDir failed[%d]", iRet);
             return iRet;
         }
-        
+
         // 刷新日志目录后, 再打印当前配置
         JSON_PARSER_INFO("JsonData[%s]", pcJsonData);
 
@@ -77,87 +77,31 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         // 解析ServerAntCollector数据.
         ptDataTmp.clear();
         ptDataTmp = ptDataRoot.get_child("ServerAntCollector");
-        
+
         strTemp = ptDataTmp.get<string>("Protocol");
-        if ("Kafka" == strTemp)
-        {
-            ptree ptEntry;
-            ptree ptArray;
-            KafkaConnectInfo_S stKafkaConnectInfo;
 
-            // 读取 topic
-            ptDataTmp.clear();
-            ptDataTmp = ptDataRoot.get_child("ServerAntCollector.KafkaInfo");
-            stKafkaConnectInfo.strTopic = ptDataTmp.get<string>("Topic");
-
-            // 读取 BrokerList
-            ptArray.clear();
-            ptArray = ptDataRoot.get_child("ServerAntCollector.KafkaInfo.BrokerList");
-            // 遍历ptArray, 逐个添加Broker
-            for (ptree::iterator itFlow = ptArray.begin(); itFlow != ptArray.end(); itFlow++)
-            {
-                ptEntry = itFlow->second; // first为空, boost格式
-                strTemp = ptEntry.data();
-
-                // 检查是否有重复的Broker服务器信息
-                vector<string>::iterator pstrKafkaBrokerInfo;
-                for( pstrKafkaBrokerInfo = stKafkaConnectInfo.KafkaBrokerList.begin(); 
-                     pstrKafkaBrokerInfo != stKafkaConnectInfo.KafkaBrokerList.end(); 
-                     pstrKafkaBrokerInfo++ )
-                {
-                    if (strTemp == *pstrKafkaBrokerInfo)
-                    {
-                        MSG_CLIENT_INFO("Find Same Broker server address[%s] in cfg file", strTemp.c_str());
-                        return AGENT_E_PARA;
-                    }
-                }
-                stKafkaConnectInfo.KafkaBrokerList.push_back(strTemp);
-            }
-
-            // 保存kafka配置信息
-            iRet = pcCfg->SetCollectorKafkaInfo(&stKafkaConnectInfo);
-            if (iRet)
-            {
-                    JSON_PARSER_ERROR("SetCollectorKafkaInfo failed[%d]", iRet);
-                    return iRet;
-            }
-
-            // 刷新 Collector 配置
-            iRet = pcCfg->SetCollectorProtocol(COLLECTOR_PROTOCOL_KAFKA);
-            if (iRet)
-            {
-                    JSON_PARSER_ERROR("SetCollectorKafkaInfo failed[%d]", iRet);
-                    return iRet;
-            }
-        }
-        else
-        {
-            JSON_PARSER_ERROR("Unknown Server Ants Collector Protocol[%s] In Cfg info", strTemp.c_str());
-            return AGENT_E_PARA;
-        }
-        
 
         // 解析ServerAntAgent数据.
         ptDataTmp.clear();
         ptDataTmp = ptDataRoot.get_child("ServerAntAgent");
-		strTemp = ptDataTmp.get<string>("MgntIP");
-		
-		uiIp = sal_inet_aton(strTemp.c_str());
+        strTemp = ptDataTmp.get<string>("MgntIP");
+
+        uiIp = sal_inet_aton(strTemp.c_str());
         iRet = pcCfg->SetMgntIP(uiIp);
-		if (iRet)
+        if (iRet)
         {
             JSON_PARSER_ERROR("SetMnMgntIPgtIP failed[%d]", iRet);
             return iRet;
         }
 
         strTemp = ptDataTmp.get<string>("Hostname");
-		iRet = pcCfg->SetHostname(strTemp);
-		if (iRet)
+        iRet = pcCfg->SetHostname(strTemp);
+        if (iRet)
         {
             JSON_PARSER_ERROR("SetHostname failed[%d]", iRet);
             return iRet;
         }
-		
+
         strTemp = ptDataTmp.get<string>("AgentIP");
         uiIp = sal_inet_aton(strTemp.c_str());
         uiPort = ptDataTmp.get<UINT32>("Port");
@@ -178,7 +122,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         iRet = pcCfg->SetReportPeriod(uiData);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetReportPeriod failed[%d]", iRet);
+            JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u]", uiData, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD);
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("QueryPeriod");
@@ -192,14 +136,14 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         iRet = pcCfg->SetDetectPeriod(uiData);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectPeriod failed[%d]", iRet);
+            JSON_PARSER_ERROR("set detect period[%u] faild[%d], range should be in [%u, %u]", uiData, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("DetectTimeoutPeriod");
         iRet = pcCfg->SetDetectTimeout(uiData);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectTimeout failed[%d]", iRet);
+            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", uiData, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("DetectDropThresh");
@@ -228,7 +172,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         JSON_PARSER_ERROR("Caught exception [%s] when ParserLocalCfg. LocalCfg:[%s]", e.what(), pcJsonData);
         return AGENT_E_ERROR;
     }
-    
+
     return iRet;
 }
 
@@ -257,7 +201,7 @@ INT32 CreatProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * 
         ptDataRoot.put("Action", NormalFlowRequestAction);
         ptDataRoot.put("target", "ServerTopology");
         ptDataRoot.put("scope", "global");
-        
+
         UINT32 uiIp;
         iRet = pcCfg->GetAgentAddress(&uiIp, NULL);
         if (iRet)
@@ -267,7 +211,7 @@ INT32 CreatProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * 
         }
         ptDataTemp.put("agent-ip", sal_inet_ntoa(uiIp));
         ptDataRoot.put_child("content", ptDataTemp);
-        
+
         write_json(ssJsonData, ptDataRoot);
         (*pssPostData) << ssJsonData.str();
     }
@@ -289,7 +233,7 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
     {
         stringstream ssJsonData;
         ptree ptDataRoot;
-        
+
         UINT32 uiIp, uiMgntIp;
         iRet = pcCfg->GetAgentAddress(&uiIp, NULL);
         if (iRet)
@@ -298,11 +242,11 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
             return iRet;
         }
 
-		iRet = pcCfg->GetMgntIP(&uiMgntIp);
-		
-        ptDataRoot.put("vbond-ip", sal_inet_ntoa(uiIp));    // 数据面IP 
-		ptDataRoot.put("agent-ip", sal_inet_ntoa(uiMgntIp));
-		ptDataRoot.put("hostname", pcCfg->GetHostname().c_str());
+        iRet = pcCfg->GetMgntIP(&uiMgntIp);
+
+        ptDataRoot.put("vbond-ip", sal_inet_ntoa(uiIp));    // 数据面IP
+        ptDataRoot.put("agent-ip", sal_inet_ntoa(uiMgntIp));
+        ptDataRoot.put("hostname", pcCfg->GetHostname().c_str());
         write_json(ssJsonData, ptDataRoot);
         (*pssPostData) << ssJsonData.str();
     }
@@ -318,9 +262,9 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 /*
 {
     "orgnizationSignature": "HuaweiDC3ServerAntsFull",
-    "flow": 
+    "flow":
     {
-        
+
         "sip": "",
         "dip": "",
         "sport": "",
@@ -328,23 +272,23 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
         "ip-protocol": "icmp:udp",
         "dscp": "",
         "urgent-flag": "0:1",
-        "topology-tag": 
+        "topology-tag":
         {
             "level": "",
             "svid": "",
             "dvid": ""
         },
-        "time": 
+        "time":
         {
             "t1": "",
             "t2": "",
             "t3": "",
             "t4": ""
         },
-        "statistics": 
+        "statistics":
         {
             "packet-sent": "",
-            "packet-drops": "",            
+            "packet-drops": "",
             "50percentile": "",
             "99percentile": ""
             "standard-deviation": ""
@@ -364,15 +308,15 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
     {
         ptree ptDataRoot, ptDataFlowArray, ptDataFlowEntry;
         ptree ptDataFlowEntryTemp;
-        
+
         stringstream ssJsonData;
 
         ptDataRoot.clear();
         ptDataRoot.put("orgnizationSignature", LatencyReportSignature);
-        
+
         // 清空Flow Entry Array
         ptDataFlowArray.clear();
-        
+
         // 生成一个Flow Entry的数据
         {
             ptDataFlowEntry.clear();
@@ -382,18 +326,18 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntry.put("dport", pstAgentFlowEntry->stFlowKey.uiDestPort);
             switch (pstAgentFlowEntry->stFlowKey.eProtocol)
             {
-                case AGENT_DETECT_PROTOCOL_UDP:
-                    ptDataFlowEntry.put("ip-protocol","udp");
-                    break;
-                case AGENT_DETECT_PROTOCOL_TCP:
-                    ptDataFlowEntry.put("ip-protocol","tcp");
-                    break;
-                case AGENT_DETECT_PROTOCOL_ICMP:
-                    ptDataFlowEntry.put("ip-protocol","icmp");
-                    break;
-                default:
-                    ptDataFlowEntry.put("ip-protocol","null");
-                    break;
+            case AGENT_DETECT_PROTOCOL_UDP:
+                ptDataFlowEntry.put("ip-protocol","udp");
+                break;
+            case AGENT_DETECT_PROTOCOL_TCP:
+                ptDataFlowEntry.put("ip-protocol","tcp");
+                break;
+            case AGENT_DETECT_PROTOCOL_ICMP:
+                ptDataFlowEntry.put("ip-protocol","icmp");
+                break;
+            default:
+                ptDataFlowEntry.put("ip-protocol","null");
+                break;
             }
             ptDataFlowEntry.put("dscp",pstAgentFlowEntry->stFlowKey.uiDscp);
             ptDataFlowEntry.put("urgent-flag",pstAgentFlowEntry->stFlowKey.uiUrgentFlow);
@@ -412,9 +356,9 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntryTemp.put("sid", pstAgentFlowEntry->stFlowKey.stServerTopo.uiSvid);
             ptDataFlowEntryTemp.put("did", pstAgentFlowEntry->stFlowKey.stServerTopo.uiDvid);
 #endif
-            
+
             ptDataFlowEntry.put_child("topology-tag", ptDataFlowEntryTemp);
-            
+
             // 处理time信息
             ptDataFlowEntryTemp.clear();
             ptDataFlowEntryTemp.put("t1", pstAgentFlowEntry->stFlowDetectResult.lT1);
@@ -424,11 +368,11 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntry.put_child("time", ptDataFlowEntryTemp);
 
             // 处理statistics信息
-            ptDataFlowEntryTemp.clear();        
+            ptDataFlowEntryTemp.clear();
             ptDataFlowEntryTemp.put("packet-sent", pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter);
             ptDataFlowEntryTemp.put("packet-drops", pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter);
             ptDataFlowEntryTemp.put("50percentile", pstAgentFlowEntry->stFlowDetectResult.lLatency50Percentile);
-            ptDataFlowEntryTemp.put("99percentile", pstAgentFlowEntry->stFlowDetectResult.lLatency99Percentile);            
+            ptDataFlowEntryTemp.put("99percentile", pstAgentFlowEntry->stFlowDetectResult.lLatency99Percentile);
             ptDataFlowEntryTemp.put("standard-deviation", pstAgentFlowEntry->stFlowDetectResult.lLatencyStandardDeviation);
             ptDataFlowEntryTemp.put("min", pstAgentFlowEntry->stFlowDetectResult.lLatencyMin);
             ptDataFlowEntryTemp.put("max", pstAgentFlowEntry->stFlowDetectResult.lLatencyMax);
@@ -444,7 +388,7 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
 
         ssJsonData.clear();
         ssJsonData.str("");
-        write_json(ssJsonData, ptDataRoot);    
+        write_json(ssJsonData, ptDataRoot);
         (*pssReportData) << ssJsonData.str();
     }
     catch (exception const & e)
@@ -493,42 +437,42 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
     {
         ptree ptDataRoot, ptDataFlowArray, ptDataFlowEntry;
         ptree ptDataFlowEntryTemp;
-        
+
         stringstream ssJsonData;
 
         ptDataRoot.clear();
         ptDataRoot.put("orgnizationSignature", DropReportSignature);
 
-         // 清空Flow Entry Array
+        // 清空Flow Entry Array
         ptDataFlowArray.clear();
 
         // 生成一个Flow Entry的数据
         {
             ptDataFlowEntry.clear();
-            
+
             ptDataFlowEntry.put("sip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP));
             ptDataFlowEntry.put("dip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP));
             ptDataFlowEntry.put("sport", pstAgentFlowEntry->stFlowKey.uiSrcPort);
             ptDataFlowEntry.put("dport", pstAgentFlowEntry->stFlowKey.uiDestPort);
             switch (pstAgentFlowEntry->stFlowKey.eProtocol)
             {
-                case AGENT_DETECT_PROTOCOL_UDP:
-                    ptDataFlowEntry.put("ip-protocol","udp");
-                    break;
-                case AGENT_DETECT_PROTOCOL_TCP:
-                    ptDataFlowEntry.put("ip-protocol","tcp");
-                    break;
-                case AGENT_DETECT_PROTOCOL_ICMP:
-                    ptDataFlowEntry.put("ip-protocol","icmp");
-                    break;
-                default:
-                    ptDataFlowEntry.put("ip-protocol","null");
-                    break;
+            case AGENT_DETECT_PROTOCOL_UDP:
+                ptDataFlowEntry.put("ip-protocol","udp");
+                break;
+            case AGENT_DETECT_PROTOCOL_TCP:
+                ptDataFlowEntry.put("ip-protocol","tcp");
+                break;
+            case AGENT_DETECT_PROTOCOL_ICMP:
+                ptDataFlowEntry.put("ip-protocol","icmp");
+                break;
+            default:
+                ptDataFlowEntry.put("ip-protocol","null");
+                break;
             }
             ptDataFlowEntry.put("dscp",pstAgentFlowEntry->stFlowKey.uiDscp);
             ptDataFlowEntry.put("urgent-flag",pstAgentFlowEntry->stFlowKey.uiUrgentFlow);
 
-            // 处理topology-tag信息        
+            // 处理topology-tag信息
             ptDataFlowEntryTemp.clear();
             ptDataFlowEntryTemp.put("level", pstAgentFlowEntry->stFlowKey.stServerTopo.uiLevel);
 #if 0
@@ -548,9 +492,9 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
             ptDataFlowEntryTemp.clear();
             ptDataFlowEntryTemp.put("t", pstAgentFlowEntry->stFlowDetectResult.lT5);
             ptDataFlowEntryTemp.put("packet-sent", pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter);
-            ptDataFlowEntryTemp.put("packet-drops", pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter);       
+            ptDataFlowEntryTemp.put("packet-drops", pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter);
             ptDataFlowEntry.put_child("statistics", ptDataFlowEntryTemp);
-            
+
             // 加入json数组
             ptDataFlowArray.push_back(make_pair("", ptDataFlowEntry));
         }
@@ -560,7 +504,7 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
 
         ssJsonData.clear();
         ssJsonData.str("");
-        write_json(ssJsonData, ptDataRoot);    
+        write_json(ssJsonData, ptDataRoot);
         (*pssReportData) << ssJsonData.str();
     }
     catch (exception const & e)
@@ -575,20 +519,20 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
 
 /*
 ServerAntServer 下发的紧急探测流格式
-post 
+post
 key = ServerAntAgent
-data = 
+data =
 {
     "orgnizationSignature": "HuaweiDC3ServerAntsProbelistIssue",
     "serverIP": "10.1.1.1",
     "action": "post",
     "content": "probe-list",
-    
+
     "flow": [
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -601,9 +545,9 @@ data =
         },
 
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -633,7 +577,7 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
 
         // 初始化
         sal_memset(pstNewServerFlowKey, 0, sizeof(ServerFlowKey_S));
-        
+
         // 解析Urgent
 #if 0
         pstNewServerFlowKey->uiUrgentFlow   = ptFlowEntry.get<UINT32>("urgent-flag");
@@ -644,11 +588,11 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
         else
             pstNewServerFlowKey->uiUrgentFlow = 0;
 #endif
-        
+
         // 解析Protocol
         strTemp = ptFlowEntry.get<string>("ip-protocol");
         if (0 == strTemp.compare("udp"))
-            pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_UDP;                
+            pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_UDP;
         else if (0 == strTemp.compare("tcp"))
             pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_TCP;
         else if (0 == strTemp.compare("icmp"))
@@ -658,7 +602,7 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
 
         strTemp = ptFlowEntry.get<string>("sip");
         pstNewServerFlowKey->uiSrcIP = sal_inet_aton(strTemp.c_str());
-        
+
         strTemp = ptFlowEntry.get<string>("dip");
         pstNewServerFlowKey->uiDestIP = sal_inet_aton(strTemp.c_str());
 
@@ -668,22 +612,22 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
         pstNewServerFlowKey->uiSrcPortRange  = ptFlowEntry.get<UINT32>("sport-range");
 
         ptFlowEntryTopo = ptFlowEntry.get_child("topology-tag");
-        #if 0
-            //pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("svid");
-            uiDataTemp = 0;
-            strTemp = ptFlowEntryTopo.get<string>("svid");
-            sscanf(strTemp.c_str(), "0x%x", &uiDataTemp); 
-            pstNewServerFlowKey->stServerTopo.uiSvid   = uiDataTemp;
-            //pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dvid");
-            uiDataTemp = 0;
-            strTemp = ptFlowEntryTopo.get<string>("dvid");
-            sscanf(strTemp.c_str(), "0x%x", &uiDataTemp); 
-            pstNewServerFlowKey->stServerTopo.uiDvid   = uiDataTemp;
-        #else
-            pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("src-id");
-            pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dst-id");
-        #endif
-        
+#if 0
+        //pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("svid");
+        uiDataTemp = 0;
+        strTemp = ptFlowEntryTopo.get<string>("svid");
+        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
+        pstNewServerFlowKey->stServerTopo.uiSvid   = uiDataTemp;
+        //pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dvid");
+        uiDataTemp = 0;
+        strTemp = ptFlowEntryTopo.get<string>("dvid");
+        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
+        pstNewServerFlowKey->stServerTopo.uiDvid   = uiDataTemp;
+#else
+        pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("src-id");
+        pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dst-id");
+#endif
+
         pstNewServerFlowKey->stServerTopo.uiLevel  = ptFlowEntryTopo.get<UINT32>("level");
     }
     catch (exception const & e)
@@ -693,12 +637,12 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
     }
 
     JSON_PARSER_INFO("Get Flow From Server: sip[%s], sport[%u]-[%u], range[%u], dscp[%d], Urgent[%d], Protocol[%d]",
-            sal_inet_ntoa(pstNewServerFlowKey->uiSrcIP), pstNewServerFlowKey->uiSrcPortMin, pstNewServerFlowKey->uiSrcPortMax, pstNewServerFlowKey->uiSrcPortRange,
-            pstNewServerFlowKey->uiDscp, pstNewServerFlowKey->uiUrgentFlow,  pstNewServerFlowKey->eProtocol);
+                     sal_inet_ntoa(pstNewServerFlowKey->uiSrcIP), pstNewServerFlowKey->uiSrcPortMin, pstNewServerFlowKey->uiSrcPortMax, pstNewServerFlowKey->uiSrcPortRange,
+                     pstNewServerFlowKey->uiDscp, pstNewServerFlowKey->uiUrgentFlow,  pstNewServerFlowKey->eProtocol);
 
     JSON_PARSER_INFO("                      dip[%s], topy: Level[%u], Source id[%8u], Dest id[%8u]",
-            sal_inet_ntoa(pstNewServerFlowKey->uiDestIP), pstNewServerFlowKey->stServerTopo.uiLevel,
-            pstNewServerFlowKey->stServerTopo.uiSvid, pstNewServerFlowKey->stServerTopo.uiDvid);
+                     sal_inet_ntoa(pstNewServerFlowKey->uiDestIP), pstNewServerFlowKey->stServerTopo.uiLevel,
+                     pstNewServerFlowKey->stServerTopo.uiSvid, pstNewServerFlowKey->stServerTopo.uiDvid);
 
     return AGENT_OK;
 }
@@ -707,7 +651,7 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
 INT32 IssueFlowFromJsonFlowArray(ptree ptFlowArray, FlowManager_C* pcFlowManager, UINT32 uiIsUrgentFlow)
 {
     INT32 iRet = AGENT_OK;
-    
+
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
     {
@@ -729,7 +673,7 @@ INT32 IssueFlowFromJsonFlowArray(ptree ptFlowArray, FlowManager_C* pcFlowManager
             }
 
             // 普通流程添加到配置表, 待配置倒换后生效.
-	   iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
+            iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
             if (iRet)
             {
                 JSON_PARSER_ERROR("Add New ServerWorkingFlowTable failed [%d]", iRet);
@@ -764,41 +708,7 @@ INT32 ProcessUrgentFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         read_json(ssStringData, ptDataRoot);
 
         // 检查pt中的解析结果
-#if 0
-        // 检查Signature
-        string strSignature =   ptDataRoot.get<string>("MessageSignature");
-        
-        // 校验签名
-        if (0 == strSignature.compare(UrgentFlowIssueSignature))
-        {
-            string strAction    =   ptDataRoot.get<string>("Action");
-            
-            // 校验action和content
-            if( (0 != strAction.compare(UrgentFlowIssueAction)) )
-            {
-                JSON_PARSER_WARNING("Unsupported Action[%s].", strAction.c_str());
-                // 校验失败
-                return AGENT_E_ERROR;
-            }
-            
-            // 从data中解析数据,填充stServerFlowKey, 然后调用FlowManager接口添加探测流.
-            ptFlowArray.clear();
-            ptFlowArray = ptDataRoot.get_child("flows");
-            iRet = IssueFlowFromJsonFlowArray(ptFlowArray, pcFlowManager, AGENT_TRUE);
-            if (iRet)
-            {
-                JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]", iRet);
-                return iRet;
-            }
-                    
-            return iRet;
-        }
-        else
-        {
-            JSON_PARSER_WARNING("Unsupported Signature:[%s]", strSignature.c_str());        
-            return AGENT_E_PARA;
-        }
-#else
+
         ptFlowArray.clear();
         ptFlowArray = ptDataRoot.get_child("flows");
         iRet = IssueFlowFromJsonFlowArray(ptFlowArray, pcFlowManager, AGENT_TRUE);
@@ -807,14 +717,13 @@ INT32 ProcessUrgentFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d], Flow info[%s]", iRet, pcJsonData);
             return iRet;
         }
-#endif
     }
     catch (exception const & e)
     {
         JSON_PARSER_ERROR("Caught exception [%s] when ProcessUrgentFlowFromServer. Flow info[%s]", e.what(), pcJsonData);
         return AGENT_E_ERROR;
     }
-    
+
     return iRet;
 }
 
@@ -828,12 +737,12 @@ ServerAntServer 回复的普通探测流格式
     "serverIP": "10.1.1.1",
     "action": "reply",
     "content": "probe-list",
-    
+
     "flow": [
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -846,9 +755,9 @@ ServerAntServer 回复的普通探测流格式
         },
 
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -875,7 +784,7 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
     {
-    
+
         // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
         stringstream ssStringData(pcJsonData);
 
@@ -887,12 +796,12 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
 #if 0
         // 检查Signature
         string strSignature =   ptDataRoot.get<string>("MessageSignature");
-        
+
         // 校验签名
         if (0 == strSignature.compare(NormalFlowReplaySignature))
         {
             string strAction    =   ptDataRoot.get<string>("Action");
-            
+
             // 校验action和content
             if( (0 != strAction.compare(NormalFlowReplayAction)) )
             {
@@ -900,7 +809,7 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
                 // 校验失败
                 return AGENT_E_ERROR;
             }
-            
+
             // 从data中解析数据,填充stServerFlowKey, 然后调用FlowManager接口添加探测流.
             ptFlowArray.clear();
             ptFlowArray = ptDataRoot.get_child("flow");
@@ -910,12 +819,12 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
                 JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]", iRet);
                 return iRet;
             }
-                    
+
             return iRet;
         }
         else
         {
-            JSON_PARSER_WARNING("Unsupported Signature:[%s]", strSignature.c_str());        
+            JSON_PARSER_WARNING("Unsupported Signature:[%s]", strSignature.c_str());
             return AGENT_E_PARA;
         }
 #else
@@ -928,7 +837,7 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
             JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]. Flow info[%s]", iRet, pcJsonData);
             return iRet;
         }
-#endif  
+#endif
     }
 
     catch (exception const & e)
@@ -955,20 +864,113 @@ INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 
     // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot;
-	UINT32 interval;
-    try 
-	{
+    UINT32 interval;
+    try
+    {
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
         // 防止没有设值，传入空值
         interval = ptDataRoot.get<UINT32>("probe_interval");
     }
-	catch (exception const & e)
-	{
+    catch (exception const & e)
+    {
         JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
         return AGENT_E_ERROR;
-	}
-	INT32 iRet = pcFlowManager -> FlowManagerAction(interval);
-	return iRet;
+    }
+    INT32 iRet = pcFlowManager -> FlowManagerAction((INT32)interval);
+    return iRet;
 }
+
+/*
+	接收从Server端下发的配置参数
+	格式为
+	{
+		"probe_period":"0",
+		"port_count" : "5",
+		"report_period" : "",
+		"delay_threshold":"",
+		"dscp":"",
+		"lossPkg_timeout":"",
+		"package_rate":""
+
+
+	}
+*/
+INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
+{
+    // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
+    stringstream ssStringData(pcJsonData);
+
+    // boost::property_tree对象, 用于存储json格式数据.
+    ptree ptDataRoot;
+    UINT32 interval;
+    INT32 iRet = AGENT_OK;
+    try
+    {
+        // 防止Json消息体不规范
+        read_json(ssStringData, ptDataRoot);
+        interval = ptDataRoot.get<UINT32>("probe_period");
+        iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
+            return AGENT_E_ERROR;
+        }
+
+        interval = ptDataRoot.get<UINT32>("port_count");
+        iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetPortCount[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PORT_COUNT, MAX_PORT_COUNT);
+            return AGENT_E_ERROR;
+        }
+
+        interval = ptDataRoot.get<UINT32>("report_period");
+        iRet = pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u] and >= than detectPeriod[%u]", interval, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD, pcFlowManager->pcAgentCfg->GetDetectPeriod());
+            return AGENT_E_ERROR;
+        }
+
+        interval = ptDataRoot.get<UINT32>("delay_threshold");
+        iRet = pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetMaxDelay[%u] failed[%d]");
+            return AGENT_E_ERROR;
+        }
+
+        interval = ptDataRoot.get<UINT32>("dscp");
+        iRet = pcFlowManager->pcAgentCfg->SetDscp(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetDscp[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_DSCP, MAX_DSCP);
+            return AGENT_E_ERROR;
+        }
+
+        interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
+        iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
+            return AGENT_E_ERROR;
+        }
+
+        interval = ptDataRoot.get<UINT32>("package_rate");
+        iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
+            return AGENT_E_ERROR;
+        }
+    }
+    catch (exception const & e)
+    {
+        JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
+        return AGENT_E_ERROR;
+    }
+    return AGENT_OK;
+}
+
 
