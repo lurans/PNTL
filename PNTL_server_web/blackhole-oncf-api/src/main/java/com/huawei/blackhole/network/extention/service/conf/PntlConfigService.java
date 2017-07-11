@@ -69,7 +69,7 @@ public class PntlConfigService {
         Result<String> result = new Result<String>();
         try{
 
-            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_CONF);
+            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
             dataObj.put("ak",pntlConfig.getAk());
             dataObj.put("sk",pntlConfig.getSk());
             pntlConfig.setByMap(dataObj);
@@ -77,9 +77,9 @@ public class PntlConfigService {
             validPntlConfig(pntlConfig);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
             Map<String, Object> data = pntlConfig.convertToMap();
-            YamlUtil.setConf(data, Resource.PNTL_CONF);
+            YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
         }catch (ApplicationException | InvalidParamException e) {
-            String errMsg = "set config [" + Resource.NAME_CONF + "] failed : " + e.getLocalizedMessage();
+            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
             result.addError("", e.prefix() + errMsg);
         } catch (Exception e){
@@ -94,7 +94,7 @@ public class PntlConfigService {
     public Result<String> setPntlConfig(PntlConfig pntlConfig) {
         Result<String> result = new Result<String>();
         try {
-            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_CONF);
+            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
             pntlConfig.setAk((String) dataObj.get("ak"));
             pntlConfig.setSk((String) dataObj.get("sk"));
 

@@ -332,7 +332,7 @@ public class Pntl {
                 snList.add(host.getAgentSN());
             }
         }
-        final String command = "cd /opt/huawei/ServerAntAgent;sh -x StopService.sh";
+        final String command = "service ServerAntAgentService stop";
         return sendCommandToAgents(snList, token, command, "sync");
     }
 
