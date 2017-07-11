@@ -16,7 +16,6 @@ import java.util.List;
 public class PntlInfoService {
     public Result<Object> getLossRate() {
         Result<Object> result = new Result<>();
-        //result = LossRate.getLossRateInfo();
         result.setModel(LossRate.getResult());
         return result;
     }

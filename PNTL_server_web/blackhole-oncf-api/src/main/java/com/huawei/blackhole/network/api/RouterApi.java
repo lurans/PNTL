@@ -521,4 +521,15 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
     }
+
+    @Path("/warningList")
+    @POST
+    public Response getWarningList(PntlWarning.PntlWarnInfo param){
+        Result<Object> result = PntlWarning.getWarnList(param);
+        if (result.isSuccess()) {
+            return ResponseUtil.succ(result.getModel());
+        } else {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+    }
 }
