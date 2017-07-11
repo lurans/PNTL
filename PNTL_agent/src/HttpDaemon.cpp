@@ -343,10 +343,7 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
     }
 
     keyPem = loadFile(keyPath);
-    HTTP_DAEMON_ERROR("key pem is [%s].", keyPem.c_str());
-
     certPem = loadFile(certPath);
-    HTTP_DAEMON_ERROR("certPem is [%s].", certPem.c_str());
 
     // 使用新端口号启动http daemon.
     /**
