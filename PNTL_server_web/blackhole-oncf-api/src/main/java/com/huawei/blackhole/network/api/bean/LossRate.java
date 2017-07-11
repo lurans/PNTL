@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -146,6 +146,8 @@ public class LossRate implements Serializable{
         newData.setRecvLossRate("0");///TODO:暂时设为0
         newData.setRecvPkgs(recvPkgs);
         newData.setTimestamp(System.currentTimeMillis()/1000);
+
+        PntlWarning.saveWarnToWarningList(newData);
 
         List<LossRateResult> resultList = LossRate.result;
         for (LossRateResult result : resultList){

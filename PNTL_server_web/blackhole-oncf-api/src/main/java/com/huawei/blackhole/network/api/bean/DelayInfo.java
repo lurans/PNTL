@@ -136,6 +136,8 @@ public class DelayInfo implements Serializable {
         newData.setRecvRoundDelay("0");
         newData.setTimestamp(System.currentTimeMillis()/1000);
 
+        PntlWarning.saveWarnToWarningList(newData);
+
         List<DelayInfoResult> resultList = getResult();
         for (DelayInfoResult result : resultList){
             if (result.getSrcIp().equals(srcIp) && result.getDstIp().equals(dstIp)){
