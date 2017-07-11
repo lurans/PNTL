@@ -111,7 +111,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             JSON_PARSER_ERROR("SetAgentAddress failed[%d]", iRet);
             return iRet;
         }
-        
+
         uiData = ptDataTmp.get<UINT32>("ReportPeriod");
         iRet = pcCfg->SetReportPeriod(uiData);
         if (iRet)
@@ -297,10 +297,10 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay)
 {
     INT64 max = pstAgentFlowEntry->stFlowDetectResult.lLatencyMax;
-	if (0 != maxDelay && maxDelay > max)
-	{
-	    return AGENT_FILTER_DELAY;
-	}
+    if (0 != maxDelay && maxDelay > max)
+    {
+        return AGENT_FILTER_DELAY;
+    }
 
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try

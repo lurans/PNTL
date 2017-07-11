@@ -306,9 +306,9 @@ HttpDaemon_C::HttpDaemon_C()
     pcResponcePageOK = "<html><head><title>Info</title></head><body>Process Request Sucess</body></html>";
     pcResponcePageError = "<html><head><title>Error</title></head><body>Process Request Failed</body></html>";
     pcResponcePageUnsupported = "<html><head><title>Error</title></head><body>Unsupported Request</body></html>";
-	keyPath = "/home/wangjian/server.key";
-	certPath = "/home/wangjian/server.pem";
-    
+    keyPath = "/opt/huawei/ServerAntAgent/server.key";
+    certPath = "/opt/huawei/ServerAntAgent/server.pem";
+
 }
 
 // 析构函数, 释放必要资源.
@@ -345,9 +345,9 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
     keyPem = loadFile(keyPath);
     HTTP_DAEMON_ERROR("key pem is [%s].", keyPem.c_str());
 
-	certPem = loadFile(certPath);
-	HTTP_DAEMON_ERROR("certPem is [%s].", certPem.c_str());
-    
+    certPem = loadFile(certPath);
+    HTTP_DAEMON_ERROR("certPem is [%s].", certPem.c_str());
+
     // 使用新端口号启动http daemon.
     /**
      * Start a webserver on the given port.  Variadic version of
@@ -366,16 +366,16 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
      * @ingroup event
      */
     pstDaemon = MHD_start_daemon (
-                                MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_POLL | MHD_USE_SSL,
-                                uiNewPort,
-                                0, 0, 
-                                &HttpDaemonHandlerCallback, this, 
-                                MHD_OPTION_NOTIFY_COMPLETED, request_completed, NULL,
-                                MHD_OPTION_EXTERNAL_LOGGER, HttpDaemonLogCallback, this,
-                                MHD_OPTION_HTTPS_MEM_KEY, keyPem.c_str(),
-                                MHD_OPTION_HTTPS_MEM_CERT, certPem.c_str(),
-                                MHD_OPTION_END
-                                );
+                    MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_POLL | MHD_USE_SSL,
+                    uiNewPort,
+                    0, 0,
+                    &HttpDaemonHandlerCallback, this,
+                    MHD_OPTION_NOTIFY_COMPLETED, request_completed, NULL,
+                    MHD_OPTION_EXTERNAL_LOGGER, HttpDaemonLogCallback, this,
+                    MHD_OPTION_HTTPS_MEM_KEY, keyPem.c_str(),
+                    MHD_OPTION_HTTPS_MEM_CERT, certPem.c_str(),
+                    MHD_OPTION_END
+                );
     if (NULL == pstDaemon)
     {
         HTTP_DAEMON_ERROR("Http Daemon Init Failed on Port [%d].", uiNewPort);
@@ -442,21 +442,21 @@ INT32 HttpDaemon_C::ProcessPostIterate(const char * pcKey, const char * pcData, 
 
 string HttpDaemon_C::loadFile(string path)
 {
-	HTTP_DAEMON_ERROR("Read file at [%s]", path.c_str());
+    HTTP_DAEMON_ERROR("Read file at [%s]", path.c_str());
     string content = "";
-	ifstream in;
-	in.open(path.c_str(), ios::in);
-	if(in.fail())
-	{
-		return NULL;
-	}
-	string line = "";
-	while (getline(in, line))
-	{
-	    content += line + "\n";
-	}
-	in.close();
-	return content;
+    ifstream in;
+    in.open(path.c_str(), ios::in);
+    if(in.fail())
+    {
+        return NULL;
+    }
+    string line = "";
+    while (getline(in, line))
+    {
+        content += line + "\n";
+    }
+    in.close();
+    return content;
 }
 
 

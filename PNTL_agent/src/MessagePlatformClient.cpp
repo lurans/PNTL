@@ -14,7 +14,7 @@ using namespace std;
 // http 请求处理超时时间,单位s, 避免因为Server未响应数据导致挂死
 #define AGENT_REQUEST_TIMEOUT 5
 
-const CHAR* SERVER_CERT_PATH = "/home/wangjian/wlchou.pem";
+const CHAR* SERVER_CERT_PATH = "/opt/huawei/ServerAntAgent/server_cert.pem";
 /*
 ServerAntServer 下发的紧急探测流格式
 post
@@ -129,14 +129,14 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         headers = curl_slist_append(headers, "Accept:application/json");
         headers = curl_slist_append(headers, "Content-Type:application/json");
 
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-        curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH); 
+        curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH);
 
         curl_easy_setopt(curl,CURLOPT_SSLCERT,"/home/wangjian/server.pem");
-		curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE,"PEM");
-		curl_easy_setopt(curl,CURLOPT_SSLKEY,"/home/wangjian/server.key");   
+        curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE,"PEM");
+        curl_easy_setopt(curl,CURLOPT_SSLKEY,"/home/wangjian/server.key");
         curl_easy_setopt(curl,CURLOPT_SSLKEYTYPE,"PEM");
 
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);

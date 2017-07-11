@@ -895,11 +895,12 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
     iRet = CreatLatencyReportData(pstAgentFlowEntry, &ssReportData, maxDelay);
 
 
-	if (AGENT_FILTER_DELAY == iRet)
-	{
-	    FLOW_MANAGER_INFO("Current flow's delay time is less than threshold, return [%d]", iRet);
+    if (AGENT_FILTER_DELAY == iRet)
+    {
+        FLOW_MANAGER_INFO("Current flow's delay time is less than threshold, return [%d]", iRet);
         return AGENT_FILTER_DELAY;
-	} else if (iRet)
+    }
+    else if (iRet)
     {
         FLOW_MANAGER_ERROR("Creat Latency Report Data[%d]", iRet);
         return iRet;
@@ -1139,10 +1140,10 @@ INT32 FlowManager_C::DoReport()
                 {
                     FLOW_MANAGER_ERROR("Flow Latency Report failed[%d], index[%u]", iRet, uiFlowTableIndex);
                 }
-				else if (AGENT_FILTER_DELAY == iRet)
-				{
-				    continue ;
-				}
+                else if (AGENT_FILTER_DELAY == iRet)
+                {
+                    continue ;
+                }
             }
         }
     }
