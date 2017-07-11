@@ -199,7 +199,7 @@ private:
     INT32 FlowPrepareReport(UINT32 uiFlowTableIndex);   // 计算统计数据,准备上报
     INT32 FlowReportData(string * pstrReportData);      // 统一上报接口
     INT32 FlowDropReport(UINT32 uiFlowTableIndex);      // 丢包上报接口
-    INT32 FlowLatencyReport(UINT32 uiFlowTableIndex);   // 延时上报接口
+    INT32 FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay);   // 延时上报接口
 
     UINT32 uiLastQuerytTimeCounter;           // 最近一次启动查询Server的时间点
     INT32 QueryCheck(UINT32 counter);           // 检测此时是否该启动查询Server配置流程.
