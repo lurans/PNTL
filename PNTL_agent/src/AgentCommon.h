@@ -13,7 +13,8 @@ enum
     AGENT_E_THREAD      = -7,
     AGENT_E_HANDLER     = -8,
     AGENT_E_EXIST       = -9,
-    AGENT_EXIT          = 10
+    AGENT_EXIT          = -10,
+    AGENT_FILTER_DELAY  = -11
 };
 
 #define AGENT_ENABLE                         1

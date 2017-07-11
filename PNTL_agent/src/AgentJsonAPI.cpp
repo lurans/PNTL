@@ -111,13 +111,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             JSON_PARSER_ERROR("SetAgentAddress failed[%d]", iRet);
             return iRet;
         }
-        uiData = ptDataTmp.get<UINT32>("PollingTimerPeriod");
-        /*iRet = pcCfg->SetPollingTimerPeriod(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetPollingTimerPeriod failed[%d]", iRet);
-            return iRet;
-        }*/
+        
         uiData = ptDataTmp.get<UINT32>("ReportPeriod");
         iRet = pcCfg->SetReportPeriod(uiData);
         if (iRet)
@@ -300,8 +294,13 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 #define LatencyReportSignature    "HuaweiDC3ServerAntsFull"
 
 // 生成json格式的字符串, 用于向Analyzer上报延时信息.
-INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData)
+INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay)
 {
+    INT64 max = pstAgentFlowEntry->stFlowDetectResult.lLatencyMax;
+	if (0 != maxDelay && maxDelay > max)
+	{
+	    return AGENT_FILTER_DELAY;
+	}
 
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
@@ -375,7 +374,7 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntryTemp.put("99percentile", pstAgentFlowEntry->stFlowDetectResult.lLatency99Percentile);
             ptDataFlowEntryTemp.put("standard-deviation", pstAgentFlowEntry->stFlowDetectResult.lLatencyStandardDeviation);
             ptDataFlowEntryTemp.put("min", pstAgentFlowEntry->stFlowDetectResult.lLatencyMin);
-            ptDataFlowEntryTemp.put("max", pstAgentFlowEntry->stFlowDetectResult.lLatencyMax);
+            ptDataFlowEntryTemp.put("max", max);
             ptDataFlowEntryTemp.put("drop-notices", pstAgentFlowEntry->stFlowDetectResult.lDropNotesCounter);
             ptDataFlowEntry.put_child("statistics", ptDataFlowEntryTemp);
 
