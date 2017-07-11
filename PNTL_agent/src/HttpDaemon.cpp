@@ -343,13 +343,13 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
     }
 
     keyPem = loadFile(keyPath);
-    if (NULL == keyPem)
+    if (keyPem.empty())
     {
         HTTP_DAEMON_ERROR("Load server.key fail, exit.");
         return AGENT_E_PARA;
     }
     certPem = loadFile(certPath);
-    if (NULL == certPem)
+    if (certPem.empty())
     {
         HTTP_DAEMON_ERROR("Load server.pem fail, exit.");
         return AGENT_E_PARA;
