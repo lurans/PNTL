@@ -325,6 +325,17 @@ public class Pntl {
         return sendCommandToAgents(snList, token, command, "sync");
     }
 
+    public RestResp exitAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
+        List<String> snList = new ArrayList<>();
+        for (PntlHostContext host : pntlHostList){
+            if (host.getAgentSN() != null) {
+                snList.add(host.getAgentSN());
+            }
+        }
+        final String command = "service ServerAntAgentService stop";
+        return sendCommandToAgents(snList, token, command, "sync");
+    }
+
     public static final class ProbeFlows{
         private String ServerAntsAgent;
 

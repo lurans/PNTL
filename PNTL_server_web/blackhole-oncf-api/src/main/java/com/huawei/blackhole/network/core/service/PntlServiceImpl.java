@@ -6,7 +6,6 @@ import com.huawei.blackhole.network.api.resource.PntlShareInfo;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
-import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.utils.FileUtil;
@@ -21,11 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.xml.ws.Response;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.*;
 
 @Service("pntlService")
@@ -43,25 +37,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      */
     public Result<String> startPntl() {
         Result<String> result = new Result<>();
-        /* 获取主机列表 */
-        /*
-        try {
-            hostList = genProbeHostList();
-        } catch (Exception e){
-            LOG.error("get probe host list failed:" + e.getMessage());
-            result.addError("", "get probe host list failed:" + e.getMessage());
-            return result;
-        }
-*/
-        /* 初始化配置 */
-        try {
-           result = initPntlConfig();
-        } catch (Exception e){
-            LOG.error(e.getMessage());
-            result.addError("", e.getMessage());
-            return result;
-        }
-
+        //
         try {
             result = installStartAgent();
         } catch (ClientException e){
@@ -173,6 +149,19 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
         }
         LOG.info("Set probe interval:" + timeInterval);
+        if (timeInterval.equals("-1")){
+            try{
+                String token = identityWrapperService.getPntlAccessToken();
+                RestResp resp = pntlRequest.exitAgent(hostList, token);
+                if (resp.getStatusCode().isError()){
+                    result.addError("", "cmd to exit agent failed");
+                }
+            } catch (ClientException e){
+                LOG.error("cmd to exit agent failed, " + e.getMessage());
+                result.addError("", e.toString());
+            }
+            return result;
+        }
         for (int i = 0; i < hostList.size(); i++){
             String agentIp = hostList.get(i).getAgentIp();
             try {
@@ -252,6 +241,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      *3. 安装
      */
     private Result<String> installStartAgent() throws ClientException{
+        if (hostList == null || hostList.size() == 0){
+            try {
+                hostList = readFileHostList();
+            } catch (Exception e){
+                LOG.error("get host list failed:" + e.getMessage());
+            }
+        }
         final PntlShareInfo pntlInfo = new PntlShareInfo();
         Result<String> result = new Result<String>();
         Runnable scriptSendTask = new Runnable() {
@@ -307,16 +303,17 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @return
      * @throws ClientException
      */
-    private Result<String> initPntlConfig() throws ClientException {
+    public Result<String> initPntlConfig() throws ClientException {
         Result<String> result = new Result<String>();
         try {
+            //read IpList.yml
             hostList = readFileHostList();
         } catch (Exception e){
             LOG.error("get host list failed:" + e.getMessage());
             result.addError("", "get host list failed:" + e.getMessage());
             return result;
         }
-
+        //read config.yml
         Result<PntlConfig> pntlConfig = pntlConfigService.getPntlConfig();
         if (!pntlConfig.isSuccess()){
             LOG.error("get pntlConfig failed");
