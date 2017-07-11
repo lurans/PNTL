@@ -343,7 +343,17 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
     }
 
     keyPem = loadFile(keyPath);
+    if (NULL == keyPem)
+    {
+        HTTP_DAEMON_ERROR("Load server.key fail, exit.");
+        return AGENT_E_PARA;
+    }
     certPem = loadFile(certPath);
+    if (NULL == certPem)
+    {
+        HTTP_DAEMON_ERROR("Load server.pem fail, exit.");
+        return AGENT_E_PARA;
+    }
 
     // 使用新端口号启动http daemon.
     /**
