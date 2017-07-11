@@ -40,7 +40,7 @@ public class PntlConfigService {
         Result<PntlConfig> result = new Result<PntlConfig>();
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(Resource.PNTL_CONF);
+            Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
 
             PntlConfig pntlConfig = new PntlConfig();
             pntlConfig.setByMap(data);
@@ -101,7 +101,7 @@ public class PntlConfigService {
             validPntlConfig(pntlConfig);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
             Map<String, Object> data = pntlConfig.convertToMap();
-            YamlUtil.setConf(data, Resource.PNTL_CONF);
+            YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
         } catch (ApplicationException | InvalidParamException e) {
             String errMsg = "set config [" + Resource.NAME_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
@@ -178,7 +178,7 @@ public class PntlConfigService {
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "ipList file required");
         }
         String name = file.getDataHandler().getName();
-        if (!name.endsWith("yml")) {
+        if (!name.endsWith("yml") || !name.equalsIgnoreCase(PntlInfo.PNTL_IPLIST_CONF)) {
             throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of ipList file, should be *.yml");
         }
 
@@ -208,7 +208,7 @@ public class PntlConfigService {
 
     @SuppressWarnings("unchecked")
     private void deleteOldIpListFile() throws ApplicationException, ConfigLostException, InvalidFormatException, CommonException {
-        new File(FileUtil.getResourcePath() + Resource.PNTL_IPLIST_CONF).delete();
+        new File(FileUtil.getResourcePath() + PntlInfo.PNTL_IPLIST_CONF).delete();
     }
     public Result<String> uploadIpListFile(Attachment file){
         Result<String> result = new Result<String>();
@@ -248,9 +248,11 @@ public class PntlConfigService {
         if ((contentDisposition == null) || (contentDisposition.indexOf("filename") == -1)) {
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "agent file required");
         }
+
         String name = file.getDataHandler().getName();
-        if (!name.endsWith("tar.gz") && !name.endsWith("sh")) {
-            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of agent file, should be *.tar.gz");
+        if (!name.equalsIgnoreCase(PntlInfo.AGENT_EULER) && !name.equalsIgnoreCase(PntlInfo.AGENT_SUSE)
+                && !name.equalsIgnoreCase(PntlInfo.AGENT_INSTALL_FILENAME)){
+            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of agent file");
         }
 
         if (!name.equalsIgnoreCase(PntlInfo.AGENT_EULER) && !name.equalsIgnoreCase(PntlInfo.AGENT_SUSE)
@@ -264,8 +266,7 @@ public class PntlConfigService {
         }
     }
 
-    public Result<String> uploadAgentPkgFile(Attachment attachment)
-            throws UnsupportedEncodingException, FileNotFoundException {
+    public Result<String> uploadAgentPkgFile(Attachment attachment) {
         final String BOUNDARY = "----WebKitFormBoundaryzOYdpFxbuIoovXYf";
         Result<String> result = new Result<String>();
         try {

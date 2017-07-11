@@ -165,7 +165,7 @@ INT32 ServerAntAgent()
 
     if (AGENT_OK == iRet)
     {
-        UINT32 delayTime = 10000 + rand() % 30;
+        UINT32 delayTime = 10 + rand() % 30;
         INIT_INFO("Query pingList will be in [%u] seconds.", delayTime);
         sleep(delayTime);
         SHOULD_PROBE = 1;

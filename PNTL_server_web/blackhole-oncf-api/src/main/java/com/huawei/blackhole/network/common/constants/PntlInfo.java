@@ -40,4 +40,6 @@ public class PntlInfo {
     public static final String AGENT_EULER = "ServerAntAgentForEuler.tar.gz";
     public static final String AGENT_SUSE  = "ServerAntAgentForSles.tar.gz";
     public static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
+    public static final String PNTL_CONF = "pntlConfig.yml";
+    public static final String PNTL_IPLIST_CONF = "ipList.yml";
 }

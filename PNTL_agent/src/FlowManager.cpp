@@ -873,7 +873,7 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
 }
 
 // 延时上报接口
-INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex)
+INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
 {
     INT32 iRet = AGENT_OK;
     AgentFlowTableEntry_S * pstAgentFlowEntry = NULL;
@@ -892,9 +892,15 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex)
     ssReportData.str("");
 
     pstAgentFlowEntry = &(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex]);
-    iRet = CreatLatencyReportData(pstAgentFlowEntry, &ssReportData);
+    iRet = CreatLatencyReportData(pstAgentFlowEntry, &ssReportData, maxDelay);
 
-    if (iRet)
+
+    if (AGENT_FILTER_DELAY == iRet)
+    {
+        FLOW_MANAGER_INFO("Current flow's delay time is less than threshold, return [%d]", iRet);
+        return AGENT_FILTER_DELAY;
+    }
+    else if (iRet)
     {
         FLOW_MANAGER_ERROR("Creat Latency Report Data[%d]", iRet);
         return iRet;
@@ -1129,10 +1135,14 @@ INT32 FlowManager_C::DoReport()
             if ((FLOW_ENTRY_STATE_CHECK(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_ENABLE))
                     && (AGENT_TRUE != AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey.uiUrgentFlow))
             {
-                iRet = FlowLatencyReport(uiFlowTableIndex);
+                iRet = FlowLatencyReport(uiFlowTableIndex, pcAgentCfg->GetMaxDelay());
                 if (iRet)
                 {
                     FLOW_MANAGER_ERROR("Flow Latency Report failed[%d], index[%u]", iRet, uiFlowTableIndex);
+                }
+                else if (AGENT_FILTER_DELAY == iRet)
+                {
+                    continue ;
                 }
             }
         }
