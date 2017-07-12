@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.blackhole.network.api.bean.DelayInfoAgent;
 import com.huawei.blackhole.network.api.bean.LossRateAgent;
+import com.huawei.blackhole.network.api.bean.PntlConfig;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ClientException;
@@ -16,6 +17,7 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
+import com.sun.org.apache.regexp.internal.RE;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
@@ -38,7 +40,7 @@ public class Pntl {
     private static final String HOSTCLASS = "hostClass";
     private static final String PAGESIZE = "pageSize";
     private static final String PAGEINDEX = "pageIndex";
-    private static final String PORT = "1200";
+    private static final String PORT = "33000";
     private static final String OS_SUSE = "SUSE";
     private static final String OS_EULER = "EULER";
     private static final String FILETYPE_SCRIPT = "SCRIPT";
@@ -123,6 +125,31 @@ public class Pntl {
         return hostInfo;
     }
 
+    public RestResp sendServerConf(String agentIp, PntlConfig config)
+            throws ClientException, JsonProcessingException {
+        LOG.info("start to send server config");
+
+        Map<String, String> header = new HashMap<>();
+        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
+
+        String url = "http://" + agentIp + ":" + PORT;
+        ObjectMapper mapper = new ObjectMapper();
+        ServerConf json = new ServerConf();
+        json.setProbePeriod(config.getProbePeriod());
+        json.setPortCount(config.getPortCount());
+        json.setReportPeriod(config.getReportPeriod());
+        json.setDelayThreshold(config.getDelayThreshold());
+        json.setDscp(config.getDscp());
+        json.setLossPkgTimeout(config.getLossPkgTimeout());
+        json.setBigPkgRate(config.getPkgCount());
+        String jsonInString = mapper.writeValueAsString(json);
+
+        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_CONF, jsonInString));
+
+        return RestClientExt.post(url, null, formBody,  header);
+    }
+
     /**
      * 发送探测时间间隔到agent
      * @param agentIp
@@ -142,7 +169,7 @@ public class Pntl {
         String jsonInString = mapper.writeValueAsString(json);
 
         List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT_ACTION, jsonInString));
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_ACTION, jsonInString));
 
         return RestClientExt.post(url, null, formBody,  header);
     }
@@ -161,7 +188,7 @@ public class Pntl {
 
         String url = "http://" + agentIp + ":" + PORT;
         List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_ANGENT_ACTION, ""));
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_ACTION, ""));
 
         return RestClientExt.post(url, null, formBody,  header);
     }

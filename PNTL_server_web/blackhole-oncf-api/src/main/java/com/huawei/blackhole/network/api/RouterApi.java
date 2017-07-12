@@ -410,12 +410,13 @@ public class RouterApi {
     @Path("/pntlVariableConf")
     @POST
     public Response setPntlConfig(PntlConfig config){
+        /*先保存在文件，后下发到agent*/
         Result<String> result = pntlConfigService.setPntlConfig(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
-        result = pntlService.setProbeInterval(config.getProbePeriod());
+        result = pntlService.setServerConf(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }

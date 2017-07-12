@@ -142,6 +142,24 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return result;
     }
 
+    public Result<String> setServerConf(PntlConfig config){
+        Result<String> result = new Result<>();
+        for (int i = 0; i < hostList.size(); i++){
+            String agentIp = hostList.get(i).getAgentIp();
+            try {
+                RestResp resp = pntlRequest.sendServerConf(agentIp, config);
+                if (resp.getStatusCode().isError()){
+                    LOG.error("stop probe failed[" + agentIp + "]");
+                    result.addError("", "stop probe failed[" + agentIp + "]");
+                }
+            } catch (ClientException | JsonProcessingException e){
+                LOG.error("stop probe failed[" + agentIp + "] " + e.getMessage());
+                result.addError("", "stop probe failed[" + agentIp + "] "+ e.getMessage());
+            }
+        }
+        return result;
+    }
+
     /**
      * 设置探测时间间隔，若为0，则停止探测
      * @return
@@ -353,6 +371,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
         DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
+
+
         return result;
     }
 

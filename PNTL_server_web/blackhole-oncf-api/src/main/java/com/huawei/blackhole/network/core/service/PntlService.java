@@ -1,6 +1,7 @@
 package com.huawei.blackhole.network.core.service;
 
 import com.huawei.blackhole.network.api.bean.PingListRequest;
+import com.huawei.blackhole.network.api.bean.PntlConfig;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
@@ -26,4 +27,6 @@ public interface PntlService {
     Result<String> saveAgentIp(String agentIp, String vbondIp);
 
     Result<String> updateAgents(String type);
+
+    Result<String> setServerConf(PntlConfig config);
 }
