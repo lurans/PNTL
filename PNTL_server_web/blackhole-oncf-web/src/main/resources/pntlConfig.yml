@@ -1,18 +1,18 @@
-probe_period: 10
+probe_period: 60
 
-port_count: 2
+port_count: 5
 
-report_period: 10
+report_period: 120
 
-pkg_count: 5
+pkg_count: 0
 
 delay_threshold: 10
 
 lossRate_threshold: 20
 
-dscp: 60
+dscp: 0
 
-lossPkg_timeout: 10
+lossPkg_timeout: 1
 
 ak: 0j_xmyclMrfvSzmMrGFdRbTLfYIa
 
