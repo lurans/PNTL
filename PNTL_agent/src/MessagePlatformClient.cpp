@@ -131,7 +131,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
 
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+        //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
         curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH);
 
         curl_easy_setopt(curl,CURLOPT_SSLCERT,"/home/wangjian/server.pem");

@@ -449,7 +449,7 @@ INT32 HttpDaemon_C::ProcessPostIterate(const char * pcKey, const char * pcData, 
 
 string HttpDaemon_C::loadFile(string path)
 {
-    HTTP_DAEMON_ERROR("Read file at [%s]", path.c_str());
+    HTTP_DAEMON_INFO("Read file at [%s]", path.c_str());
     string content = "";
     ifstream in;
     in.open(path.c_str(), ios::in);

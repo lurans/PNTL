@@ -211,6 +211,8 @@ INT32 ServerAntAgent()
 }
 
 INT32 SHOULD_PROBE = 0;
+INT32 SEND_BIG_PKG = 0;
+INT32 CLEAR_BIG_PKG = 0;
 
 // 程序入口, 默认直接启动.
 // 不带参数时直接启动

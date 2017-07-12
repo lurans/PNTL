@@ -25,6 +25,10 @@ enum
 
 extern INT32 SHOULD_PROBE;
 
+extern INT32 SEND_BIG_PKG;
+
+extern INT32 CLEAR_BIG_PKG;
+
 typedef enum  tagAgentDetectProtocolType
 {
     AGENT_DETECT_PROTOCOL_NULL = 0,   // Œ¥≈‰÷√

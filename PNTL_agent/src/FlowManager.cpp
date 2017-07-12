@@ -10,6 +10,7 @@ using namespace std;
 #include "AgentJsonAPI.h"
 #include "MessagePlatformClient.h"
 #include "FlowManager.h"
+#include "AgentCommon.h"
 
 
 // 锁使用原则: 所有配置由ServerFlowTable刷新到AgentFlowTable.
@@ -230,6 +231,7 @@ INT32 FlowManager_C::AgentFlowTableAdd(UINT32 uiAgentFlowTableNumber, ServerFlow
     stNewAgentEntry.stFlowKey.uiDestPort = pstServerFlowEntry->stServerFlowKey.uiDestPort;
     stNewAgentEntry.stFlowKey.uiDscp = pstServerFlowEntry->stServerFlowKey.uiDscp;
     stNewAgentEntry.stFlowKey.stServerTopo = pstServerFlowEntry->stServerFlowKey.stServerTopo;
+	stNewAgentEntry.stFlowKey.uiIsBigPkg = 0;
 
     // 刷新索引信息
     stNewAgentEntry.stFlowKey.uiAgentFlowTableIndex = AgentFlowTable[uiAgentFlowTableNumber].size();
@@ -259,8 +261,6 @@ INT32 FlowManager_C::AgentFlowTableAdd(UINT32 uiAgentFlowTableNumber, ServerFlow
         uiAgentIndexCounter ++ ;
     }
     pstServerFlowEntry->uiAgentFlowIndexMax = stNewAgentEntry.stFlowKey.uiAgentFlowTableIndex - 1;
-
-
     return iRet;
 }
 
@@ -581,7 +581,7 @@ INT32 FlowManager_C::DoDetect()
                 if (NULL !=  WorkerList_UDP)
                 {
                     stFlowKey = pAgentFlowEntry->stFlowKey;
-                    FLOW_MANAGER_INFO("flow proc====    destip is %u, destPort is %u",stFlowKey.uiDestIP,stFlowKey.uiDestPort);
+                    FLOW_MANAGER_INFO("destip is %s, destPort is %u, src port is %u", sal_inet_ntoa(stFlowKey.uiDestIP), stFlowKey.uiDestPort, stFlowKey.uiSrcPort);
 
                     iRet = WorkerList_UDP->PushSession(stFlowKey);
                     if (iRet && AGENT_E_SOCKET != iRet)
@@ -1297,6 +1297,22 @@ INT32 FlowManager_C::ThreadHandler()
         // 当前周期是否该启动探测流程.
         if (DetectCheck(counter))
         {
+            if (SEND_BIG_PKG)
+			{
+			    // 设置了最大包比例，需要发送最大包
+			    iRet = preSendBigPkg(this->pcAgentCfg);
+				if (!iRet)
+				{
+				    SEND_BIG_PKG = 0;
+				}
+            }
+
+			if (CLEAR_BIG_PKG)
+			{
+                clearBigPkgConf();
+				CLEAR_BIG_PKG = 0;
+			}
+			
             // 启动探测流程.
             iRet = DoDetect();
             if (iRet)
@@ -1416,4 +1432,29 @@ INT32 FlowManager_C::FlowManagerAction(INT32 interval)
     }
     return iRet;
 }
+
+INT32 FlowManager_C::preSendBigPkg(ServerAntAgentCfg_C* config)
+{
+     vector<AgentFlowTableEntry_S>::iterator pAgentFlowEntry;	
+    for(pAgentFlowEntry = AgentFlowTable[AGENT_WORKING_FLOW_TABLE].begin();pAgentFlowEntry != AgentFlowTable[AGENT_WORKING_FLOW_TABLE].end();
+            pAgentFlowEntry++)
+    {
+            pAgentFlowEntry->stFlowKey.uiIsBigPkg = 1;
+    }
+    return AGENT_OK;
+    
+    return AGENT_OK;
+}
+
+INT32 FlowManager_C::clearBigPkgConf()
+{
+    vector<AgentFlowTableEntry_S>::iterator pAgentFlowEntry;	
+    for(pAgentFlowEntry = AgentFlowTable[AGENT_WORKING_FLOW_TABLE].begin();pAgentFlowEntry != AgentFlowTable[AGENT_WORKING_FLOW_TABLE].end();
+            pAgentFlowEntry++)
+    {
+            pAgentFlowEntry->stFlowKey.uiIsBigPkg = 0;
+    }
+    return AGENT_OK;
+}
+
 
