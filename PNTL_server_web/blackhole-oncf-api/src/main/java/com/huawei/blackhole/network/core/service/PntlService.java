@@ -15,9 +15,15 @@ public interface PntlService {
 
     Result<IpListJson> getIpListinfo(String azId, String podId);
 
-    public Result<String> setProbeInterval(String timeInterval);
+    Result<String> setProbeInterval(String timeInterval);
 
-    public Result<String> saveAgentIp(String agentIp, String vbondIp);
+    Result<String> startAgent();
 
-    public Result<String> initPntlConfig() throws ClientException;
+    Result<String> initPntl() throws ClientException;
+
+    Result<String> initHostList();
+
+    Result<String> saveAgentIp(String agentIp, String vbondIp);
+
+    Result<String> updateAgents(String type);
 }

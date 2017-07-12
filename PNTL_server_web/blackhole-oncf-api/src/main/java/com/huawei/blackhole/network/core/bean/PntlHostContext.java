@@ -1,7 +1,10 @@
 package com.huawei.blackhole.network.core.bean;
 
+import com.huawei.blackhole.network.common.constants.ExceptionType;
+import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.extention.bean.pntl.HostInfo;
 import com.huawei.blackhole.network.extention.bean.vrm.Hosts;
+import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -125,5 +128,28 @@ public class PntlHostContext {
         }
         pingMeshList.put(srcIp, ips);
         setPingMeshList(pingMeshList);
+    }
+
+    public List<Map<String, String>> convertToMap(List<PntlHostContext> pntlHosts){
+        List<Map<String, String>> data = new ArrayList<>();
+
+        for (PntlHostContext host : pntlHosts){
+            Map<String, String> d = new HashMap<>();
+            d.put("ip", host.getAgentIp());
+            d.put("pod", host.getPodId());
+            d.put("az", host.getZoneId());
+            d.put("os", host.getOs());
+            data.add(d);
+        }
+        return data;
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if (obj instanceof PntlHostContext){
+            PntlHostContext p = (PntlHostContext)obj;
+            return this.getAgentIp().equals(p.getAgentIp());
+        }
+        return super.equals(obj);
     }
 }

@@ -10,10 +10,12 @@ import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.*;
 import com.huawei.blackhole.network.common.utils.ExceptionUtil;
 import com.huawei.blackhole.network.common.utils.FileUtil;
+import com.huawei.blackhole.network.common.utils.ResponseUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.Result;
+import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.apache.commons.codec.binary.Base64;
@@ -25,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +38,9 @@ public class PntlConfigService {
     private static Logger LOGGER = LoggerFactory.getLogger(PntlConfigService.class);
     @javax.annotation.Resource(name = "keystoneService")
     protected Keystone identityWrapperService;
+
+    @javax.annotation.Resource(name = "pntlService")
+    private PntlService pntlService;
 
     public Result<PntlConfig> getPntlConfig() {
         Result<PntlConfig> result = new Result<PntlConfig>();
@@ -125,20 +131,20 @@ public class PntlConfigService {
 
         try {
             int probe_period = Integer.valueOf(pntlConfig.getProbePeriod());
-            if (probe_period < 0 || probe_period > 60) {
+            if (probe_period < 60 || probe_period > 1800) {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "probe period is invalid");
             }
 
             int port_count = Integer.valueOf(pntlConfig.getPortCount());
-            if (port_count < 1 || port_count > 50){
+            if (port_count < 1 || port_count > 100){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "port count is invalid");
             }
             int report_period = Integer.valueOf(pntlConfig.getReportPeriod());
-            if (report_period < 1 || report_period > 60){
+            if (report_period < 60 || report_period > 1800){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "report period is invalid");
             }
             int pkg_count = Integer.valueOf(pntlConfig.getPkgCount());
-            if (pkg_count <= 0){
+            if (pkg_count !=0 && pkg_count != 100){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "package count is invalid");
             }
             int delay_threshold = Integer.valueOf(pntlConfig.getDelayThreshold());
@@ -168,7 +174,7 @@ public class PntlConfigService {
         return new String(encodeBasic64);
     }
 
-    private void validIpListAttachment(Attachment file) throws InvalidParamException, InvalidFormatException {
+    private void validIpListAttachment(Attachment file, String filename) throws InvalidParamException, InvalidFormatException {
         if (file == null) {
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "invalid request to upload ipList file");
         }
@@ -178,8 +184,8 @@ public class PntlConfigService {
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "ipList file required");
         }
         String name = file.getDataHandler().getName();
-        if (!name.endsWith("yml") || !name.equalsIgnoreCase(PntlInfo.PNTL_IPLIST_CONF)) {
-            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of ipList file, should be *.yml");
+        if (!name.endsWith("yml")) {
+            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of ipList file, should be " + filename);
         }
 
         File tmpFile = new File(FileUtil.getResourceIpListPath() + name + UUID.randomUUID());
@@ -210,10 +216,12 @@ public class PntlConfigService {
     private void deleteOldIpListFile() throws ApplicationException, ConfigLostException, InvalidFormatException, CommonException {
         new File(FileUtil.getResourcePath() + PntlInfo.PNTL_IPLIST_CONF).delete();
     }
-    public Result<String> uploadIpListFile(Attachment file){
+
+    public Result<String> uploadIpListFile(Attachment file, String othername){
         Result<String> result = new Result<String>();
+        String name = othername.isEmpty() ? file.getDataHandler().getName() : othername;
         try {
-            validIpListAttachment(file);
+            validIpListAttachment(file, name);
         } catch (InvalidParamException | InvalidFormatException e) {
             String errMsg = e.toString();
             result.addError("", errMsg);
@@ -221,10 +229,11 @@ public class PntlConfigService {
             return result;
         }
 
-        String name = file.getDataHandler().getName();
         File destinationFile = new File(getFileName(name));
         try {
-            deleteOldIpListFile();
+            if (othername.isEmpty()) {
+                deleteOldIpListFile();
+            }
             file.transferTo(destinationFile);
         } catch (IOException e) {
             String errMsg = "file to load ipList file to server : " + e.getLocalizedMessage();
@@ -237,6 +246,9 @@ public class PntlConfigService {
             LOGGER.error(errMsg, e);
             return result;
         }
+
+        /*更新ipList之后，重新加载文件*/
+        result = pntlService.initHostList();
         return result;
     }
 

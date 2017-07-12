@@ -24,7 +24,8 @@ public class PntlInfo {
     public static final String X_FORM_URLENCODED = "application/x-www-form-urlencoded";
     public static final String AUTH = "Authorization";
     public static final String GRANT_TYPE = "grant_type";
-    public static final int    MONITOR_INTERVAL_TIME = 5*60;//second
+    public static final int    MONITOR_INTERVAL_TIME_NEWEST = 5*60;//second
+    public static final int    MONITOR_INTERVAL_TIME_HISTORY = 7*24*60*60;//seven days
     public static final int    NOTIFY_AGENT_TO_GET_PINGLIST_TIME = 1*10;
 
     public static final String REPOURL = "http://8.15.4.10";//beta
@@ -42,4 +43,7 @@ public class PntlInfo {
     public static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
     public static final String PNTL_CONF = "pntlConfig.yml";
     public static final String PNTL_IPLIST_CONF = "ipList.yml";
+    public static final String PNTL_UPDATE_IPLIST_CONFIG = "updateIpList.yml";
+    public static final String PNTL_UPDATE_TYPE_ADD = "add";
+    public static final String PNTL_UPDATE_TYPE_DEL = "del";
 }

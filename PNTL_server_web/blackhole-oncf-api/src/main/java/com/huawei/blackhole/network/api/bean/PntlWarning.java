@@ -3,15 +3,19 @@ package com.huawei.blackhole.network.api.bean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import javafx.scene.input.DataFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -19,6 +23,7 @@ import java.util.regex.Pattern;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PntlWarning implements Serializable{
     private static final long serialVersionUID = -8897848136750379361L;
+    private static final Logger LOG = LoggerFactory.getLogger(PntlWarning.class);
     @JsonProperty("result")
     private static List<PntlWarnInfo> result = new ArrayList<PntlWarnInfo>();
 
@@ -265,5 +270,22 @@ public class PntlWarning implements Serializable{
             result.setModel(getFilteredResults(param));
         }
         return result;
+    }
+
+    public static void refleshHistoryWarning() throws ParseException {
+        List<PntlWarnInfo> resultList = PntlWarning.getResult();
+        if (resultList == null || resultList.isEmpty()){
+            return;
+        }
+        Iterator<PntlWarnInfo> it = resultList.iterator();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
+        while (it.hasNext()){
+            PntlWarnInfo p = it.next();
+            Long intervalTime = System.currentTimeMillis()/1000 - df.parse(p.getTime()).getTime() ;
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME_HISTORY){
+                LOG.info("Remove history warning:" + p.getSrcIp() + "->" + p.getDstIp());
+                it.remove();
+            }
+        }
     }
 }

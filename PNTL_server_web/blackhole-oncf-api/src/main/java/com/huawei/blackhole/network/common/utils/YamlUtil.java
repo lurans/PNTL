@@ -54,12 +54,15 @@ public class YamlUtil {
     }
 
     public static void appendConf(Object data, String confFile) throws ApplicationException {
-        BufferedWriter output = null;
+        Writer output = null;
         String path = getPath(confFile);
         try{
             output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path, true), Charsets.UTF_8));
             Yaml yaml = new Yaml(new SafeConstructor());
             String yamlData = yaml.dumpAsMap(data);
+            if (yamlData.startsWith("!!map")){
+                yamlData = yamlData.substring(5);
+            }
             output.write(yamlData);
             output.flush();
         } catch (IOException e){
