@@ -326,18 +326,18 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntry.put("dport", pstAgentFlowEntry->stFlowKey.uiDestPort);
             switch (pstAgentFlowEntry->stFlowKey.eProtocol)
             {
-            case AGENT_DETECT_PROTOCOL_UDP:
-                ptDataFlowEntry.put("ip-protocol","udp");
-                break;
-            case AGENT_DETECT_PROTOCOL_TCP:
-                ptDataFlowEntry.put("ip-protocol","tcp");
-                break;
-            case AGENT_DETECT_PROTOCOL_ICMP:
-                ptDataFlowEntry.put("ip-protocol","icmp");
-                break;
-            default:
-                ptDataFlowEntry.put("ip-protocol","null");
-                break;
+                case AGENT_DETECT_PROTOCOL_UDP:
+                    ptDataFlowEntry.put("ip-protocol","udp");
+                    break;
+                case AGENT_DETECT_PROTOCOL_TCP:
+                    ptDataFlowEntry.put("ip-protocol","tcp");
+                    break;
+                case AGENT_DETECT_PROTOCOL_ICMP:
+                    ptDataFlowEntry.put("ip-protocol","icmp");
+                    break;
+                default:
+                    ptDataFlowEntry.put("ip-protocol","null");
+                    break;
             }
             ptDataFlowEntry.put("dscp",pstAgentFlowEntry->stFlowKey.uiDscp);
             ptDataFlowEntry.put("urgent-flag",pstAgentFlowEntry->stFlowKey.uiUrgentFlow);
@@ -464,18 +464,18 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
             ptDataFlowEntry.put("dport", pstAgentFlowEntry->stFlowKey.uiDestPort);
             switch (pstAgentFlowEntry->stFlowKey.eProtocol)
             {
-            case AGENT_DETECT_PROTOCOL_UDP:
-                ptDataFlowEntry.put("ip-protocol","udp");
-                break;
-            case AGENT_DETECT_PROTOCOL_TCP:
-                ptDataFlowEntry.put("ip-protocol","tcp");
-                break;
-            case AGENT_DETECT_PROTOCOL_ICMP:
-                ptDataFlowEntry.put("ip-protocol","icmp");
-                break;
-            default:
-                ptDataFlowEntry.put("ip-protocol","null");
-                break;
+                case AGENT_DETECT_PROTOCOL_UDP:
+                    ptDataFlowEntry.put("ip-protocol","udp");
+                    break;
+                case AGENT_DETECT_PROTOCOL_TCP:
+                    ptDataFlowEntry.put("ip-protocol","tcp");
+                    break;
+                case AGENT_DETECT_PROTOCOL_ICMP:
+                    ptDataFlowEntry.put("ip-protocol","icmp");
+                    break;
+                default:
+                    ptDataFlowEntry.put("ip-protocol","null");
+                    break;
             }
             ptDataFlowEntry.put("dscp",pstAgentFlowEntry->stFlowKey.uiDscp);
             ptDataFlowEntry.put("urgent-flag",pstAgentFlowEntry->stFlowKey.uiUrgentFlow);

@@ -177,17 +177,17 @@ INT32 KafkaClient_C::StartKafkaClient(KafakClientType_E eNewClientType)
     rd_kafka_type_t eKafkaType;
     switch (eNewClientType)
     {
-    case KAFAKA_CLIENT_TYPE_PRODUCER:
-        eKafkaType = RD_KAFKA_PRODUCER;
-        break;
+        case KAFAKA_CLIENT_TYPE_PRODUCER:
+            eKafkaType = RD_KAFKA_PRODUCER;
+            break;
 
-    case KAFAKA_CLIENT_TYPE_CONSUMER:
-        eKafkaType = RD_KAFKA_CONSUMER;
-        break;
+        case KAFAKA_CLIENT_TYPE_CONSUMER:
+            eKafkaType = RD_KAFKA_CONSUMER;
+            break;
 
-    default:
-        KAFKA_CLIENT_ERROR("Unknown client type[%d]", eNewClientType);
-        return AGENT_E_PARA;
+        default:
+            KAFKA_CLIENT_ERROR("Unknown client type[%d]", eNewClientType);
+            return AGENT_E_PARA;
     }
 
 

@@ -210,21 +210,21 @@ INT32 AgentLogSaveToFile( UINT32 ulModule, UINT32 ulLogType, const char *pcMsg )
         INT32 iPriority = LOG_INFO;
         switch (ulLogType)
         {
-        case AGENT_LOG_TYPE_INFO:
-            iPriority = LOG_INFO;
-            break;
+            case AGENT_LOG_TYPE_INFO:
+                iPriority = LOG_INFO;
+                break;
 
-        case AGENT_LOG_TYPE_WARNING:
-            iPriority = LOG_WARNING;
-            break;
+            case AGENT_LOG_TYPE_WARNING:
+                iPriority = LOG_WARNING;
+                break;
 
-        case AGENT_LOG_TYPE_ERROR:
-            iPriority = LOG_ERR;
-            break;
+            case AGENT_LOG_TYPE_ERROR:
+                iPriority = LOG_ERR;
+                break;
 
-        default :
-            AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
-            return AGENT_E_PARA;
+            default :
+                AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
+                return AGENT_E_PARA;
         }
 
         openlog("ServerAntAgent", LOG_CONS|LOG_PID, LOG_DAEMON);
