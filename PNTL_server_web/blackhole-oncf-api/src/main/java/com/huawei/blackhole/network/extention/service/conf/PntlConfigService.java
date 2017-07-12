@@ -15,6 +15,7 @@ import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.Result;
+import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.apache.commons.codec.binary.Base64;
@@ -37,6 +38,9 @@ public class PntlConfigService {
     private static Logger LOGGER = LoggerFactory.getLogger(PntlConfigService.class);
     @javax.annotation.Resource(name = "keystoneService")
     protected Keystone identityWrapperService;
+
+    @javax.annotation.Resource(name = "pntlService")
+    private PntlService pntlService;
 
     public Result<PntlConfig> getPntlConfig() {
         Result<PntlConfig> result = new Result<PntlConfig>();
@@ -242,6 +246,9 @@ public class PntlConfigService {
             LOGGER.error(errMsg, e);
             return result;
         }
+
+        /*更新ipList之后，重新加载文件*/
+        pntlService.initHostList();
         return result;
     }
 

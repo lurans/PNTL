@@ -291,12 +291,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
         return result;
     }
-    /**
-     * 初始化配置，下发脚本，学习网络拓扑
-     * @return
-     * @throws ClientException
-     */
-    public Result<String> initPntlConfig() throws ClientException {
+
+    public Result<String> initHostList(){
         Result<String> result = new Result<String>();
         try {
             hostList = readFileHostList(PntlInfo.PNTL_IPLIST_CONF);
@@ -305,16 +301,10 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "get host list failed:" + e.getMessage());
             return result;
         }
-        //read config.yml
-        Result<PntlConfig> pntlConfig = pntlConfigService.getPntlConfig();
-        if (!pntlConfig.isSuccess()){
-            LOG.error("get pntlConfig failed");
-            result.addError("", "get pntlConfig failed");
-            return result;
-        }
-        LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
-        DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
+        return result;
+    }
 
+    private void startMonitor(){
          /* 启动轮询监控*/
         Runnable monitorPntlNewestWarnTask = new Runnable() {
             @Override
@@ -331,6 +321,46 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
         };
         resultService.execute(monitorPntlHistoryWarnTask);
+    }
+
+    private Result<String> initPntlConfig(){
+        Result<String> result = new Result<String>();
+        //read config.yml
+        Result<PntlConfig> pntlConfig = pntlConfigService.getPntlConfig();
+        if (!pntlConfig.isSuccess()){
+            LOG.error("get pntlConfig failed");
+            result.addError("", "get pntlConfig failed");
+            return result;
+        }
+        LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
+        DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
+        return result;
+    }
+
+    /**
+     * 初始化配置，下发脚本，学习网络拓扑
+     * @return
+     * @throws ClientException
+     */
+    public Result<String> initPntl() throws ClientException {
+        Result<String> result = new Result<String>();
+
+        result = initHostList();
+        if (!result.isSuccess()){
+            String errMsg = result.getErrorMessage();
+            LOG.error(errMsg);
+            result.addError("", errMsg);
+            return result;
+        }
+
+        result = initPntlConfig();
+        if (!result.isSuccess()){
+            LOG.error("get pntlConfig failed");
+            result.addError("", "get pntlConfig failed");
+            return result;
+        }
+
+        startMonitor();
         LOG.info("Init host list and pntlConfig success");
 
         return  result;

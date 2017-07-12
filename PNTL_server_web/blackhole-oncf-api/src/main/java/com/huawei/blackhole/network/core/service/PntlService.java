@@ -17,7 +17,9 @@ public interface PntlService {
 
     Result<String> setProbeInterval(String timeInterval);
 
-    Result<String> initPntlConfig() throws ClientException;
+    Result<String> initPntl() throws ClientException;
+
+    Result<String> initHostList();
 
     Result<String> saveAgentIp(String agentIp, String vbondIp);
 

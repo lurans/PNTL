@@ -20,10 +20,10 @@ public class InitPntl implements ServletContextListener{
         WebApplicationContext rwp = WebApplicationContextUtils.getRequiredWebApplicationContext(sce.getServletContext());
         PntlService pntlService= (PntlService) rwp.getBean("pntlService");
         try {
-            result = pntlService.initPntlConfig();
+            result = pntlService.initPntl();
         }catch (Exception e){
-            LOG.error("Pntl Init Failed:" + e.getMessage());
-            result.addError("", "Pntl Init Failed:" + e.getMessage());
+            LOG.error("Pntl Init Failed");
+            result.addError("", "Pntl Init Failed");
         }
     }
 

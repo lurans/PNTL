@@ -491,8 +491,8 @@ public class RouterApi {
     @Path("/uploadFiles")
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadAgentPkg(@Context HttpServletRequest request, MultipartBody body){
-        LOGGER.info("start to upload agent package file");
+    public Response uploadFiles(@Context HttpServletRequest request, MultipartBody body){
+        LOGGER.info("start to upload agent package files");
         Result<String> result = null;
         Attachment file = body.getAttachment(Constants.FORM_FILE);
         if (file == null) {
