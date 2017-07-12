@@ -42,4 +42,7 @@ public class PntlInfo {
     public static final String AGENT_INSTALL_FILENAME = "install_pntl.sh";
     public static final String PNTL_CONF = "pntlConfig.yml";
     public static final String PNTL_IPLIST_CONF = "ipList.yml";
+    public static final String PNTL_UPDATE_IPLIST_CONFIG = "updateIpList.yml";
+    public static final String PNTL_UPDATE_TYPE_ADD = "add";
+    public static final String PNTL_UPDATE_TYPE_DEL = "del";
 }

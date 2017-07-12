@@ -13,10 +13,7 @@ import com.huawei.blackhole.network.common.utils.AuthUtil;
 import com.huawei.blackhole.network.common.utils.ExceptionUtil;
 import com.huawei.blackhole.network.common.utils.ResponseUtil;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.core.service.EIPRouterService;
-import com.huawei.blackhole.network.core.service.EwRouterService;
-import com.huawei.blackhole.network.core.service.PntlService;
-import com.huawei.blackhole.network.core.service.VPNRouterService;
+import com.huawei.blackhole.network.core.service.*;
 import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
 import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
 import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
@@ -509,7 +506,7 @@ public class RouterApi {
             ContentDisposition cd = a.getContentDisposition();
             if (cd != null && Constants.FORM_FILE.equals(cd.getParameter("name"))) {
                 if (a.getDataHandler().getName().equalsIgnoreCase(PntlInfo.PNTL_IPLIST_CONF)) {
-                    result = pntlConfigService.uploadIpListFile(a);
+                    result = pntlConfigService.uploadIpListFile(a, "");
                     if (!result.isSuccess()) {
                         return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
                     }
@@ -530,6 +527,32 @@ public class RouterApi {
         Result<Object> result = PntlWarning.getWarnList(param);
         if (result.isSuccess()) {
             return ResponseUtil.succ(result.getModel());
+        } else {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+    }
+
+    @Path("/updateAgents")
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response updateAgents(@Context HttpServletRequest request, MultipartBody body){
+        LOGGER.info("start to update agents");
+        Result<String> result = new Result<>();
+
+        String type = body.getAttachmentObject("operation", String.class);
+        if (!type.equals(PntlInfo.PNTL_UPDATE_TYPE_ADD) && !type.equals(PntlInfo.PNTL_UPDATE_TYPE_DEL)){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, "operation is error:" + type);
+        }
+
+        Attachment file = body.getAttachment(Constants.FORM_FILE);
+        result = pntlConfigService.uploadIpListFile(file, PntlInfo.PNTL_UPDATE_IPLIST_CONFIG);
+        if (!result.isSuccess()) {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        result = pntlService.updateAgents(type);
+        if (result.isSuccess()) {
+            return ResponseUtil.succ();
         } else {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
