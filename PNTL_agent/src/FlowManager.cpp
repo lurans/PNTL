@@ -1136,13 +1136,14 @@ INT32 FlowManager_C::DoReport()
                     && (AGENT_TRUE != AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey.uiUrgentFlow))
             {
                 iRet = FlowLatencyReport(uiFlowTableIndex, pcAgentCfg->GetMaxDelay());
-                if (iRet)
-                {
-                    FLOW_MANAGER_ERROR("Flow Latency Report failed[%d], index[%u]", iRet, uiFlowTableIndex);
-                }
-                else if (AGENT_FILTER_DELAY == iRet)
+                if (AGENT_FILTER_DELAY == iRet)
                 {
                     continue ;
+                }
+                else if (iRet)
+                {
+                    FLOW_MANAGER_ERROR("Flow Latency Report failed[%d], index[%u]", iRet, uiFlowTableIndex);
+                    
                 }
             }
         }
