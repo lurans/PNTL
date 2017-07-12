@@ -125,6 +125,23 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             host.setPingMeshList(host.getAgentIp(), hostList);
         }
     }
+
+    public Result<String> startAgent(){
+        Result<String> result = new Result<>();
+        try{
+            String token = identityWrapperService.getPntlAccessToken();
+            RestResp resp = pntlRequest.startAgent(hostList, token);
+            if (resp.getStatusCode().isError()){
+                result.addError("", "cmd to start agent failed");
+            }
+        } catch (ClientException e){
+            String errMsg = "cmd to start agent failed, " + e.getMessage();
+            LOG.error(errMsg);
+            result.addError("", errMsg);
+        }
+        return result;
+    }
+
     /**
      * 设置探测时间间隔，若为0，则停止探测
      * @return
