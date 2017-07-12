@@ -8,6 +8,7 @@ import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
+import com.huawei.blackhole.network.common.exception.InvalidFormatException;
 import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
@@ -301,6 +302,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "get host list failed:" + e.getMessage());
             return result;
         }
+
         return result;
     }
 
@@ -508,7 +510,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return directory + confFile;
     }
 
-    private List<PntlHostContext> readFileHostList(String filename) throws Exception{
+    private List<PntlHostContext> readFileHostList(String filename) throws Exception, InvalidFormatException{
         List<PntlHostContext> hostsList = new ArrayList<PntlHostContext>();
 
         Map<String, PntlHostInfo> data = (Map<String, PntlHostInfo>) YamlUtil.getConf(filename);
@@ -516,10 +518,18 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         for (int i = 0; i < ipList.size(); i++) {
             PntlHostContext host = new PntlHostContext();
             String ip = ipList.get(i).get("ip");
+            String os = ipList.get(i).get("os");
+            String az = ipList.get(i).get("az");
+            String pod = ipList.get(i).get("pod");
+            if (ip == null || os == null || az == null || pod == null || !checkIpValid(ip)){
+                String errMsg = "ipList.yml format is invalid";
+                LOG.error(errMsg);
+                throw new InvalidFormatException(ExceptionType.CLIENT_ERR, errMsg);
+            }
             host.setAgentIp(ip);
-            host.setOs(ipList.get(i).get("os"));
-            host.setZoneId(ipList.get(i).get("az"));
-            host.setPodId(ipList.get(i).get("pod"));
+            host.setOs(os);
+            host.setZoneId(az);
+            host.setPodId(pod);
             try{
                 String sn = Pntl.getAgentSnByIp(ip);
                 host.setAgentSN(sn);
@@ -706,6 +716,11 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
     }
 
+    /**
+     * 校验ip合理性
+     * @param ip
+     * @return true:ok, false: failed
+     */
     private boolean checkIpValid(String ip){
         Pattern pattern = Pattern
                 .compile("^((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]"

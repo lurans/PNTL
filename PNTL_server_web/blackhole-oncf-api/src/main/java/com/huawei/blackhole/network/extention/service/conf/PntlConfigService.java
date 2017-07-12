@@ -248,7 +248,7 @@ public class PntlConfigService {
         }
 
         /*更新ipList之后，重新加载文件*/
-        pntlService.initHostList();
+        result = pntlService.initHostList();
         return result;
     }
 
