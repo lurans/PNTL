@@ -25,7 +25,7 @@ INT32 GetLocalCfg(ServerAntAgentCfg_C * pcCfg)
 
     ssCfgFileName << SERVER_ANT_CFG_FILE_NAME;
     // 尝试在当前目录查找本地配置文件
-    ifsAgentCfg.open(ssCfgFileName.str().c_str());
+    ifsAgentCfg.open(ssCfgFileName.str().c_str(), ios::in);
     if ( ifsAgentCfg.fail() )
     {
         INIT_INFO("No cfg file[%s] in current dir, trying [%s] ...", SERVER_ANT_CFG_FILE_NAME, SERVER_ANT_CFG_FILE_PATH);

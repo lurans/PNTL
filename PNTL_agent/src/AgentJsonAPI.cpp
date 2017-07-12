@@ -299,6 +299,7 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
     INT64 max = pstAgentFlowEntry->stFlowDetectResult.lLatencyMax;
     if (0 != maxDelay && maxDelay > max)
     {
+        JSON_PARSER_INFO("Max delay is [%d], less than threshold[%d], does not report.", max, maxDelay);
         return AGENT_FILTER_DELAY;
     }
 
@@ -377,6 +378,15 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntryTemp.put("max", max);
             ptDataFlowEntryTemp.put("drop-notices", pstAgentFlowEntry->stFlowDetectResult.lDropNotesCounter);
             ptDataFlowEntry.put_child("statistics", ptDataFlowEntryTemp);
+            if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
+            {
+                ptDataFlowEntry.put("package-size", 1000);
+            }
+            else
+            {
+                ptDataFlowEntry.put("package-size", sizeof(PacketInfo_S));
+            }
+
 
             // 加入json数组, 暂不使用数组, Collector不支持.
             ptDataFlowArray.push_back(make_pair("", ptDataFlowEntry));
@@ -448,7 +458,6 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
         // 生成一个Flow Entry的数据
         {
             ptDataFlowEntry.clear();
-
             ptDataFlowEntry.put("sip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP));
             ptDataFlowEntry.put("dip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP));
             ptDataFlowEntry.put("sport", pstAgentFlowEntry->stFlowKey.uiSrcPort);
@@ -492,6 +501,14 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
             ptDataFlowEntryTemp.put("t", pstAgentFlowEntry->stFlowDetectResult.lT5);
             ptDataFlowEntryTemp.put("packet-sent", pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter);
             ptDataFlowEntryTemp.put("packet-drops", pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter);
+            if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
+            {
+                ptDataFlowEntryTemp.put("package-size", 1000);
+            }
+            else
+            {
+                ptDataFlowEntryTemp.put("package-size", 40);
+            }
             ptDataFlowEntry.put_child("statistics", ptDataFlowEntryTemp);
 
             // 加入json数组
@@ -870,6 +887,7 @@ INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         read_json(ssStringData, ptDataRoot);
         // 防止没有设值，传入空值
         interval = ptDataRoot.get<UINT32>("probe_interval");
+
     }
     catch (exception const & e)
     {
@@ -915,6 +933,7 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
             return AGENT_E_ERROR;
         }
+        JSON_PARSER_INFO("Current detect period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
 
         interval = ptDataRoot.get<UINT32>("port_count");
         iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
@@ -923,6 +942,7 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("SetPortCount[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PORT_COUNT, MAX_PORT_COUNT);
             return AGENT_E_ERROR;
         }
+        JSON_PARSER_INFO("Current port count is %u", pcFlowManager->pcAgentCfg->GetPortCount());
 
         interval = ptDataRoot.get<UINT32>("report_period");
         iRet = pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
@@ -931,6 +951,7 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u] and >= than detectPeriod[%u]", interval, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD, pcFlowManager->pcAgentCfg->GetDetectPeriod());
             return AGENT_E_ERROR;
         }
+        JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
         interval = ptDataRoot.get<UINT32>("delay_threshold");
         iRet = pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
@@ -939,6 +960,7 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("SetMaxDelay[%u] failed[%d]");
             return AGENT_E_ERROR;
         }
+        JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
 
         interval = ptDataRoot.get<UINT32>("dscp");
         iRet = pcFlowManager->pcAgentCfg->SetDscp(interval);
@@ -947,6 +969,7 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("SetDscp[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_DSCP, MAX_DSCP);
             return AGENT_E_ERROR;
         }
+        JSON_PARSER_INFO("Current dscp is %u", pcFlowManager->pcAgentCfg->getDscp());
 
         interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
         iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
@@ -955,14 +978,16 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
             JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
             return AGENT_E_ERROR;
         }
+        JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 
         interval = ptDataRoot.get<UINT32>("package_rate");
         iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
+            JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], range should be %u or %u.", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
             return AGENT_E_ERROR;
         }
+        JSON_PARSER_INFO("Current package rate is %u", pcFlowManager->pcAgentCfg->GetBigPkgRate());
     }
     catch (exception const & e)
     {

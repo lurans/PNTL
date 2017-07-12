@@ -4,6 +4,7 @@ using namespace std;
 
 #include "Log.h"
 #include "ServerAntAgentCfg.h"
+#include "AgentCommon.h"
 
 #define LOCK() \
         if (AgentCfgLock) \
@@ -42,7 +43,9 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     stProtocolUDP.uiDestPort    = 6000;                      // UDP探测的目的端口号, 需全局统一.
     stProtocolUDP.uiSrcPortMin  = 5000;                      // UDP探测源端口号范围, 初始化时会尝试绑定该端口.
     stProtocolUDP.uiSrcPortMax  = 5100;                      // UDP探测源端口号范围, 初始化时会尝试绑定该端口.
-
+    uiDscp = 0;
+    uiMaxDelay = 0;
+    uiBigPkgRate = 0;
     AgentCfgLock = sal_mutex_create("ServerAntAgentCfg");
 
 }

@@ -247,7 +247,17 @@ public:
 
     INT32 SetBigPkgRate(UINT32 newRate)
     {
-        if (MIN_BIG_PACKAGE_RATE > newRate || MAX_BIG_PACKAGE_RATE < newRate)
+        if (MIN_BIG_PACKAGE_RATE == newRate)
+        {
+            SEND_BIG_PKG = 0;
+            CLEAR_BIG_PKG = 1;
+        }
+        else if (MAX_BIG_PACKAGE_RATE == newRate)
+        {
+            SEND_BIG_PKG = 1;
+            CLEAR_BIG_PKG = 0;
+        }
+        else
         {
             return AGENT_E_ERROR;
         }

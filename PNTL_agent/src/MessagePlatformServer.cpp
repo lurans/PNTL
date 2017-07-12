@@ -102,8 +102,8 @@ data =
 // POST 提交的key必须为ServerAntAgentName, 否则会返回错误.
 #define ServerAntAgentName          "ServerAntsAgent"
 #define ServerAntAgentAction        "ServerAntsAgentAction"
-#define ServerAntsAgentIp        "ServerAntsAgentIp"
-#define ServerAntsAgentConf      "ServerAntsAgentConf"
+#define ServerAntsAgentIp           "ServerAntsAgentIp"
+#define ServerAntsAgentConf         "ServerAntsAgentConf"
 
 #if 1
 // 使用json格式反馈post操作结果
@@ -164,6 +164,7 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
     {
         iRet = ProcessConfigFlowFromServer(pcData, pcFlowManager);
         HandleResponse(iRet, pstrResponce);
+        return iRet;
     }
     else
     {
