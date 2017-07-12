@@ -164,7 +164,7 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
     {
         iRet = ProcessConfigFlowFromServer(pcData, pcFlowManager);
         HandleResponse(iRet, pstrResponce);
-		return iRet;
+        return iRet;
     }
     else
     {

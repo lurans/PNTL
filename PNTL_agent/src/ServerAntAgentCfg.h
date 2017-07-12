@@ -252,16 +252,16 @@ public:
             SEND_BIG_PKG = 0;
             CLEAR_BIG_PKG = 1;
         }
-		else if (MAX_BIG_PACKAGE_RATE == newRate)
-		{
-		    SEND_BIG_PKG = 1;
+        else if (MAX_BIG_PACKAGE_RATE == newRate)
+        {
+            SEND_BIG_PKG = 1;
             CLEAR_BIG_PKG = 0;
-		}
-		else
-		{
-		    return AGENT_E_ERROR;
-		}
-		uiBigPkgRate = newRate;
+        }
+        else
+        {
+            return AGENT_E_ERROR;
+        }
+        uiBigPkgRate = newRate;
         return AGENT_OK;
     }
 

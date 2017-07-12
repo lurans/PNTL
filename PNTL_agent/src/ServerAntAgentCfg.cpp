@@ -44,8 +44,8 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     stProtocolUDP.uiSrcPortMin  = 5000;                      // UDP探测源端口号范围, 初始化时会尝试绑定该端口.
     stProtocolUDP.uiSrcPortMax  = 5100;                      // UDP探测源端口号范围, 初始化时会尝试绑定该端口.
     uiDscp = 0;
-	uiMaxDelay = 0;
-	uiBigPkgRate = 0;
+    uiMaxDelay = 0;
+    uiBigPkgRate = 0;
     AgentCfgLock = sal_mutex_create("ServerAntAgentCfg");
 
 }

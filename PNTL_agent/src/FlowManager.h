@@ -226,7 +226,7 @@ public:
 
     INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
     INT32 preSendBigPkg(ServerAntAgentCfg_C* config);
-	INT32 clearBigPkgConf();
+    INT32 clearBigPkgConf();
 };
 
 #endif
