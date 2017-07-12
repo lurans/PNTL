@@ -41,6 +41,15 @@ public class PntlConfigService {
 
     @javax.annotation.Resource(name = "pntlService")
     private PntlService pntlService;
+    private static String repoUrl;
+
+    public static String getRepoUrl() {
+        return repoUrl;
+    }
+
+    public static void setRepoUrl(String repoUrl) {
+        PntlConfigService.repoUrl = repoUrl;
+    }
 
     public Result<PntlConfig> getPntlConfig() {
         Result<PntlConfig> result = new Result<PntlConfig>();
@@ -76,12 +85,15 @@ public class PntlConfigService {
         try{
 
             Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
-            dataObj.put("ak",pntlConfig.getAk());
-            dataObj.put("sk",pntlConfig.getSk());
+            dataObj.put("ak", pntlConfig.getAk());
+            dataObj.put("sk", pntlConfig.getSk());
+            dataObj.put("repo_url", pntlConfig.getRepoUrl());
             pntlConfig.setByMap(dataObj);
 
             validPntlConfig(pntlConfig);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
+            pntlConfig.setRepoUrl(pntlConfig.getRepoUrl());
+            PntlConfigService.setRepoUrl(pntlConfig.getRepoUrl());
             Map<String, Object> data = pntlConfig.convertToMap();
             YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
         }catch (ApplicationException | InvalidParamException e) {
@@ -298,7 +310,7 @@ public class PntlConfigService {
             LOGGER.error("", errMsg);
             result.addError("", errMsg);
         }
-        String url = PntlInfo.REPOURL + PntlInfo.DFS_URL_SUFFIX;
+        String url = PntlConfigService.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
         Map<String, String> header = new HashMap<>();
 
         Pntl.setCommonHeaderForAgent(header, token);

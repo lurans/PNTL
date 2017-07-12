@@ -42,6 +42,17 @@ public class PntlConfig implements Serializable{
     @JsonProperty("basicToken")
     private static String basicToken;
 
+    @JsonProperty("repo_url")
+    private String repoUrl;
+
+    public String getRepoUrl() {
+        return repoUrl;
+    }
+
+    public void setRepoUrl(String repoUrl) {
+        this.repoUrl = repoUrl;
+    }
+
     public String getProbePeriod() {
         return probePeriod;
     }
@@ -145,6 +156,7 @@ public class PntlConfig implements Serializable{
         this.ak = MapUtils.getAsStr(data, "ak");
         this.sk = MapUtils.getAsStr(data, "sk");
         this.basicToken = MapUtils.getAsStr(data, "basicToken");
+        this.repoUrl = MapUtils.getAsStr(data, "repo_url");
     }
 
     private boolean containsEmptyField() {
@@ -152,7 +164,7 @@ public class PntlConfig implements Serializable{
                 || StringUtils.isEmpty(probePeriod) || StringUtils.isEmpty(pkgCount)
                 || StringUtils.isEmpty(portCount) || StringUtils.isEmpty(reportPeriod)
                 || StringUtils.isEmpty(dscp) || StringUtils.isEmpty(lossPkgTimeout)
-                || StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk);
+                || StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk) || StringUtils.isEmpty(repoUrl);
     }
     public Map<String, Object> convertToMap() throws ApplicationException {
         if (containsEmptyField()) {
@@ -171,6 +183,7 @@ public class PntlConfig implements Serializable{
         data.put("sk", sk);
 
         data.put("basicToken", basicToken);
+        data.put("repo_url", repoUrl);
 
         return data;
     }

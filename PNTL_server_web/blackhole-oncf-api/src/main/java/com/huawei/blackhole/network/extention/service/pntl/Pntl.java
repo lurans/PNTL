@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.blackhole.network.api.bean.DelayInfoAgent;
 import com.huawei.blackhole.network.api.bean.LossRateAgent;
 import com.huawei.blackhole.network.api.bean.PntlConfig;
+import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ClientException;
@@ -132,7 +133,7 @@ public class Pntl {
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
 
-        String url = "http://" + agentIp + ":" + PORT;
+        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
         ObjectMapper mapper = new ObjectMapper();
         ServerConf json = new ServerConf();
         json.setProbePeriod(config.getProbePeriod());
@@ -164,7 +165,7 @@ public class Pntl {
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
 
-        String url = "http://" + agentIp + ":" + PORT;
+        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
         ObjectMapper mapper = new ObjectMapper();
         String jsonInString = mapper.writeValueAsString(json);
 
@@ -186,7 +187,7 @@ public class Pntl {
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
 
-        String url = "http://" + agentIp + ":" + PORT;
+        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
         List<NameValuePair> formBody = new ArrayList<NameValuePair>();
         formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_ACTION, ""));
 

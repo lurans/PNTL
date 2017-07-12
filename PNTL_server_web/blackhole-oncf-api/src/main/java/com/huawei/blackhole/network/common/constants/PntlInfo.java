@@ -29,7 +29,7 @@ public class PntlInfo {
     public static final int    MONITOR_INTERVAL_TIME_HISTORY = 7*24*60*60;//seven days
     public static final int    NOTIFY_AGENT_TO_GET_PINGLIST_TIME = 1*10;
 
-    public static final String REPOURL = "http://8.15.4.10";//beta
+    //public static final String REPOURL = "http://8.15.4.10";//beta
     //private static final String REPOURL = "http://192.168.212.16/";//alpha
 
     public static final String USERNAME = "user_name";
