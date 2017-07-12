@@ -131,20 +131,20 @@ public class PntlConfigService {
 
         try {
             int probe_period = Integer.valueOf(pntlConfig.getProbePeriod());
-            if (probe_period < 0 || probe_period > 60) {
+            if (probe_period < 60 || probe_period > 1800) {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "probe period is invalid");
             }
 
             int port_count = Integer.valueOf(pntlConfig.getPortCount());
-            if (port_count < 1 || port_count > 50){
+            if (port_count < 1 || port_count > 100){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "port count is invalid");
             }
             int report_period = Integer.valueOf(pntlConfig.getReportPeriod());
-            if (report_period < 1 || report_period > 60){
+            if (report_period < 60 || report_period > 1800){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "report period is invalid");
             }
             int pkg_count = Integer.valueOf(pntlConfig.getPkgCount());
-            if (pkg_count <= 0){
+            if (pkg_count !=0 && pkg_count != 100){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "package count is invalid");
             }
             int delay_threshold = Integer.valueOf(pntlConfig.getDelayThreshold());
