@@ -1410,25 +1410,25 @@ INT32 FlowManager_C::FlowManagerAction(INT32 interval)
     ss >> newInterval;
     switch(oldInterval)
     {
-    case 0:
-        if (newInterval)
-        {
-            // 启动FlowManager
+        case 0:
+            if (newInterval)
+            {
+                // 启动FlowManager
+                SetNewInterval(newInterval);
+                FLOW_MANAGER_INFO("Set CurrentInterval to [%d] success.", newInterval);
+                StartThread();
+                FLOW_MANAGER_INFO("Start flowmanager thread success");
+            }
+            else
+            {
+                // 已经停止，无需再次停止，直接返回
+                FLOW_MANAGER_INFO("CurrentInterval is alread 0, return.");
+            }
+            break;
+        default:
+            // 设置新的间隔时间
             SetNewInterval(newInterval);
-            FLOW_MANAGER_INFO("Set CurrentInterval to [%d] success.", newInterval);
-            StartThread();
-            FLOW_MANAGER_INFO("Start flowmanager thread success");
-        }
-        else
-        {
-            // 已经停止，无需再次停止，直接返回
-            FLOW_MANAGER_INFO("CurrentInterval is alread 0, return.");
-        }
-        break;
-    default:
-        // 设置新的间隔时间
-        SetNewInterval(newInterval);
-        FLOW_MANAGER_INFO("Set CurrentInterval from [%d] to [%d] success.", oldInterval, newInterval);
+            FLOW_MANAGER_INFO("Set CurrentInterval from [%d] to [%d] success.", oldInterval, newInterval);
     }
     return iRet;
 }
