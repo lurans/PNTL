@@ -154,8 +154,7 @@ public class DelayInfo implements Serializable {
 
     public static void refleshDelayInfoWarning(){
         List<DelayInfoResult> resultList = getResult();
-        if (resultList == null){
-            LOG.error("delayInfo is null");
+        if (resultList == null || resultList.isEmpty()){
             return;
         }
 
@@ -163,7 +162,7 @@ public class DelayInfo implements Serializable {
         while (it.hasNext()){
             DelayInfoResult delayInfo = it.next();
             Long intervalTime = System.currentTimeMillis()/1000 - delayInfo.getTimestamp();
-            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME_NEWEST){
                 LOG.info("Remove warning:" + delayInfo.getSrcIp() +" -> " + delayInfo.getDstIp());
                 it.remove();
             }

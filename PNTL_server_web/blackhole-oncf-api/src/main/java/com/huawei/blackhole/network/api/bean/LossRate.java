@@ -175,8 +175,7 @@ public class LossRate implements Serializable{
 
     public static void refleshLossRateWarning(){
         List<LossRateResult> resultList = getResult();
-        if (resultList == null){
-            LOG.error("lossRate is null");
+        if (resultList == null || resultList.isEmpty()){
             return;
         }
 
@@ -184,7 +183,7 @@ public class LossRate implements Serializable{
         while (it.hasNext()){
             LossRateResult lossRate = it.next();
             Long intervalTime = System.currentTimeMillis()/1000 - lossRate.getTimestamp();
-            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME){
+            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME_NEWEST){
                 LOG.info("Remove warning:" + lossRate.getSrcIp() +" -> " + lossRate.getDstIp());
                 it.remove();
             }

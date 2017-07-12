@@ -19,6 +19,8 @@ import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -43,14 +45,6 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.setErrorMessage("Install and start agent failed:" + e.getMessage());
             LOG.error("Install and start agent failed: " + e.getMessage());
         }
-          /* 启动轮询监控*/
-        Runnable monitorTask = new Runnable() {
-            @Override
-            public void run() {
-                monitorPntl();
-            }
-        };
-        resultService.execute(monitorTask);
 
         return result;
     }
@@ -320,6 +314,23 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
         DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
+
+         /* 启动轮询监控*/
+        Runnable monitorPntlNewestWarnTask = new Runnable() {
+            @Override
+            public void run() {
+                monitorPntlNewestWarn();
+            }
+        };
+        resultService.execute(monitorPntlNewestWarnTask);
+
+        Runnable monitorPntlHistoryWarnTask = new Runnable() {
+            @Override
+            public void run() {
+                monitorPntlHistoryWarn();
+            }
+        };
+        resultService.execute(monitorPntlHistoryWarnTask);
         LOG.info("Init host list and pntlConfig success");
 
         return  result;
@@ -328,13 +339,26 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     /**
      * 监控当前告警，对于长时间没有上报的告警，设置老化时间，超时则删除
      */
-    private void monitorPntl(){
+    private void monitorPntlNewestWarn(){
         while (true){
             LossRate.refleshLossRateWarning();
             DelayInfo.refleshDelayInfoWarning();
             try{
-                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME * 1000);//second
+                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME_NEWEST * 1000);//second
             } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void monitorPntlHistoryWarn(){
+        while (true){
+            try{
+                PntlWarning.refleshHistoryWarning();
+                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME_HISTORY * 1000);//second
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
