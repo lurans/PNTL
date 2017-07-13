@@ -9,6 +9,7 @@ using namespace std;
 
 #include "Log.h"
 #include "AgentJsonAPI.h"
+#include "ServerAntAgentCfg.h"
 #include "MessagePlatformClient.h"
 
 // http 请求处理超时时间,单位s, 避免因为Server未响应数据导致挂死
@@ -265,7 +266,7 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     ssPostData.str("");
     //ssPostData << ServerAntServerName << "=";
 
-    iRet = CreatProbeListRequestPostData(pcFlowManager->pcAgentCfg, &ssPostData);
+    iRet = CreateProbeListRequestPostData(pcFlowManager->pcAgentCfg, &ssPostData);
     if (iRet)
     {
         MSG_CLIENT_ERROR("Creat Probe-List Request Post Data failed[%d]", iRet);
@@ -302,14 +303,12 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
 
 
 // 向ServerAnrServer请求新的probe列表
-INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrReportData, string strUrl)
+INT32 ReportDataToServer(stringstream * pstrReportData, string strUrl)
 {
     INT32 iRet = AGENT_OK;
 
     // 用于提交的URL地址
     stringstream ssUrl;
-    // 保存需要post的数据,json格式字符串, 由json模块生成.
-    stringstream ssPostData;
     // 保存post的response(查询结果),json格式字符串, 后续交给json模块处理.
     stringstream ssResponceData;
     const char * pcJsonData = NULL;
@@ -318,8 +317,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
 
-
-    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+    iRet = ServerAntAgentCfg_C().GetServerAddress(&uiServerIP, &uiServerPort);
     if (iRet)
     {
         MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
@@ -332,9 +330,6 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
 
 
     //ssPostData << ServerAntServerName << "=";
-
-
-    //MSG_CLIENT_INFO("PostData [%s]", ssPostData.str().c_str());
 
     ssResponceData.clear();
     ssResponceData.str("");
