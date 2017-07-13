@@ -159,7 +159,7 @@ INT32 DetectWorker_C::ThreadHandler()
 
         // 填充 msg
         sal_memset(&stSendMsg, 0, sizeof(PacketInfo_S));
-        sal_memset(aucBuffer, 0, 1000 * sizeof(char));
+        sal_memset(aucBuffer, 0, sizeof(aucBuffer));
         pstSendMsg = (PacketInfo_S*)aucBuffer;
 
         // 对端socket地址
@@ -211,7 +211,7 @@ INT32 DetectWorker_C::ThreadHandler()
 
                     // 接收报文
                     iRet = recvmsg(iSockFd, &msg, 0);
-                    if (iRet == sizeof(PacketInfo_S) || (sizeof(char) * 1000) == iRet)
+                    if (iRet == sizeof(PacketInfo_S) || iRet == sizeof(aucBuffer))
                     {
                         sal_memset(&tm, 0, sizeof(tm));
                         gettimeofday(&tm,NULL); //获取当前时间
@@ -232,38 +232,24 @@ INT32 DetectWorker_C::ThreadHandler()
                         }
                         iTos = ((INT32 *) CMSG_DATA(cmsg))[0];
 
-                        if (sizeof(char) * 1000 == iRet)
-                        {
-                            PacketNtoH(pstSendMsg);
-                        }
-                        else
-                        {
-                            PacketNtoH(&stSendMsg); // 报文payload网络序转主机序
-                        }
 
-                        if(WORKER_ROLE_SERVER == stSendMsg.uiRole || WORKER_ROLE_SERVER == (*pstSendMsg).uiRole)
+                        PacketNtoH(pstSendMsg);
+
+                        if(WORKER_ROLE_SERVER == pstSendMsg->uiRole)
                         {
                             DETECT_WORKER_INFO("RX: Get reply packet from socket[%d], Len[%d], TOS[%d]",
                                                iSockFd, iRet, iTos);
 
-                            if (sizeof(char) * 1000 == iRet)
-                            {
-                                (*pstSendMsg).stT4.uiSec = tm.tv_sec;
-                                (*pstSendMsg).stT4.uiUsec = tm.tv_usec;
-                                iRet = RxUpdateSession(pstSendMsg); //刷新sender的会话列表
-                            }
-                            else
-                            {
-                                stSendMsg.stT4.uiSec = tm.tv_sec;
-                                stSendMsg.stT4.uiUsec = tm.tv_usec;
-                                iRet = RxUpdateSession(&stSendMsg); //刷新sender的会话列表
-                            }
 
-                            // 若应答报文返回的太晚(Timeout), Sender会话列表已经删除会话, 会返回找不到.
+	                        pstSendMsg->stT4.uiSec = tm.tv_sec;
+	                        pstSendMsg->stT4.uiUsec = tm.tv_usec;
+	                        iRet = RxUpdateSession(pstSendMsg); //刷新sender的会话列表
+
+                           // 若应答报文返回的太晚(Timeout), Sender会话列表已经删除会话, 会返回找不到.
                             if ((AGENT_OK!= iRet) && (AGENT_E_NOT_FOUND != iRet))
                                 DETECT_WORKER_WARNING("RX: Update Session failed. iRet:[%d]", iRet);
                         }
-                        else if(WORKER_ROLE_CLIENT == stSendMsg.uiRole || WORKER_ROLE_CLIENT == (*pstSendMsg).uiRole)
+                        else if(WORKER_ROLE_CLIENT == pstSendMsg->uiRole)
                         {
                             /*
                                老版本的Linux kernel, sendmsg时不支持设定tos, recvmsg支持获取tos.
@@ -288,29 +274,17 @@ INT32 DetectWorker_C::ThreadHandler()
                             sal_memset(&tm, 0, sizeof(tm));
                             gettimeofday(&tm,NULL); //获取当前时间
 
-                            if (sizeof(char) * 1000 == iRet)
-                            {
-                                (*pstSendMsg).stT2.uiSec = tm.tv_sec;
-                                (*pstSendMsg).stT2.uiUsec = tm.tv_usec;
-                                (*pstSendMsg).stT3.uiSec = tm.tv_sec;
-                                (*pstSendMsg).stT3.uiUsec = tm.tv_usec;
-                                (*pstSendMsg).uiRole = WORKER_ROLE_SERVER;
-                                PacketHtoN(pstSendMsg); // 报文payload主机序转网络序
-                            }
-                            else
-                            {
-                                stSendMsg.stT2.uiSec = tm.tv_sec;
-                                stSendMsg.stT2.uiUsec = tm.tv_usec;
-                                stSendMsg.stT3.uiSec = tm.tv_sec;
-                                stSendMsg.stT3.uiUsec = tm.tv_usec;
-                                stSendMsg.uiRole = WORKER_ROLE_SERVER;
 
-                                PacketHtoN(&stSendMsg); // 报文payload主机序转网络序
-                            }
+                            pstSendMsg->stT2.uiSec = tm.tv_sec;
+                            pstSendMsg->stT2.uiUsec = tm.tv_usec;
+                            pstSendMsg->stT3.uiSec = tm.tv_sec;
+                            pstSendMsg->stT3.uiUsec = tm.tv_usec;
+                            pstSendMsg->uiRole = WORKER_ROLE_SERVER;
+                            PacketHtoN(pstSendMsg); // 报文payload主机序转网络序
 
 
                             iRet = sendmsg(iSockFd, &msg, 0);
-                            if (iRet != sizeof(PacketInfo_S) || iRet != sizeof(char) * 1000) // send failed
+                            if (iRet != sizeof(PacketInfo_S) && iRet != sizeof(aucBuffer)) // send failed
                             {
                                 DETECT_WORKER_WARNING("RX: Send reply packet failed[%d]: %s [%d]", iRet, strerror(errno), errno);
                             }
@@ -330,6 +304,7 @@ INT32 DetectWorker_C::ThreadHandler()
             }
         }
     }
+
     DETECT_WORKER_INFO("RX: Task Exiting, Socket[%d], RxInterval[%d]", GetSocket(), GetCurrentInterval());
     return AGENT_OK;
 }
@@ -587,17 +562,18 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
 
     sal_memset(&servaddr, 0, sizeof(servaddr));
     sal_memset(&tm, 0, sizeof(tm));
+
+	pstSendMsg = (PacketInfo_S *)aucBuff;
     gettimeofday(&tm,NULL); //获取当前时间
     DETECT_WORKER_WARNING("is big pkg [%u]", pNewSession->stFlowKey.uiIsBigPkg);
     if (pNewSession->stFlowKey.uiIsBigPkg)
     {
-        sal_memset(aucBuff, 1, sizeof(char) * 1000);
-        pstSendMsg = (PacketInfo_S *)aucBuff;
-        (*pstSendMsg).uiSequenceNumber = pNewSession->uiSequenceNumber;
-        (*pstSendMsg).stT1.uiSec = tm.tv_sec;
-        (*pstSendMsg).stT1.uiUsec = tm.tv_usec;
-        (*pstSendMsg).uiRole = WORKER_ROLE_CLIENT;
-        pNewSession->stT1 = (*pstSendMsg).stT1; //保存T1时间
+        sal_memset(aucBuff, 0, sizeof(aucBuff));
+        pstSendMsg->uiSequenceNumber = pNewSession->uiSequenceNumber;
+        pstSendMsg->stT1.uiSec = tm.tv_sec;
+        pstSendMsg->stT1.uiUsec = tm.tv_usec;
+        pstSendMsg->uiRole = WORKER_ROLE_CLIENT;
+        pNewSession->stT1 = pstSendMsg->stT1; //保存T1时间
     }
     else
     {
@@ -647,7 +623,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
             if (pNewSession->stFlowKey.uiIsBigPkg)
             {
                 PacketHtoN(pstSendMsg);// 主机序转网络序
-                iRet = sendto(GetSocket(), pstSendMsg, 1000, 0, (sockaddr *)&servaddr, sizeof(servaddr));
+                iRet = sendto(GetSocket(), aucBuff, sizeof(aucBuff), 0, (sockaddr *)&servaddr, sizeof(servaddr));
                 DETECT_WORKER_INFO("set big package size [%d], iRet is [%d]", sizeof(PacketInfo_S), iRet);
             }
             else
@@ -658,7 +634,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
             }
 
 
-            if (sizeof(PacketInfo_S) == iRet || 1000 == iRet) //发送成功.
+            if (sizeof(PacketInfo_S) == iRet || iRet == sizeof(aucBuff)) //发送成功.
             {
                 pNewSession->uiSessionState = SESSION_STATE_WAITING_REPLY;
                 iRet = TxUpdateSession(pNewSession);

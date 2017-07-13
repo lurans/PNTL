@@ -39,23 +39,40 @@ void * MainTestTask(void * p)
     do
     {
         // 模拟Server下发紧急探测流
-#if 0
+        #if 0
         iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
         if (iRet)
             INIT_ERROR("FlowManager.ServerWorkingFlowTableAdd failed [%d]", iRet);
-#endif
+        #endif
 
         // 模拟向ServerAntServer请求Server
-#if 0
+        #if 0
         iRet = RequestProbeListFromServer(pcFlowManager);
         if (iRet)
             INIT_ERROR("RequestProbeListFromServer failed [%d]", iRet);
-#endif
+        #endif
         sal_sleep(120);
 
-    }
-    while(1);
+    } while(1);
 }
+
+void destroyServerCfgObj(ServerAntAgentCfg_C * pcCfg)
+{
+     if (NULL != pcCfg)
+     {
+        delete pcCfg;
+     }
+}
+
+void destroyFlowManagerObj(FlowManager_C * pcFlowManager)
+{
+     if (NULL != pcFlowManager)
+     {
+        delete pcFlowManager;
+     }
+}
+
+
 
 // 启动ServerAntAgent业务
 INT32 ServerAntAgent()
@@ -73,9 +90,7 @@ INT32 ServerAntAgent()
     iRet = GetLocalCfg(pcCfg);
     if (iRet)
     {
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
+        destroyServerCfgObj(pcCfg);
 
         INIT_ERROR("GetLocalCfg failed [%d]", iRet);
         return iRet;
@@ -86,9 +101,7 @@ INT32 ServerAntAgent()
     iRet = ReportToServer(pcCfg);
     if (iRet)
     {
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
+        destroyServerCfgObj(pcCfg);
 
         INIT_ERROR("ReportToServer failed [%d]", iRet);
         return iRet;
@@ -99,9 +112,7 @@ INT32 ServerAntAgent()
     iRet = GetCfgFromServer(pcCfg);
     if (iRet)
     {
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
+        destroyServerCfgObj(pcCfg);
 
         INIT_ERROR("GetCfgFromServer failed [%d]", iRet);
         return iRet;
@@ -114,12 +125,7 @@ INT32 ServerAntAgent()
     iRet = pcCfg->GetAgentAddress(NULL, &uiPort);
     if (iRet)
     {
-        if (pcFlowManager)
-            delete pcFlowManager;
-        pcFlowManager = NULL;
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
+        destroyServerCfgObj(pcCfg);
 
         INIT_ERROR("GetAgentAddress  failed [%d]", iRet);
         return iRet;
@@ -131,9 +137,8 @@ INT32 ServerAntAgent()
     iRet = pcFlowManager->Init(pcCfg);
     if (iRet)
     {
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
+        destroyFlowManagerObj(pcFlowManager);
+        destroyServerCfgObj(pcCfg);
 
         INIT_ERROR("FlowManager.init failed [%d]", iRet);
         return iRet;
@@ -143,13 +148,14 @@ INT32 ServerAntAgent()
     iRet = pcMsgServer->Init(uiPort, pcFlowManager);
     if (iRet)
     {
-        if (pcFlowManager)
-            delete pcFlowManager;
-        pcFlowManager = NULL;
-        if (pcCfg)
-            delete pcCfg;
-        pcCfg = NULL;
+        destroyFlowManagerObj(pcFlowManager);
+
+        destroyServerCfgObj(pcCfg);
+
+        delete pcMsgServer;
+
         INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
+        return iRet;
     }
 
     iRet = ReportAgentIPToServer(pcCfg);
@@ -165,7 +171,7 @@ INT32 ServerAntAgent()
 
     if (AGENT_OK == iRet)
     {
-        UINT32 delayTime = 10 + rand() % 30;
+        UINT32 delayTime = 10000 + rand() % 30;
         INIT_INFO("Query pingList will be in [%u] seconds.", delayTime);
         sleep(delayTime);
         SHOULD_PROBE = 1;
@@ -173,20 +179,6 @@ INT32 ServerAntAgent()
 
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
-
-
-
-
-#if 0
-    pthread_t thread;
-    INT32 error;
-    error = pthread_create(&thread, NULL, MainTestTask, pcFlowManager);
-    if(error)
-    {
-        INIT_ERROR("Create Thread failed[%d]: %s [%d]", iRet, strerror(errno), errno);
-    }
-    sal_sleep(2);
-#endif
 
     while(1)
     {
@@ -199,12 +191,10 @@ INT32 ServerAntAgent()
     if (pcMsgServer)
         delete pcMsgServer;
     pcMsgServer = NULL;
-    if (pcFlowManager)
-        delete pcFlowManager;
-    pcFlowManager = NULL;
-    if (pcCfg)
-        delete pcCfg;
-    pcCfg = NULL;
+
+    destroyFlowManagerObj(pcFlowManager);
+    destroyServerCfgObj(pcCfg);
+
     INIT_INFO("-------- ServerAntAgent Exit Now --------");
 
     return AGENT_OK;
