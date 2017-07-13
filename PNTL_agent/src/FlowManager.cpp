@@ -839,22 +839,6 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
         return iRet;
     }
-
-#if 0
-    AGENT_WORKING_FLOW_TABLE_LOCK();
-    FlowKey_S   stFlowKey = AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey;
-    DetectResult_S stFlowDetectResult = AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowDetectResult;
-    AGENT_WORKING_FLOW_TABLE_UNLOCK();
-
-    FLOW_MANAGER_INFO("Flow info: sip[%s], sport[%u], dscp[%d], Urgent[%d], AgentFlowIndex[%u]",
-                      sal_inet_ntoa(stFlowKey.uiSrcIP), stFlowKey.uiSrcPort, stFlowKey.uiDscp, stFlowKey.uiUrgentFlow, stFlowKey.uiAgentFlowTableIndex);
-
-    FLOW_MANAGER_INFO("           dip[%s], dport[%u]",
-                      sal_inet_ntoa(stFlowKey.uiDestIP), stFlowKey.uiDestPort);
-
-    FLOW_MANAGER_INFO("Drop info: PktSent[%u], PktDrop[%u], ReportTime[%u]",
-                      stFlowDetectResult.lPktSentCounter, stFlowDetectResult.lPktDropCounter, stFlowDetectResult.lT5);
-#endif
     return AGENT_OK;
 }
 
