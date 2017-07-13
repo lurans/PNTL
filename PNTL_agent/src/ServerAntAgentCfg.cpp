@@ -57,8 +57,7 @@ ServerAntAgentCfg_C::~ServerAntAgentCfg_C()
 
 }
 
-INT32 ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP,
-        UINT32 * puiServerDestPort)          // 查询ServerAntServer地址信息.
+INT32 ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP,  UINT32 * puiServerDestPort)          // 查询ServerAntServer地址信息.
 {
     LOCK();     //互斥锁保持数据一致
     if (puiServerIP)
