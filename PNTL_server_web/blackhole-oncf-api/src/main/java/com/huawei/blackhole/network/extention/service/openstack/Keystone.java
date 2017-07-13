@@ -157,7 +157,7 @@ public class Keystone {
         List<NameValuePair> reqBody = new ArrayList<NameValuePair>();
         reqBody.add(new BasicNameValuePair(PntlInfo.GRANT_TYPE, "client_credentials"));
 
-        String url = PntlInfo.URL_IP+PntlInfo.TOKEN_URL_SUFFIX;
+        String url = PntlInfo.URL_IP + PntlInfo.TOKEN_URL_SUFFIX;
         RestResp rsp = new RestResp();
         try {
             rsp = RestClientExt.post(url, null, reqBody, header);

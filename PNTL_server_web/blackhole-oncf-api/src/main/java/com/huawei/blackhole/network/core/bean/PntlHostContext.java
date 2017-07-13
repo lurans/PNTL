@@ -26,11 +26,22 @@ public class PntlHostContext {
 
     private String agentSN;
 
+    /*install 状态*/
     private String agentStatus;
+    /*install 失败原因*/
+    private String reason;
 
     private String hostClass;
 
     private Map<String, List<String>> pingMeshList;
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
 
     public String getId() {
         return id;
