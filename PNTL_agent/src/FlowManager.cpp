@@ -310,7 +310,14 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
         }
 
         // 根据range计算下一轮探测的AgentFlow
-        uiSrcPortRange = pServerEntry->stServerFlowKey.uiSrcPortRange;
+        if (0 != pcAgentCfg->GetPortCount())
+        {
+            uiSrcPortRange = pcAgentCfg->GetPortCount();
+        }
+        else
+        {
+            uiSrcPortRange = pServerEntry->stServerFlowKey.uiSrcPortRange;
+        }
         if ( pServerEntry->uiAgentFlowWorkingIndexMax + uiSrcPortRange <= pServerEntry->uiAgentFlowIndexMax)
         {
             pServerEntry->uiAgentFlowWorkingIndexMin = pServerEntry->uiAgentFlowWorkingIndexMax + 1;
