@@ -314,10 +314,10 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
         {
             uiSrcPortRange = pcAgentCfg->GetPortCount();
         }
-		else
-		{
+        else
+        {
             uiSrcPortRange = pServerEntry->stServerFlowKey.uiSrcPortRange;
-		}
+        }
         if ( pServerEntry->uiAgentFlowWorkingIndexMax + uiSrcPortRange <= pServerEntry->uiAgentFlowIndexMax)
         {
             pServerEntry->uiAgentFlowWorkingIndexMin = pServerEntry->uiAgentFlowWorkingIndexMax + 1;
