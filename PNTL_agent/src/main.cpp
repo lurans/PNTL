@@ -28,6 +28,14 @@ void destroyFlowManagerObj(FlowManager_C * pcFlowManager)
      }
 }
 
+void destroyMessagePlatformServer(MessagePlatformServer_C * pcMsgServer)
+{
+    if (NULL != pcMsgServer)
+     {
+        delete pcMsgServer;
+     }
+}
+
 // 启动ServerAntAgent业务
 INT32 ServerAntAgent()
 {
@@ -79,7 +87,7 @@ INT32 ServerAntAgent()
     {
         destroyFlowManagerObj(pcFlowManager);
         destroyServerCfgObj(pcCfg);
-        delete pcMsgServer;
+        destroyMessagePlatformServer(pcMsgServer);
         INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
         return iRet;
     }
@@ -94,14 +102,6 @@ INT32 ServerAntAgent()
         iRet = ReportAgentIPToServer(pcCfg);
     }
 
-    if (AGENT_OK == iRet)
-    {
-        UINT32 delayTime = 10 + rand() % 30;
-        INIT_INFO("Query pingList will be in [%u] seconds.", delayTime);
-        sleep(delayTime);
-        SHOULD_PROBE = 1;
-    }
-
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
 
@@ -113,12 +113,9 @@ INT32 ServerAntAgent()
 
     INIT_INFO("-------- Stopping ServerAntAgent Now --------");
 
-    if (pcMsgServer)
-        delete pcMsgServer;
-    pcMsgServer = NULL;
-
     destroyFlowManagerObj(pcFlowManager);
     destroyServerCfgObj(pcCfg);
+	destroyMessagePlatformServer(pcMsgServer);
 
     INIT_INFO("-------- ServerAntAgent Exit Now --------");
 
@@ -145,9 +142,8 @@ INT32 main (INT32 argc, char **argv)
     // 参数解析
     if ( 2 <= argc)
     {
-        INT32 iIndex = 0;
         string strTemp ;
-        for (iIndex = 1; iIndex < argc; iIndex++ )
+        for (INT32 iIndex = 1; iIndex < argc; iIndex++ )
         {
             strTemp = argv[iIndex];
             if ( "-d" == strTemp )
