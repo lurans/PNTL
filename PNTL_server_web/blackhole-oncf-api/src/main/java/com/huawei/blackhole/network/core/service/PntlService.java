@@ -10,7 +10,7 @@ import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import java.util.List;
 
 public interface PntlService {
-    Result<String> startPntl();
+    Result<String> deployAgent();
 
     Result<AgentFlowsJson> getPingList(PingListRequest config);
 

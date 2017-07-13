@@ -45,6 +45,34 @@ public class PntlConfig implements Serializable{
     @JsonProperty("repo_url")
     private String repoUrl;
 
+    private String eulerRepoUrl;
+    private String suseRepoUrl;
+    private String installScriptRepoUrl;
+
+    public String getEulerRepoUrl() {
+        return eulerRepoUrl;
+    }
+
+    public void setEulerRepoUrl(String eulerRepoUrl) {
+        this.eulerRepoUrl = eulerRepoUrl;
+    }
+
+    public String getSuseRepoUrl() {
+        return suseRepoUrl;
+    }
+
+    public void setSuseRepoUrl(String suseRepoUrl) {
+        this.suseRepoUrl = suseRepoUrl;
+    }
+
+    public String getInstallScriptRepoUrl() {
+        return installScriptRepoUrl;
+    }
+
+    public void setInstallScriptRepoUrl(String installScriptRepoUrl) {
+        this.installScriptRepoUrl = installScriptRepoUrl;
+    }
+
     public String getRepoUrl() {
         return repoUrl;
     }
@@ -157,6 +185,9 @@ public class PntlConfig implements Serializable{
         this.sk = MapUtils.getAsStr(data, "sk");
         this.basicToken = MapUtils.getAsStr(data, "basicToken");
         this.repoUrl = MapUtils.getAsStr(data, "repo_url");
+        this.eulerRepoUrl = MapUtils.getAsStr(data, "eulerRepoUrl");
+        this.suseRepoUrl = MapUtils.getAsStr(data, "suseRepoUrl");
+        this.installScriptRepoUrl = MapUtils.getAsStr(data, "installScriptRepoUrl");
     }
 
     private boolean containsEmptyField() {
@@ -165,6 +196,7 @@ public class PntlConfig implements Serializable{
                 || StringUtils.isEmpty(portCount) || StringUtils.isEmpty(reportPeriod)
                 || StringUtils.isEmpty(dscp) || StringUtils.isEmpty(lossPkgTimeout)
                 || StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk) || StringUtils.isEmpty(repoUrl);
+
     }
     public Map<String, Object> convertToMap() throws ApplicationException {
         if (containsEmptyField()) {
@@ -181,9 +213,11 @@ public class PntlConfig implements Serializable{
         data.put("lossPkg_timeout", lossPkgTimeout);
         data.put("ak", ak);
         data.put("sk", sk);
-
         data.put("basicToken", basicToken);
         data.put("repo_url", repoUrl);
+        data.put("eulerRepoUrl", eulerRepoUrl);
+        data.put("suseRepoUrl", suseRepoUrl);
+        data.put("installScriptRepoUrl", installScriptRepoUrl);
 
         return data;
     }

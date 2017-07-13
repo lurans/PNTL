@@ -19,3 +19,11 @@ ak: 0j_xmyclMrfvSzmMrGFdRbTLfYIa
 sk: gTSMfZWx5bo3xILy754tItTp6Mca
 
 basicToken: MGpfeG15Y2xNcmZ2U3ptTXJHRmRSYlRMZllJYTpnVFNNZlpXeDVibzN4SUx5NzU0dEl0VHA2TWNh
+
+repo_url: https://8.15.4.96:8243
+
+eulerRepoUrl: http://8.15.4.10/dfs/download/root/ServerAntAgentForEuler.tar.gz
+
+suseRepoUrl: http://8.15.4.10/dfs/download/root/ServerAntAgentForSles.tar.gz
+
+installScriptRepoUrl: http://8.15.4.10/dfs/download/root/install_pntl.sh

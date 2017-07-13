@@ -47,4 +47,7 @@ public class PntlInfo {
     public static final String PNTL_UPDATE_IPLIST_CONFIG = "updateIpList.yml";
     public static final String PNTL_UPDATE_TYPE_ADD = "add";
     public static final String PNTL_UPDATE_TYPE_DEL = "del";
+
+    public static final String PNTL_AGENT_STATUS_SUCC = "success";
+    public static final String PNTL_AGENT_STATUS_FAIL = "fail";
 }

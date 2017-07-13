@@ -20,7 +20,7 @@ import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
 import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
-import com.huawei.blackhole.network.extention.service.pntl.PntlInfoService;
+import com.huawei.blackhole.network.extention.service.pntl.PntlWarnService;
 import com.huawei.blackhole.network.extention.service.sso.SsoConfiger;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
@@ -43,9 +43,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.ws.WebServiceContext;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -87,8 +84,8 @@ public class RouterApi {
     @Resource(name = "pntlService")
     private PntlService pntlService;
 
-    @Resource(name = "pntlInfoService")
-    private PntlInfoService pntlInfoService;
+    @Resource(name = "pntlWarnService")
+    private PntlWarnService pntlWarnService;
 
     @Resource(name = "pntlConfigService")
     private PntlConfigService pntlConfigService;
@@ -331,11 +328,11 @@ public class RouterApi {
 
     @Path("/pntlInit")
     @POST
-    public Response pntlInit(){
+    public Response deployAgent(){
         LOGGER.info("pntl init configuration");
         Result<String> result = new Result<String>();
 
-        result = pntlService.startPntl();
+        result = pntlService.deployAgent();
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -361,7 +358,7 @@ public class RouterApi {
         LOGGER.info("receive lossRate from agent");
         Result<String> result = new Result<String>();
 
-        result = pntlInfoService.saveLossRateData(data);
+        result = pntlWarnService.saveLossRateData(data);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -375,7 +372,7 @@ public class RouterApi {
         LOGGER.info("receive delayInfo from agent");
         Result<String> result = new Result<String>();
 
-        result = pntlInfoService.saveDelayInfoData(data);
+        result = pntlWarnService.saveDelayInfoData(data);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -388,7 +385,7 @@ public class RouterApi {
     public Response getLossRate(){
         LOGGER.info("send loss rate to UI");
 
-        Result<Object> result = pntlInfoService.getLossRate();
+        Result<Object> result = pntlWarnService.getLossRate();
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -400,7 +397,7 @@ public class RouterApi {
     public Response getDelayInfo(){
         LOGGER.info("send delay info to UI");
 
-        Result<Object> result = pntlInfoService.getDelayInfo();
+        Result<Object> result = pntlWarnService.getDelayInfo();
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }

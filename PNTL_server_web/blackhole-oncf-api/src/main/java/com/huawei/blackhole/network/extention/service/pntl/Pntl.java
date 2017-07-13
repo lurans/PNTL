@@ -22,6 +22,7 @@ import com.sun.org.apache.regexp.internal.RE;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -29,10 +30,7 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service("pntlRequestService")
 public class Pntl {
@@ -193,6 +191,17 @@ public class Pntl {
 
         return RestClientExt.post(url, null, formBody,  header);
     }
+
+    private void setHostErrorMsg(List<PntlHostContext> hostList, List<String> snList, String agentStatus,
+                                 String errMsg){
+        for (PntlHostContext host : hostList){
+            if (snList.contains(host.getAgentSN())){
+                host.setAgentStatus(agentStatus);
+                host.setReason(errMsg);
+            }
+        }
+    }
+
     /**
      *  发送ants agent和脚本
      * @param pntlHostList
@@ -238,6 +247,15 @@ public class Pntl {
                 } else {
                     body.get(key).setRepoUrl(getDownloadUrl(key));
                 }
+                if (host.getAgentSN() == null){
+                    host.setReason("sn is null");
+                    host.setAgentStatus(PntlInfo.PNTL_AGENT_STATUS_FAIL);
+                    continue;
+                } else if (body.get(key).getRepoUrl() == null){
+                    host.setReason("repo url is null");
+                    host.setAgentStatus(PntlInfo.PNTL_AGENT_STATUS_FAIL);
+                    continue;
+                }
 
                 body.get(key).setPath(PNTL_PATH);
                 body.get(key).setMode("644");
@@ -247,11 +265,18 @@ public class Pntl {
             }
 
             for (String key : body.keySet()){
+//                if (body.get(key).getRepoUrl() == null || agentSnList.get(key.toUpperCase()) == null){
+//                    continue;
+//                }
                 body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
-                    if (resp.getStatusCode().isError()){
-                        LOG.error("send file to agent failed" + resp.getRespBody().get("reason").toString());
+                    if ((Integer)resp.getRespBody().get("code") != 0){
+                        //agent返回失败，1000部分成功，2000全部失败，其他非0值，调用接口失败
+                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, resp.getRespBody().get("reason").toString());
+                        result.addError("", "send file to agent failed " + resp.getRespBody().get("reason").toString());
+                    } else {
+                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_SUCC, "send files to agent success");
                     }
                 } catch (ClientException | JSONException e){
                     LOG.error("Send script to suse os agent failed");
@@ -345,7 +370,7 @@ public class Pntl {
     public RestResp installAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
         List<String> snList = new ArrayList<>();
         for (PntlHostContext host : pntlHostList){
-            if (host.getAgentSN() != null) {
+            if (host.getAgentSN() != null && !host.getAgentStatus().equals(PntlInfo.PNTL_AGENT_STATUS_FAIL)) {
                 snList.add(host.getAgentSN());
             }
         }

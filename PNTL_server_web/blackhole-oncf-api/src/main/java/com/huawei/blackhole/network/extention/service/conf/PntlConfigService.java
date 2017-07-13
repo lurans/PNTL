@@ -10,12 +10,12 @@ import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.*;
 import com.huawei.blackhole.network.common.utils.ExceptionUtil;
 import com.huawei.blackhole.network.common.utils.FileUtil;
-import com.huawei.blackhole.network.common.utils.ResponseUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.core.service.PntlService;
+import com.huawei.blackhole.network.extention.bean.pntl.CommonInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.apache.commons.codec.binary.Base64;
@@ -41,15 +41,6 @@ public class PntlConfigService {
 
     @javax.annotation.Resource(name = "pntlService")
     private PntlService pntlService;
-    private static String repoUrl;
-
-    public static String getRepoUrl() {
-        return repoUrl;
-    }
-
-    public static void setRepoUrl(String repoUrl) {
-        PntlConfigService.repoUrl = repoUrl;
-    }
 
     public Result<PntlConfig> getPntlConfig() {
         Result<PntlConfig> result = new Result<PntlConfig>();
@@ -79,6 +70,34 @@ public class PntlConfigService {
         }
         return result;
     }
+
+    /**
+     * 将key:value保存到pntlConfig.yml文件汇总
+     * @param key
+     * @param value
+     * @return
+     */
+    public Result<String> saveElemToPntlConfigFile(String key, String value){
+        Result<String> result = new Result<String>();
+        if (key == null){
+            result.addError("", "key is null");
+            return result;
+        }
+
+        try{
+            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
+            dataObj.put(key, value);
+            YamlUtil.setConf(dataObj, PntlInfo.PNTL_CONF);
+        }catch (ApplicationException e) {
+            String errMsg = "save " + key + ":" + value+" to " + PntlInfo.PNTL_CONF + " failed: " + e.getLocalizedMessage();
+            LOGGER.error(errMsg);
+            result.addError("", e.prefix() + errMsg);
+        } catch (Exception e){
+            result.addError("", "parameter is invalid");
+        }
+        return result;
+    }
+
     public Result<String> setPntlAkSkConfig(PntlConfig pntlConfig) {
         //Get PntlConfig
         Result<String> result = new Result<String>();
@@ -89,11 +108,11 @@ public class PntlConfigService {
             dataObj.put("sk", pntlConfig.getSk());
             dataObj.put("repo_url", pntlConfig.getRepoUrl());
             pntlConfig.setByMap(dataObj);
-
             validPntlConfig(pntlConfig);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
+            //保存在文件
             pntlConfig.setRepoUrl(pntlConfig.getRepoUrl());
-            PntlConfigService.setRepoUrl(pntlConfig.getRepoUrl());
+
             Map<String, Object> data = pntlConfig.convertToMap();
             YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
         }catch (ApplicationException | InvalidParamException e) {
@@ -103,6 +122,8 @@ public class PntlConfigService {
         } catch (Exception e){
             result.addError("", "parameter is invalid");
         }
+        //保存在内存公共信息
+        CommonInfo.setRepoUrl(pntlConfig.getRepoUrl());
 
         LOGGER.info("Update pntlConfig success");
 
@@ -290,6 +311,21 @@ public class PntlConfigService {
         }
     }
 
+    /**
+     * 根据文件名，保存对应的repoUrl
+     * @param filename
+     * @param repoUrl
+     */
+    private void saveDownloadUrlToFile(String filename, String repoUrl){
+        if (filename.equalsIgnoreCase(PntlInfo.AGENT_EULER)){
+            saveElemToPntlConfigFile("eulerRepoUrl", repoUrl);
+        } else if (filename.equalsIgnoreCase(PntlInfo.AGENT_SUSE)){
+            saveElemToPntlConfigFile("suseRepoUrl", repoUrl);
+        } else if (filename.equalsIgnoreCase(PntlInfo.AGENT_INSTALL_FILENAME)){
+            saveElemToPntlConfigFile("installScriptRepoUrl", repoUrl);
+        }
+    }
+
     public Result<String> uploadAgentPkgFile(Attachment attachment) {
         final String BOUNDARY = "----WebKitFormBoundaryzOYdpFxbuIoovXYf";
         Result<String> result = new Result<String>();
@@ -310,7 +346,7 @@ public class PntlConfigService {
             LOGGER.error("", errMsg);
             result.addError("", errMsg);
         }
-        String url = PntlConfigService.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
+        String url = CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
         Map<String, String> header = new HashMap<>();
 
         Pntl.setCommonHeaderForAgent(header, token);
@@ -322,6 +358,7 @@ public class PntlConfigService {
         builder.addTextBody("uploader", PntlInfo.OPS_USERNAME);
         builder.addTextBody("space", PntlInfo.PNTL_ROOT_NAME);
         builder.addTextBody("override", "true");
+        builder.addTextBody("description", "");
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         HttpEntity entity = builder.build();
 
@@ -333,7 +370,10 @@ public class PntlConfigService {
             } else {
                if (resp.getRespBody().getInt("code") == 0){
                    String downloadUrl = resp.getRespBody().getJSONObject("data").getString("downloadUrl");
+                   //保存到内存
                    Pntl.setDownloadUrl(downloadUrl);
+                   //保存到文件
+                   saveDownloadUrlToFile(attachment.getDataHandler().getName(), downloadUrl);
                } else {
                    result.addError("", resp.getRespBody().getString("reason"));
                }
