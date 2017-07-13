@@ -153,6 +153,10 @@ public class FileUtil {
         return tmp;
     }
 
+    public static String getResourceIpListPath(){
+        return FileUtil.class.getResource("/").getPath().replace("%20", " ");
+    }
+
     /**
      * 获取WEB-INF的绝对路径
      *

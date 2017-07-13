@@ -10,23 +10,26 @@ typedef enum tagAgentModule
     AGENT_MODULE_TIMER,             // TIMER 适配模块
     AGENT_MODULE_INIT,              // 初始化功能,main函数等
     AGENT_MODULE_COMMON,            // 公共模块
-    AGENT_MODULE_THREAD_CLASS ,     // THREAD_CLASS 类
+    AGENT_MODULE_THREAD_CLASS,      // THREAD_CLASS 类
     AGENT_MODULE_HTTP_DAEMON,       // HTTP_DAEMON 类
-    AGENT_MODULE_KAFKA_CLIENT,      // HTTP_DAEMON 类 
-    AGENT_MODULE_AGENT_CFG ,        // ServerAntAgentCfg 类
-    AGENT_MODULE_DETECT_WORKER ,    // DetectWorker 类
-    AGENT_MODULE_FLOW_MANAGER ,     // FlowMananger 类
+    AGENT_MODULE_KAFKA_CLIENT,      // HTTP_DAEMON 类
+    AGENT_MODULE_AGENT_CFG,         // ServerAntAgentCfg 类
+    AGENT_MODULE_DETECT_WORKER,     // DetectWorker 类
+    AGENT_MODULE_FLOW_MANAGER,      // FlowMananger 类
     AGENT_MODULE_MSG_SERVER,        // MessagePlatformServer 类
     AGENT_MODULE_MSG_CLIENT,        // MSG_CLIENT 模块
     AGENT_MODULE_JSON_PARSER,       // JSON_PARSER 模块(AgentJsonAPI)
+    AGENT_MODULE_SAVE_REPORTDATA,
     AGENT_MODULE_MAX
-}AgentModule_E;
+} AgentModule_E;
 
 typedef enum tagAgentLogType
 {
     AGENT_LOG_TYPE_INFO  = 1,   // 提示
     AGENT_LOG_TYPE_WARNING,     // 告警
     AGENT_LOG_TYPE_ERROR,       // 错误
+    AGENT_LOG_TYPE_LOSS_PACKET,       // 丢包
+    AGENT_LOG_TYPE_LATENCY,       // 延时
     AGENT_LOG_TYPE_MAX
 }AgentLogType_E;
 
@@ -39,10 +42,25 @@ typedef enum  tagAgentLogMode
 
 extern INT32 SetNewLogMode(AgentLogMode_E eNewLogMode);
 extern INT32 SetNewLogDir(string strNewDirPath);
+extern void GetPrintTime(char *timestr);
 extern INT32 AgentLogPrintf(AgentModule_E eModule, AgentLogType_E eLogType, const CHAR *szFormat, ...);
+extern string GetLossLogFilePath();
+extern string GetLatencyLogFilePath();
 
 //__PRETTY_FUNCTION__
 #if 1
+#define MODULE_LOSS(module, format, ...)                                        \
+do                                                                              \
+{                                                                               \
+    AgentLogPrintf(AGENT_MODULE_ ## module, AGENT_LOG_TYPE_LOSS_PACKET, format, ##__VA_ARGS__);    \
+} while(0)
+
+#define MODULE_LATENCY(module, format, ...)                                        \
+do                                                                              \
+{                                                                               \
+    AgentLogPrintf(AGENT_MODULE_ ## module, AGENT_LOG_TYPE_LATENCY,  format, ##__VA_ARGS__);    \
+} while(0)
+
 #define MODULE_INFO(module, format, ...)                                        \
 do                                                                              \
 {                                                                               \
@@ -98,6 +116,9 @@ do                                                                              
 #define MSG_SERVER_INFO(...)        MODULE_INFO(MSG_SERVER,   __VA_ARGS__)
 #define MSG_CLIENT_INFO(...)        MODULE_INFO(MSG_CLIENT,   __VA_ARGS__)
 #define JSON_PARSER_INFO(...)       MODULE_INFO(JSON_PARSER,   __VA_ARGS__)
+#define SAVE_LOSS_INFO(...)         MODULE_LOSS(SAVE_REPORTDATA,__VA_ARGS__)
+#define SAVE_LATENCY_INFO(...)      MODULE_LATENCY(SAVE_REPORTDATA, __VA_ARGS__)
+
 
 #define SAL_WARNING(...)               MODULE_WARNING(SAL,   __VA_ARGS__)
 #define TIMER_WARNING(...)             MODULE_WARNING(TIMER,   __VA_ARGS__)

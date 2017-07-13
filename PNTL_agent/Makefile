@@ -66,6 +66,8 @@ release_Sles:: ServerAntAgent
 	$Q mkdir -p $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q cp ServerAntAgent $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q cp ServerAntAgent.cfg $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
+	$Q cp server.key $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
+	$Q cp server.pem $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q cp $(SCRIPT_PATH)/$(SLES_OS_NAME)/* $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q mkdir -p $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)/logs
 	$Q $(ECHO) Release libs to $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)/libs
@@ -80,6 +82,8 @@ release_Euler:: ServerAntAgent
 	$Q mkdir -p $(EULER_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q cp ServerAntAgent $(EULER_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q cp ServerAntAgent.cfg $(EULER_RELEASE_DIR)/$(RELEASE_DIR_NAME)
+	$Q cp server.key $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
+	$Q cp server.pem $(SLES_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q cp $(SCRIPT_PATH)/$(EULER_OS_NAME)/* $(EULER_RELEASE_DIR)/$(RELEASE_DIR_NAME)
 	$Q mkdir -p $(EULER_RELEASE_DIR)/$(RELEASE_DIR_NAME)/logs
 	$Q $(ECHO) Release libs to $(EULER_RELEASE_DIR)/$(RELEASE_DIR_NAME)/libs

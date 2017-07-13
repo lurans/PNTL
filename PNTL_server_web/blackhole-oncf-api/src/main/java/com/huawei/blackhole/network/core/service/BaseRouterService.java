@@ -45,6 +45,7 @@ import com.huawei.blackhole.network.extention.service.openstack.Cps;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.openstack.Neutron;
 import com.huawei.blackhole.network.extention.service.openstack.Nova;
+import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import com.huawei.blackhole.network.extention.service.vrm.Vrm;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.format.DateTimeFormat;
@@ -87,6 +88,9 @@ public abstract class BaseRouterService {
     private Cps cpsService;
     @Resource(name = "jobThreadPool")
     protected JobThreadPool jobThreadPool;
+
+    @Resource(name = "pntlRequestService")
+    protected Pntl pntlRequest;
 
     protected ExecutorService resultService = Executors.newFixedThreadPool(Constants.RESULT_SERVICE_MAX_SIZE);
 

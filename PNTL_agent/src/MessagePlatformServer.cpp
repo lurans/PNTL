@@ -1,5 +1,6 @@
 
 #include <sstream>
+#include <stdlib.h>
 //#include <boost/property_tree/json_parser.hpp>
 
 using namespace std;
@@ -8,13 +9,12 @@ using namespace std;
 #include "AgentJsonAPI.h"
 #include "MessagePlatformServer.h"
 
-    
 // 构造函数, 填充默认值.
 MessagePlatformServer_C::MessagePlatformServer_C()
 {
     MSG_SERVER_INFO("Creat a new MessagePlatformServer.");
-    pcFlowManager = NULL; 
-    
+    pcFlowManager = NULL;
+
 }
 
 // 析构函数, 释放必要资源.
@@ -23,7 +23,7 @@ MessagePlatformServer_C::~MessagePlatformServer_C()
     MSG_SERVER_INFO("Destroy an old MessagePlatformServer.");
 
     StopHttpDaemon();
-    pcFlowManager = NULL; 
+    pcFlowManager = NULL;
 }
 
 // 根据参数完成初始化
@@ -32,8 +32,8 @@ INT32 MessagePlatformServer_C::Init(UINT32 uiNewPort, FlowManager_C* pcNewFlowMa
     INT32 iRet = AGENT_OK;
 
     // 入参检查
-    if (   0 == uiNewPort 
-        || NULL == pcNewFlowManager)
+    if(0 == uiNewPort
+            || NULL == pcNewFlowManager)
     {
         MSG_SERVER_ERROR("Para Error: NewPort[%d], pcNewFlowManager[%u]", uiNewPort, pcNewFlowManager);
         return AGENT_E_PARA;
@@ -55,20 +55,20 @@ INT32 MessagePlatformServer_C::Init(UINT32 uiNewPort, FlowManager_C* pcNewFlowMa
 
 /*
 ServerAntServer 下发的紧急探测流格式
-post 
+post
 key = ServerAntAgent
-data = 
+data =
 {
     "orgnizationSignature": "HuaweiDC3ServerAntsProbelistIssue",
     "serverIP": "10.1.1.1",
     "action": "post",
     "content": "probe-list",
-    
+
     "flow": [
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -81,9 +81,9 @@ data =
         },
 
         {
-        "urgent": "true:false",        
+        "urgent": "true:false",
         "sip": "",
-        "dip": "", 
+        "dip": "",
         "ip-protocol": "icmp:tcp:udp",
         "sport-min": "",
         "sport-max": "",
@@ -101,6 +101,9 @@ data =
 */
 // POST 提交的key必须为ServerAntAgentName, 否则会返回错误.
 #define ServerAntAgentName          "ServerAntsAgent"
+#define ServerAntAgentAction        "ServerAntsAgentAction"
+#define ServerAntsAgentIp           "ServerAntsAgentIp"
+#define ServerAntsAgentConf         "ServerAntsAgentConf"
 
 #if 1
 // 使用json格式反馈post操作结果
@@ -110,6 +113,8 @@ data =
 #define ResponcePageError "{\"" ServerAntAgentName "States\":\"failed\"}"
 // POST 收到不支持的key时返回的信息
 #define ResponcePageUnsupported  "{\"" ServerAntAgentName "States\":\"unsupported\"}"
+// POST 退出时返回的消息
+#define ResponseExitOk "{\"" ServerAntAgentName "States\":\"exit sucess\"}"
 #else
 // POST 处理成功时返回的信息
 #define ResponcePageOK "<html><head><title>"ServerAntAgentName"</title></head><body>Process Request Sucess</body></html>"
@@ -128,26 +133,38 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
     INT32 iRet = AGENT_OK;
 
     // 入参检查
-    if (NULL ==  pcKey || NULL == pcData || NULL ==  pstrResponce) 
+    if(NULL ==  pcKey || NULL == pcData || NULL ==  pstrResponce)
     {
-         MSG_SERVER_ERROR("NULL Pointer for String");
-         
-         (* pstrResponce) = ResponcePageError;
-         return AGENT_E_PARA;
+        MSG_SERVER_ERROR("NULL Pointer for String");
+
+        (* pstrResponce) = ResponcePageError;
+        return AGENT_E_PARA;
     }
-    
-    if (0 == sal_strcmp (pcKey, ServerAntAgentName))
-    {   
+
+    if(0 == sal_strcmp(pcKey, ServerAntAgentName))
+    {
         iRet = ProcessUrgentFlowFromServer(pcData, pcFlowManager);
-        if (iRet)
-        {
-            MSG_SERVER_ERROR("Process Urgent Flow From Server failed[%d]", iRet);
-            (* pstrResponce) = ResponcePageError;
-        }
-        else
-        {
-            (* pstrResponce) = ResponcePageOK;
-        }
+        HandleResponse(iRet, pstrResponce);
+        return iRet;
+    }
+    else if(0 == sal_strcmp(pcKey, ServerAntAgentAction))
+    {
+        MSG_SERVER_INFO("Begin to handle flowmanager action");
+        iRet = ProcessActionFlowFromServer(pcData, pcFlowManager);
+        HandleResponse(iRet, pstrResponce);
+        return iRet;
+    }
+    else if(0 == sal_strcmp(pcKey, ServerAntsAgentIp))
+    {
+        SHOULD_PROBE = 1;
+        (* pstrResponce) = ResponcePageOK;
+        MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
+		return AGENT_OK;
+    }
+    else if (0 == sal_strcmp(pcKey, ServerAntsAgentConf))
+    {
+        iRet = ProcessConfigFlowFromServer(pcData, pcFlowManager);
+        HandleResponse(iRet, pstrResponce);
         return iRet;
     }
     else
@@ -157,7 +174,23 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
         (* pstrResponce) = ResponcePageUnsupported;
         return AGENT_E_ERROR;
     }
-}        
+}
 
+
+void MessagePlatformServer_C::HandleResponse(INT32 iRet, string * pstrResponce)
+{
+    if(AGENT_EXIT == iRet)
+    {
+        (* pstrResponce) = ResponseExitOk;
+    }
+    else if(iRet)
+    {
+        (* pstrResponce) = ResponcePageError;
+    }
+    else
+    {
+        (* pstrResponce) = ResponcePageOK;
+    }
+}
 
 

@@ -5,7 +5,7 @@ OS_TENANT_NAME:
 
 OS_USERNAME:
 
-OS_PASSWORD:
+OS_PASSWORD: 123
 
 OS_AUTH_URL:
 
@@ -17,3 +17,4 @@ cna_passwd:
 #white list
 white_list:
     - 127.0.0.1
+    - 192.168.2.2

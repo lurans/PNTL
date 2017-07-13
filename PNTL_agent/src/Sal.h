@@ -50,11 +50,13 @@ typedef unsigned long long  UINT64;
     })
 
 
-typedef struct sal_sem_s{
+typedef struct sal_sem_s
+{
     CHAR sal_opaque_type;
 } *sal_sem_t;
 
-typedef struct sal_mutex_s{
+typedef struct sal_mutex_s
+{
     CHAR mutex_opaque_type;
 } *sal_mutex_t;
 

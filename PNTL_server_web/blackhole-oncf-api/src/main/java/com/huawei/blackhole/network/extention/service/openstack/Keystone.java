@@ -12,28 +12,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.huawei.blackhole.network.api.bean.PntlConfig;
+import com.huawei.blackhole.network.common.constants.*;
 import com.huawei.blackhole.network.common.exception.CommonException;
 import com.huawei.blackhole.network.common.utils.MapUtils;
 import com.huawei.blackhole.network.common.utils.WccCrypter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.huawei.blackhole.network.api.bean.OncfConfig;
-import com.huawei.blackhole.network.common.constants.Config;
-import com.huawei.blackhole.network.common.constants.Constants;
-import com.huawei.blackhole.network.common.constants.ExceptionType;
-import com.huawei.blackhole.network.common.constants.FspServiceName;
-import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.exception.ConfigLostException;
@@ -70,6 +67,10 @@ public class Keystone {
     private static final String SERVICE_NAME = FspServiceName.KEYSTONE;
 
     private static final Object LOCK = new Object();
+
+    private static final String BASIC_TOKEN = PntlConfig.getBasicToken();
+
+    private static final String GRANT_TYPE = "grant_type";
 
     /**
      * 判断fsp的账户信息是否是可用的。<br \>
@@ -139,6 +140,32 @@ public class Keystone {
         LOG.info("get fsp token url={}", url);
 
         return getToken(url, getDefaultAuth());
+    }
+
+    /**
+     * get auth token from AUTH SERVICE
+     * @return
+     */
+    public String getPntlAccessToken() throws ClientException{
+        Map<String, String> header = new HashMap<>();
+
+        header.put(PntlInfo.AUTH, PntlConfig.getBasicToken());
+        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
+        header.put(PntlInfo.USERNAME, PntlInfo.OPS_USERNAME);
+        header.put(PntlInfo.SERVICENAME, PntlInfo.PNTL_SERVICENAME);
+
+        List<NameValuePair> reqBody = new ArrayList<NameValuePair>();
+        reqBody.add(new BasicNameValuePair(PntlInfo.GRANT_TYPE, "client_credentials"));
+
+        String url = PntlInfo.URL_IP+PntlInfo.TOKEN_URL_SUFFIX;
+        RestResp rsp = new RestResp();
+        try {
+            rsp = RestClientExt.post(url, null, reqBody, header);
+        } catch (ClientException e){
+            throw new ClientException(ExceptionType.SERVER_ERR, "can not get access token");
+        }
+
+        return rsp.getRespBody().getString("access_token");
     }
 
     /**

@@ -7,6 +7,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -16,7 +17,9 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -28,6 +31,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -203,9 +207,41 @@ public class RestClientExt {
         try {
             // 指定url,和http方式
             HttpPost httpPost = new HttpPost(buildUrl(url, parameters));
-
             configHttpEntityRequest(httpPost, body, customizedHeaders);
 
+            RestResp response = send(httpPost);
+            if (response.getStatusCode().isError()) {
+                throw createHttpError(response);
+            }
+            return response;
+        } catch (IOException | GeneralSecurityException e) {
+            throw new ClientException(ExceptionType.SERVER_ERR, e.getLocalizedMessage());
+        }
+    }
+
+    private static void configPntlHttpBaseRequest(HttpRequestBase request, Map<String, String> customizedHeaders)
+            throws UnsupportedEncodingException {
+        // 设置请求和传输超时时间
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(SocketTimeout)
+                .setConnectTimeout(ConnectTimeout).build();
+        request.setConfig(requestConfig);
+
+        // custom header
+        if (customizedHeaders != null) {
+            for (Entry<String, String> entry : customizedHeaders.entrySet()) {
+                request.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+    private static RestResp pntlPost(String url, Parameter parameters, List<NameValuePair> body,
+                                 Map<String, String> customizedHeaders) throws ClientException {
+        try {
+            // 指定url,和http方式
+            HttpPost httpPost = new HttpPost(buildUrl(url, parameters));
+            if (body != null) {
+                httpPost.setEntity(new UrlEncodedFormEntity(body, "UTF-8"));
+            }
+            configPntlHttpBaseRequest(httpPost, customizedHeaders);
             RestResp response = send(httpPost);
             if (response.getStatusCode().isError()) {
                 throw createHttpError(response);
@@ -220,7 +256,6 @@ public class RestClientExt {
     public static RestResp get(String url, Parameter parameters, Map<String, String> header) throws ClientException {
         try {
             String newUrl = buildUrl(url, parameters);
-            LOGGER.info("get url={}", newUrl);
             HttpGet httpPut = new HttpGet(newUrl);
 
             configHttpBaseRequest(httpPut, header);
@@ -243,6 +278,32 @@ public class RestClientExt {
         }
         String strResponse = getRespBodyAsString(response);
         return convertString2Object(strResponse, responseType);
+    }
+
+    public static RestResp post(String url, Parameter para, List<NameValuePair> reqBody,
+                                Map<String, String> header) throws ClientException{
+
+        return pntlPost(url, para, reqBody, header);
+    }
+
+    public static RestResp post(String url, HttpEntity entity, Map<String, String> header)
+            throws ClientException
+    {
+        try {
+            // 指定url,和http方式
+            HttpPost httpPost = new HttpPost(buildUrl(url, null));
+            if (entity != null) {
+                httpPost.setEntity(entity);
+            }
+            configPntlHttpBaseRequest(httpPost, header);
+            RestResp response = send(httpPost);
+            if (response.getStatusCode().isError()) {
+                throw createHttpError(response);
+            }
+            return response;
+        } catch (IOException | GeneralSecurityException e) {
+            throw new ClientException(ExceptionType.SERVER_ERR, e.getLocalizedMessage());
+        }
     }
 
     public static RestResp post(String url, Parameter para, Object reqBody, Map<String, String> header)

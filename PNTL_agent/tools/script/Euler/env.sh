@@ -9,7 +9,7 @@ SERVICE_NAME="ServerAntAgent"
 # 服务自启动脚本名称, 该脚本会注册到OS初始化流程中
 SERVICE_SCRIPT_FILE_NAME="${SERVICE_NAME}Service"
 # 启动服务的用户名, 避免使用root用户启动
-SERVICE_USER_NAME="cloudeye"
+SERVICE_USER_NAME="root"
 # 服务自启动脚本安装信息
 SERVICE_SCRIPT_INSTALL_DIR="/etc/init.d"
 # 服务进程ID, 通过检测该进程是否存在来判断服务是否正在运行
@@ -50,7 +50,7 @@ EGREP=$(which egrep)
 CHMOD=$(which chmod)
 NOHUP=$(which nohup)
 LN=$(which ln)
-
+KILL=$(which kill)
 # 部分OS下普通用户PATH未包括/sbin目录
 SERVICE="/sbin/service"
 CHECKPROC="/sbin/checkproc"

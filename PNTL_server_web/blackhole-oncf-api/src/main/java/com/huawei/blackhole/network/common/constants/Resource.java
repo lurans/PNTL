@@ -1,5 +1,8 @@
 package com.huawei.blackhole.network.common.constants;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Resource file or path should be here.
  */

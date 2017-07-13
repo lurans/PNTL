@@ -9,14 +9,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 
 public class YamlUtil {
 
@@ -56,6 +49,33 @@ public class YamlUtil {
                 istm = null;
             } catch (IOException e) {
                 istm = null;
+            }
+        }
+    }
+
+    public static void appendConf(Object data, String confFile) throws ApplicationException {
+        Writer output = null;
+        String path = getPath(confFile);
+        try{
+            output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path, true), Charsets.UTF_8));
+            Yaml yaml = new Yaml(new SafeConstructor());
+            String yamlData = yaml.dumpAsMap(data);
+            if (yamlData.startsWith("!!map")){
+                yamlData = yamlData.substring(5);
+            }
+            output.write(yamlData);
+            output.flush();
+        } catch (IOException e){
+            String errMsg = String.format("fail to append configuration file[%s] : %s", confFile, e.getLocalizedMessage());
+            throw new ApplicationException(ExceptionType.SERVER_ERR, errMsg);
+        }finally {
+            try {
+                if (output != null) {
+                    output.close();
+                }
+                output = null;
+            } catch (IOException e) {
+                output = null;
             }
         }
     }

@@ -1,14 +1,10 @@
 package com.huawei.blackhole.network.api;
 
-import com.huawei.blackhole.network.api.bean.FIPRouterTaskRequest;
-import com.huawei.blackhole.network.api.bean.OncfConfig;
-import com.huawei.blackhole.network.api.bean.RouterInfoResponse;
-import com.huawei.blackhole.network.api.bean.RouterTaskRequest;
-import com.huawei.blackhole.network.api.bean.RouterTaskResponse;
-import com.huawei.blackhole.network.api.bean.VPNRouterTaskRequest;
+import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.api.resource.ResultPool;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
+import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.BaseException;
 import com.huawei.blackhole.network.common.exception.ClientException;
@@ -17,14 +13,17 @@ import com.huawei.blackhole.network.common.utils.AuthUtil;
 import com.huawei.blackhole.network.common.utils.ExceptionUtil;
 import com.huawei.blackhole.network.common.utils.ResponseUtil;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.core.service.EIPRouterService;
-import com.huawei.blackhole.network.core.service.EwRouterService;
-import com.huawei.blackhole.network.core.service.VPNRouterService;
+import com.huawei.blackhole.network.core.service.*;
 import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
+import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
+import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
+import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
+import com.huawei.blackhole.network.extention.service.pntl.PntlInfoService;
 import com.huawei.blackhole.network.extention.service.sso.SsoConfiger;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -44,6 +43,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.ws.WebServiceContext;
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -81,6 +84,14 @@ public class RouterApi {
     @Resource(name = "chkflowServiceStartup")
     private ChkflowServiceStartup chkflowServiceStartup;
 
+    @Resource(name = "pntlService")
+    private PntlService pntlService;
+
+    @Resource(name = "pntlInfoService")
+    private PntlInfoService pntlInfoService;
+
+    @Resource(name = "pntlConfigService")
+    private PntlConfigService pntlConfigService;
     /**
      * 获取当前配置 config.ymal <br />
      * {<br />
@@ -275,7 +286,8 @@ public class RouterApi {
         LOGGER.info("User[" + AuthUtil.getUser(request) + "] [submit vpn task]");
         LOGGER.info("TASK-START:" + taskId);
         RouterTaskResponse routerResponse = new RouterTaskResponse();
-        Result<String> result = vpnRouterService.submitVpnTask(req, taskId);
+        Result<String> result;
+        result = vpnRouterService.submitVpnTask(req, taskId);
 
         if (!result.isSuccess()) {
             JSONObject json = new JSONObject();
@@ -317,4 +329,245 @@ public class RouterApi {
         return valid;
     }
 
+    @Path("/pntlInit")
+    @POST
+    public Response pntlInit(){
+        LOGGER.info("pntl init configuration");
+        Result<String> result = new Result<String>();
+
+        result = pntlService.startPntl();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/pingList")
+    @POST
+    public Response getPingList(PingListRequest config){
+        LOGGER.info("receive ping list from agent[" + config.getContent().getAgentIp() + "]");
+        Result<AgentFlowsJson> result = new Result<AgentFlowsJson>();
+
+        result = pntlService.getPingList(config);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/lossRate")
+    @POST
+    public Response recvLossRate(LossRateAgent data){
+        LOGGER.info("receive lossRate from agent");
+        Result<String> result = new Result<String>();
+
+        result = pntlInfoService.saveLossRateData(data);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ();
+    }
+
+    @Path("/delayInfo")
+    @POST
+    public Response recvDelayInfo(DelayInfoAgent data){
+        LOGGER.info("receive delayInfo from agent");
+        Result<String> result = new Result<String>();
+
+        result = pntlInfoService.saveDelayInfoData(data);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ();
+    }
+
+    @Path("/lossRate")
+    @GET
+    public Response getLossRate(){
+        LOGGER.info("send loss rate to UI");
+
+        Result<Object> result = pntlInfoService.getLossRate();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/delayInfo")
+    @GET
+    public Response getDelayInfo(){
+        LOGGER.info("send delay info to UI");
+
+        Result<Object> result = pntlInfoService.getDelayInfo();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/pntlVariableConf")
+    @POST
+    public Response setPntlConfig(PntlConfig config){
+        Result<String> result = pntlConfigService.setPntlConfig(config);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        result = pntlService.setProbeInterval(config.getProbePeriod());
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ();
+    }
+
+    @Path("/pntlConf")
+    @GET
+    public Response getPntlConfig(){
+        Result<PntlConfig> result = pntlConfigService.getPntlConfig();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ(result.getModel());
+    }
+
+    @Path("/pntlAkSkConf")
+    @POST
+    public Response setPntlAkSkConf(PntlConfig config){
+        Result<String> result = pntlConfigService.setPntlAkSkConfig(config);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ();
+    }
+
+    @Path("/ipList")
+    @POST
+    public Response getIpList(IpListRequest req){
+        String azId = req.getAzId();
+        String podId = req.getPodId();
+        LOGGER.info("Get ip list, azId(" + azId + "), podId(" + podId + ")");
+        Result<IpListJson> result = pntlService.getIpListinfo(azId, podId);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        return ResponseUtil.succ(result.getModel());
+    }
+
+    /*停止探测，agent依然活着*/
+    @Path("/stopProbe")
+    @POST
+    public Response stopProbe(){
+        Result<String> result = pntlService.setProbeInterval("0");
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    /*退出探测，agent死了*/
+    @Path("/exitProbe")
+    @POST
+    public Response exitAgent(){
+        Result<String> result = pntlService.setProbeInterval("-1");
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    /*重新启动探测，启动agent*/
+    @Path("/startAgent")
+    @POST
+    public Response startAgent(){
+        Result<String> result = pntlService.startAgent();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/agentIp")
+    @POST
+    public Response recvAgentIp(AgentIp ip){
+        Result<String> result = pntlService.saveAgentIp(ip.getAgentIp(), ip.getVbondIp());
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/uploadFiles")
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadFiles(@Context HttpServletRequest request, MultipartBody body){
+        LOGGER.info("start to upload agent package files");
+        Result<String> result = null;
+        Attachment file = body.getAttachment(Constants.FORM_FILE);
+        if (file == null) {
+            String errMsg = ExceptionUtil.prefix(ExceptionType.CLIENT_ERR) + "invalid request";
+            LOGGER.error(errMsg);
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, errMsg);
+        }
+
+        List<Attachment> atts = body.getAllAttachments();
+        for (Attachment a : atts) {
+            ContentDisposition cd = a.getContentDisposition();
+            if (cd != null && Constants.FORM_FILE.equals(cd.getParameter("name"))) {
+                if (a.getDataHandler().getName().equalsIgnoreCase(PntlInfo.PNTL_IPLIST_CONF)) {
+                    result = pntlConfigService.uploadIpListFile(a, "");
+                    if (!result.isSuccess()) {
+                        return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+                    }
+                } else {
+                    result = pntlConfigService.uploadAgentPkgFile(a);
+                    if (!result.isSuccess()) {
+                        return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+                    }
+                }
+            }
+        }
+        return ResponseUtil.succ();
+    }
+
+    @Path("/warningList")
+    @POST
+    public Response getWarningList(PntlWarning.PntlWarnInfo param){
+        Result<Object> result = PntlWarning.getWarnList(param);
+        if (result.isSuccess()) {
+            return ResponseUtil.succ(result.getModel());
+        } else {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+    }
+
+    @Path("/updateAgents")
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response updateAgents(@Context HttpServletRequest request, MultipartBody body){
+        LOGGER.info("start to update agents");
+        Result<String> result = new Result<>();
+
+        String type = body.getAttachmentObject("operation", String.class);
+        if (!type.equals(PntlInfo.PNTL_UPDATE_TYPE_ADD) && !type.equals(PntlInfo.PNTL_UPDATE_TYPE_DEL)){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, "operation is error:" + type);
+        }
+
+        Attachment file = body.getAttachment(Constants.FORM_FILE);
+        result = pntlConfigService.uploadIpListFile(file, PntlInfo.PNTL_UPDATE_IPLIST_CONFIG);
+        if (!result.isSuccess()) {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
+        result = pntlService.updateAgents(type);
+        if (result.isSuccess()) {
+            return ResponseUtil.succ();
+        } else {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+    }
 }

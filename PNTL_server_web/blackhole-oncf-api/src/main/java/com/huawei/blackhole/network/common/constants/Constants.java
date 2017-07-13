@@ -17,6 +17,9 @@ public class Constants {
 
     public static final long KEY_FILE_MAX_SIZE = 1000 * 1000; // 1Mb
 
+    public static final long PNTL_WAIT_NUM = 10;
+    public static final long PNTL_WATI_TIME = 3 * 1000;
+
     public static final String WEBAPP = "webapp";
 
     public static final String ROUTER_DEVICE_OWNER = "network:router_interface_distributed";
@@ -88,5 +91,8 @@ public class Constants {
 
     public static final String TRUE = "true";
     public static final String FALSE = "false";
+
+    public static final long IPLIST_FILE_MAX_SIZE = 1000 * 1000; // 1Mb
+    public static final long AGENT_FILE_MAX_SIZE = 2000 * 1000; //2Mb
 
 }

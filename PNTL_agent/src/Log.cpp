@@ -23,7 +23,7 @@ typedef struct tagLogConfig
 {
 
     /* 日志是否记录到syslog */
-    // syslog是Linux系统中标准日志处理模块, 所有系统日志都可以提交给syslog. 
+    // syslog是Linux系统中标准日志处理模块, 所有系统日志都可以提交给syslog.
     // syslog的不同priority和facility会写入不同的日志文件, 由/etc/syslog-ng/syslog-ng.conf 文件控制
     // sles 11.3 默认情况下会将ServerAntAgent日志写入/var/log/messages, warning/error日志会额外写入/var/log/warn
     // OS会对syslog的日志进行压缩转储,不用担心日志超限问题.
@@ -35,19 +35,25 @@ typedef struct tagLogConfig
     string strLogFileNameNormal;    // 记录所有日志
     string strLogFileNameWarning;   // 记录warning和error日志
     string strLogFileNameError;     // 记录error日志
-    
+    string strLogFileNameLossPacket;     // 记录丢包日志
+    string strLogFileNameLatency;     // 记录延时日志
+
     /* 日志是否打印到终端 */
     UINT32   uiLogToTty;
-    
+    UINT32   uiDebug;      /* 值分别为0,1,2,4  */
+
 } LogConfig_S;
 
-static LogConfig_S g_stLogConfig = 
+static LogConfig_S g_stLogConfig =
 {
     AGENT_FALSE,
     "./logs/ServerAntAgent.log",
     "./logs/ServerAntAgentWarning.log",
     "./logs/ServerAntAgentError.log",
-    AGENT_FALSE
+    "./logs/ServerAntAgentLossPacket.log",
+    "./logs/ServerAntAgentLatency.log",
+    AGENT_FALSE,
+    4
 };
 
 #define AGENT_LOG_ERROR_PRINT(...) \
@@ -95,7 +101,7 @@ INT32 SetNewLogMode(AgentLogMode_E eNewLogMode)
         //g_stLogConfig.uiLogToSyslog = AGENT_TRUE;
         // 终端不希望日志记录到系统日志, 单独处理
         g_stLogConfig.uiLogToSyslog = AGENT_FALSE;
-        
+
         // 日志不打印到标准输出
         g_stLogConfig.uiLogToTty    = AGENT_FALSE;
     }
@@ -106,7 +112,7 @@ INT32 SetNewLogMode(AgentLogMode_E eNewLogMode)
     }
     return AGENT_OK;
 }
-        
+
 // 控制日志记录目录, 当日志不记录到系统日志时生效
 INT32 SetNewLogDir(string strNewDirPath)
 {
@@ -115,11 +121,25 @@ INT32 SetNewLogDir(string strNewDirPath)
     {
        AGENT_LOG_ERROR_PRINT("[%s]: Set log dir to [%s] when enable LogToSyslog\n", __FUNCTION__, strNewDirPath.c_str());
     }
-    
+
     g_stLogConfig.strLogFileNameNormal = strNewDirPath + "/ServerAntAgent.log";
     g_stLogConfig.strLogFileNameWarning= strNewDirPath + "/ServerAntAgentWarning.log";
     g_stLogConfig.strLogFileNameError  = strNewDirPath + "/ServerAntAgentError.log";
+    g_stLogConfig.strLogFileNameLossPacket  = strNewDirPath + "/ServerAntAgentLossPacket.log";
+    g_stLogConfig.strLogFileNameLatency  = strNewDirPath + "/ServerAntAgentLatency.log";
+
     return AGENT_OK;
+}
+
+// 控制日志记录目录, 当日志不记录到系统日志时生效
+string GetLossLogFilePath()
+{
+    return g_stLogConfig.strLogFileNameLossPacket;
+}
+
+string GetLatencyLogFilePath()
+{
+    return g_stLogConfig.strLogFileNameLatency;
 }
 
 // 获取当前时间, 用于记录日志
@@ -136,10 +156,17 @@ void GetPrintTime(char *timestr)
     {
         return;
     }
-    
+
+    sprintf((char *)timestr, "[%04u-%02u-%02u %02u:%02u:%02u]",
+            tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
+            tm->tm_min, tm->tm_sec);
+
+/*
     sprintf((char *)timestr, "[%04u-%02u-%02u %02u:%02u:%02u.%03u]",
             tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
             tm->tm_min, tm->tm_sec, (UINT32)tv.tv_usec/1000);
+*/
+
 }
 
 
@@ -194,7 +221,7 @@ void AgentLogPreParser(char * pcStr, UINT32 ulBufSize)
 
     /* 清除结尾的换行符, 换行符后面统一添加 */
     uiStrLen = strlen(pcStr);
-    if ('\n' == pcStr[uiStrLen - 1]) 
+    if ('\n' == pcStr[uiStrLen - 1])
     {
         pcStr[uiStrLen - 1] = ' ';
     }
@@ -202,7 +229,30 @@ void AgentLogPreParser(char * pcStr, UINT32 ulBufSize)
     return;
 }
 
-INT32 AgentLogSaveToFile( UINT32 ulModule, UINT32 ulLogType, const char *pcMsg )
+INT32 WriteToLogFile(const char *pcFileName, const char *pcMsg )
+{
+        // 写入单独的日志文件
+        FILE  * pstFile         = NULL;
+        UINT32 uiLength   = 0;
+        UINT32 uiStrLen   = 0;
+
+        uiStrLen = sal_strlen(pcMsg);
+
+        pstFile = fopen(pcFileName, "a+");
+        if(NULL == pstFile)
+        {
+            AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't open file[%s]: %s [%d]\n", __FUNCTION__,  __LINE__, pcFileName, strerror(errno), errno);
+            return AGENT_E_ERROR;
+        }
+        /* 将log写入文件 */
+        uiLength = fwrite(pcMsg, sizeof(char), uiStrLen, pstFile);
+        fflush(pstFile);
+        fclose(pstFile);
+
+        return AGENT_OK;
+}
+
+INT32 AgentLogSaveToFile(UINT32 ulLogType, const char *pcMsg )
 {
     if (AGENT_TRUE == g_stLogConfig.uiLogToSyslog)
     {
@@ -211,17 +261,19 @@ INT32 AgentLogSaveToFile( UINT32 ulModule, UINT32 ulLogType, const char *pcMsg )
         switch (ulLogType)
         {
             case AGENT_LOG_TYPE_INFO:
+            case AGENT_LOG_TYPE_LOSS_PACKET:
+            case AGENT_LOG_TYPE_LATENCY:
                 iPriority = LOG_INFO;
                 break;
-                
+
             case AGENT_LOG_TYPE_WARNING:
                 iPriority = LOG_WARNING;
                 break;
-                
+
             case AGENT_LOG_TYPE_ERROR:
                 iPriority = LOG_ERR;
                 break;
-                
+
             default :
                 AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
                 return AGENT_E_PARA;
@@ -230,130 +282,54 @@ INT32 AgentLogSaveToFile( UINT32 ulModule, UINT32 ulLogType, const char *pcMsg )
         openlog("ServerAntAgent", LOG_CONS|LOG_PID, LOG_DAEMON);
         syslog(iPriority, pcMsg);
         closelog();
-    }    
+    }
     else
     {
         // 写入单独的日志文件
-        FILE  * pstFile         = NULL;
-        UINT32 uiLength   = 0;
-        UINT32 uiStrLen   = 0;
+        const char *pcFileName = NULL;
 
-        uiStrLen = sal_strlen(pcMsg);
-        
-        pstFile = fopen(g_stLogConfig.strLogFileNameNormal.c_str(), "a+");
-        if(NULL == pstFile)
+        switch (ulLogType)
         {
-            AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't open file[%s]: %s [%d]\n", __FUNCTION__,  __LINE__,
-                    g_stLogConfig.strLogFileNameNormal.c_str(), strerror(errno), errno);
-            return AGENT_E_ERROR;
-        }
-        /* 将log写入文件 */
-        uiLength = fwrite(pcMsg, sizeof(char), uiStrLen, pstFile);    
-        fflush(pstFile);
-        fclose(pstFile);
-        pstFile = NULL;
+            case AGENT_LOG_TYPE_INFO:
+                pcFileName = g_stLogConfig.strLogFileNameNormal.c_str();
+                break;
 
-        if(   (AGENT_LOG_TYPE_WARNING == ulLogType)
-            ||(AGENT_LOG_TYPE_ERROR == ulLogType))
-        {
-            pstFile = fopen(g_stLogConfig.strLogFileNameWarning.c_str(), "a+");
-            if(NULL == pstFile)
-            {
-                AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't open file[%s]: %s [%d]\n", __FUNCTION__,  __LINE__,
-                    g_stLogConfig.strLogFileNameWarning.c_str(), strerror(errno), errno);
-                return AGENT_E_ERROR;
-            }
-            /* 将log写入文件 */
-            uiLength = fwrite(pcMsg, sizeof(char), uiStrLen, pstFile);
-            
-            fflush(pstFile);
-            fclose(pstFile);
-            pstFile = NULL;
+            case AGENT_LOG_TYPE_WARNING:
+                pcFileName = g_stLogConfig.strLogFileNameWarning.c_str();
+                break;
+
+            case AGENT_LOG_TYPE_ERROR:
+                pcFileName = g_stLogConfig.strLogFileNameError.c_str();
+                break;
+
+            case AGENT_LOG_TYPE_LOSS_PACKET:
+                pcFileName = g_stLogConfig.strLogFileNameLossPacket.c_str();
+                break;
+
+            case AGENT_LOG_TYPE_LATENCY:
+                pcFileName = g_stLogConfig.strLogFileNameLatency.c_str();
+                break;
+
+            default :
+                AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
+                return AGENT_E_PARA;
         }
-        
-        if( AGENT_LOG_TYPE_ERROR == ulLogType )
-        {
-            pstFile = fopen(g_stLogConfig.strLogFileNameError.c_str(), "a+");
-            if(NULL == pstFile)
-            {
-                AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't open file[%s]: %s [%d]\n", __FUNCTION__,  __LINE__,
-                    g_stLogConfig.strLogFileNameError.c_str(), strerror(errno), errno);
-                return AGENT_E_ERROR;
-            }
-            /* 将log写入文件 */
-            uiLength = fwrite(pcMsg, sizeof(char), uiStrLen, pstFile);
-            
-            fflush(pstFile);
-            fclose(pstFile);
-            pstFile = NULL;
-        }
+
+        WriteToLogFile(pcFileName, pcMsg);
+
     }
 }
-#if 0
-INT32 AgentLogPrintf(UINT32 ulModule, UINT32 ulLogType, const char *szFormat, ...)
-{
-    va_list         arg;
-    char            acStrTmpBuffer[AGENT_LOG_TMPBUF_SIZE] = {0};
-    char            acCurTime[32]   = {0};
-    UINT32    uiStrLen = 0;
 
-    UINT32    uiRet = AGENT_OK;
-
-    /* 入参检查,发现错误后,记录异常,返回*/
-    AGENT_LOG_CHECK_PARAM(ulModule, ulLogType);
-
-    if (NULL == szFormat)
-    {
-        AGENT_LOG_ERROR_PRINT("[%s]:Module[%u] Log[%u] NULL Input\n", __FUNCTION__, ulModule, ulLogType);
-        return AGENT_E_PARA;
-    }
-    
-    /* 记录时间标签 */
-    sal_memset(acStrTmpBuffer, 0, sizeof(acStrTmpBuffer));
-    GetPrintTime(acCurTime);
-
-    /* 加入时间戳 */
-    snprintf(acStrTmpBuffer, sizeof(acStrTmpBuffer), "%s ", acCurTime);
-    
-
-    /* 记录时间标签的结束位置 */
-    uiStrLen = strlen(acStrTmpBuffer);
-    
-    va_start(arg, szFormat);
-    vsnprintf((acStrTmpBuffer + strlen(acStrTmpBuffer)), (sizeof(acStrTmpBuffer) - strlen(acStrTmpBuffer) - 2),
-                            szFormat, arg);
-    va_end(arg);
-    
-    /* 对用户字符串中的换行符统一进行处理,跳过添加的时间标签 */
-    AgentLogPreParser(&acStrTmpBuffer[uiStrLen], sizeof(acStrTmpBuffer));
-
-    // 互斥锁等基础功能是在SAL层实现的, 避免嵌套.
-    if(AGENT_MODULE_SAL != ulModule) 
-    {
-        /* 锁住对应模块的log资源 */
-        AGENT_LOG_MODULE_LOCK(ulModule, ulLogType);
-        printf(acStrTmpBuffer);
-        AgentLogSaveToFile(ulModule, ulLogType, acStrTmpBuffer);
-        AGENT_LOG_MODULE_UNLOCK(ulModule, ulLogType);
-    }
-    else
-    {
-        printf(acStrTmpBuffer);
-        AgentLogSaveToFile(ulModule, ulLogType, acStrTmpBuffer);
-    }
-
-    return AGENT_OK;
-}
-#else
 INT32 AgentLogPrintf(AgentModule_E eModule, AgentLogType_E eLogType, const char *szFormat, ...)
 {
-    
+
     va_list         arg;                                        // 用于处理变长参数
     char            acStackLogBuffer[AGENT_LOG_TMPBUF_SIZE];    // 优先使用栈中的buffer, 小而快
     char *          pacHeapLogBuffer = NULL;                    // 当输入字符串长度超过AGENT_LOG_TMPBUF_SIZE时, 从堆中申请空间
     UINT32    uiStrLen = 0;                               // 输入字符串长度
     stringstream    ssLogBuffer;                                // 用于拼接字符串
     char            acCurTime[32]   = {0};                      // 缓存时间戳
+    INT32       iRet = AGENT_E_NOT_FOUND;
 
     /* 入参检查,发现错误后,记录异常,返回*/
     AGENT_LOG_CHECK_PARAM(eModule, eLogType);
@@ -363,15 +339,43 @@ INT32 AgentLogPrintf(AgentModule_E eModule, AgentLogType_E eLogType, const char 
         AGENT_LOG_ERROR_PRINT("[%s]:Module[%u] Log[%u] NULL Input\n", __FUNCTION__, eModule, eLogType);
         return AGENT_E_PARA;
     }
-    
+
+    switch (g_stLogConfig.uiDebug)
+    {
+        case 0:
+            break;
+
+        case 1:
+            if (AGENT_LOG_TYPE_ERROR == eLogType)
+            {
+                iRet  = AGENT_OK;
+            }
+            break;
+
+        case 2:
+            if (AGENT_LOG_TYPE_WARNING == eLogType || AGENT_LOG_TYPE_ERROR == eLogType)
+            {
+                iRet  = AGENT_OK;
+            }
+            break;
+
+        default :
+            iRet =  AGENT_OK;
+            break;
+    }
+
+    if (iRet !=  AGENT_OK)
+    {
+        return iRet;
+    }
+
     /* 生成时间标签 */
     sal_memset(acStackLogBuffer, 0, sizeof(acStackLogBuffer));
     GetPrintTime(acCurTime);
 
     // 尝试将输入字符串导入acStackLogBuffer中, 若被截断则重新申请内存.
     va_start(arg, szFormat);
-    uiStrLen = vsnprintf(acStackLogBuffer, sizeof(acStackLogBuffer),
-                            szFormat, arg);
+    uiStrLen = vsnprintf(acStackLogBuffer, sizeof(acStackLogBuffer), szFormat, arg);
     va_end(arg);
 
     // 输入字符串太长被截断, 重新申请内存
@@ -381,54 +385,59 @@ INT32 AgentLogPrintf(AgentModule_E eModule, AgentLogType_E eLogType, const char 
         // 不直接使用string类型是因为string无法识别printf类型的通配符,如%s,%d等.
         pacHeapLogBuffer = new char[uiStrLen + 2];
         // 内存申请成功, 使用新内存缓存日志信息
-        if (pacHeapLogBuffer)
+        if (NULL != pacHeapLogBuffer)
         {
             sal_memset(pacHeapLogBuffer, 0, (uiStrLen + 2));
-            uiStrLen = vsnprintf(pacHeapLogBuffer, (uiStrLen + 1),
-                                szFormat, arg);
+            uiStrLen = vsnprintf(pacHeapLogBuffer, (uiStrLen + 1), szFormat, arg);
         }
         else
+        {
             printf("No enough heap memory for log, msg will be truncated");
+        }
     }
+
     va_end(arg);
-    
+
     if (NULL == pacHeapLogBuffer)
     {
         /* 对用户字符串中的换行符统一进行处理,处理换行符 */
         AgentLogPreParser(acStackLogBuffer, sizeof(acStackLogBuffer));
-        /* 加入时间戳 */
-        ssLogBuffer << acCurTime << " " << acStackLogBuffer << endl;
+
+        if (AGENT_MODULE_SAVE_REPORTDATA != eModule)
+        {
+            /* 加入时间戳 */
+            ssLogBuffer << acCurTime << " " << acStackLogBuffer << endl;
+        }
+        else
+        {
+            ssLogBuffer << acStackLogBuffer << endl;
+        }
     }
     else
     {
         /* 对用户字符串中的换行符统一进行处理,处理换行符 */
         AgentLogPreParser(pacHeapLogBuffer, uiStrLen + 2);
-        /* 加入时间戳 */
-        ssLogBuffer << acCurTime << " " << pacHeapLogBuffer << endl;
+
+        if (AGENT_MODULE_SAVE_REPORTDATA != eModule)
+        {
+            /* 加入时间戳 */
+            ssLogBuffer << acCurTime << " " << pacHeapLogBuffer << endl;
+        }
+        else
+        {
+            /* 保存丢包信息不需要时间戳信息 */
+            ssLogBuffer << pacHeapLogBuffer << endl;
+        }
 
         /* 释放内存 */
         delete [] pacHeapLogBuffer;
         pacHeapLogBuffer = NULL;
     }
 
-    // 互斥锁等基础功能是在SAL层实现的, 避免嵌套.
-    if(AGENT_MODULE_SAL != eModule) 
-    {
-        /* 锁住对应模块的log资源 */
-        AGENT_LOG_MODULE_LOCK(eModule, eLogType);
-        if (AGENT_TRUE == g_stLogConfig.uiLogToTty)
-            printf(ssLogBuffer.str().c_str());
-        AgentLogSaveToFile(eModule, eLogType, ssLogBuffer.str().c_str());
-        AGENT_LOG_MODULE_UNLOCK(eModule, eLogType);
-    }
-    else
-    {
-        if (AGENT_TRUE == g_stLogConfig.uiLogToTty)
-            printf(ssLogBuffer.str().c_str());
-        AgentLogSaveToFile(eModule, eLogType, ssLogBuffer.str().c_str());
-    }
+    if (AGENT_TRUE == g_stLogConfig.uiLogToTty)
+        printf(ssLogBuffer.str().c_str());
+    AgentLogSaveToFile(eLogType, ssLogBuffer.str().c_str());
 
     return AGENT_OK;
 }
-#endif
 
