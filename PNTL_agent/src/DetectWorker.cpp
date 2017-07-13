@@ -330,7 +330,6 @@ INT32 DetectWorker_C::ThreadHandler()
             }
         }
     }
-    free(aucBuffer);
     DETECT_WORKER_INFO("RX: Task Exiting, Socket[%d], RxInterval[%d]", GetSocket(), GetCurrentInterval());
     return AGENT_OK;
 }

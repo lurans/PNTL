@@ -46,6 +46,7 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     uiDscp = 0;
     uiMaxDelay = 0;
     uiBigPkgRate = 0;
+	uiPortCount = 0;
     AgentCfgLock = sal_mutex_create("ServerAntAgentCfg");
 
 }
