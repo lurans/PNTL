@@ -414,7 +414,7 @@ public class Pntl {
         }
     }
 
-    public static String getAgentSnByIp(String ip){
+    public static String getAgentSnByIp(String ip) throws ClientException{
         String agentSn = null;
         if (ip == null){
             return null;
@@ -425,7 +425,7 @@ public class Pntl {
         try {
             token = new Keystone().getPntlAccessToken();
         }catch (ClientException e){
-            LOG.error("Get token fail " + e.getMessage());
+            throw new ClientException("", "Get token fail " + e.getMessage());
         }
         setCommonHeaderForAgent(header, token);
 
@@ -436,7 +436,7 @@ public class Pntl {
         try {
             resp = RestClientExt.get(url, param, AgentInfoByIp.class, header);
         }catch (ClientException e){
-            LOG.error("get agent info by ip(" + ip + ") failed " + e.getMessage());
+            throw new ClientException("", "get agent info by ip(" + ip + ") failed " + e.getMessage());
         }
         agentSn = resp.getData();
 
@@ -445,11 +445,18 @@ public class Pntl {
 
     public void startTraceroute(String srcIp, String dstIp){
         RestResp resp = null;
+        String srcAgentSn = null;
+        String dstAgentSn = null;
         if (srcIp == null || dstIp == null){
             return;
         }
-        String srcAgentSn = getAgentSnByIp(srcIp);
-        String dstAgentSn = getAgentSnByIp(srcIp);
+        try {
+            srcAgentSn = getAgentSnByIp(srcIp);
+            dstAgentSn = getAgentSnByIp(srcIp);
+        } catch (ClientException e){
+            LOG.error(e.getMessage());
+            return;
+        }
         if (srcAgentSn == null || dstAgentSn == null){
             return;
         }
@@ -460,6 +467,7 @@ public class Pntl {
             token = new Keystone().getPntlAccessToken();
         }catch (ClientException e){
             LOG.error("Get token fail " + e.getMessage());
+            return;
         }
         final String command = "cd /opt/huawei/ServerAntAgent & python tracetool.py";
         try {
