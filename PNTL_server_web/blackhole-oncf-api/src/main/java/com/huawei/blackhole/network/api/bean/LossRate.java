@@ -131,6 +131,10 @@ public class LossRate implements Serializable{
         String dstIp = flow.getDip();
         boolean hasData = false;
 
+        if (srcIp.isEmpty() || dstIp.isEmpty()){
+            return;
+        }
+
         LossRateResult newData = new LossRateResult();
         float rate = Float.parseFloat(flow.getSt().getPacketDrops()) / Float.parseFloat(flow.getSt().getPacketSent());
         DecimalFormat df2 = new DecimalFormat("###.00");
@@ -151,7 +155,7 @@ public class LossRate implements Serializable{
 
         List<LossRateResult> resultList = LossRate.result;
         for (LossRateResult result : resultList){
-            if (result.getSrcIp().equals(srcIp) && result.getDstIp().equals(dstIp)){
+            if (srcIp.equals(result.getSrcIp()) && dstIp.equals(result.getDstIp())){
                 resultList.set(resultList.indexOf(result), newData);//replace old data
                 hasData = true;
                 break;
