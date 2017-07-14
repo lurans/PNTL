@@ -81,6 +81,11 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         if (agentIpMap.get(agentIp) != null && agentIpMap.get(agentIp).equals(vbondIp)){
             return result;
         }
+
+        if ("0.0.0.0".equals(vbondIp)){
+            result.addError("", "vbondIp is invalid:" + vbondIp);
+            return result;
+        }
         agentIpMap.put(agentIp, vbondIp);
         addVbondIpToHostList(agentIp, vbondIp);
 
@@ -169,11 +174,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         interval.setProbe_interval(timeInterval);
 
         if (hostList == null || hostList.size() == 0){
-            try {
-                hostList = readFileHostList(PntlInfo.PNTL_IPLIST_CONF);
-            } catch (Exception e){
-                LOG.error("get host list failed:" + e.getMessage());
-            }
+            result.addError("", "no hosts");
+            return result;
         }
         LOG.info("Set probe interval:" + timeInterval);
         if (timeInterval.equals("-1")){
@@ -194,7 +196,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             try {
                 RestResp resp = pntlRequest.sendProbeInterval(agentIp, interval);
                 if (resp.getStatusCode().isError()){
-                    LOG.error("stop probe failed[" + agentIp + "]");
+                    LOG.error("set probe interval failed, agent:[" + agentIp + "] interval:[" + interval +"]");
                     result.addError("", "stop probe failed[" + agentIp + "]");
                 }
             } catch (ClientException | JsonProcessingException e){
@@ -575,11 +577,19 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             String os = ipList.get(i).get("os");
             String az = ipList.get(i).get("az");
             String pod = ipList.get(i).get("pod");
-            if (ip == null || os == null || az == null || pod == null || !checkIpValid(ip)){
+            if (az == null || pod == null || !checkIpValid(ip)){
                 String errMsg = "ipList.yml format is invalid";
                 LOG.error(errMsg);
                 throw new InvalidFormatException(ExceptionType.CLIENT_ERR, errMsg);
             }
+
+            if (os == null || os.isEmpty() ||
+                    (!PntlInfo.OS_EULER.equalsIgnoreCase(os) && !PntlInfo.OS_SUSE.equalsIgnoreCase(os))){
+                String errMsg = "os is error in ipList.yml";
+                LOG.error(errMsg);
+                throw new InvalidFormatException(ExceptionType.CLIENT_ERR, errMsg);
+            }
+
             host.setAgentIp(ip);
             host.setOs(os);
             host.setZoneId(az);
@@ -588,6 +598,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 String sn = Pntl.getAgentSnByIp(ip);
                 host.setAgentSN(sn);
             } catch (Exception e){
+                // 获取sn异常，不退出
                 LOG.error("Get sn fail, " + e.getMessage());
             }
 
@@ -779,7 +790,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Pattern pattern = Pattern
                 .compile("^((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]"
                         + "|[*])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]|[*])$");
-        if (!ip.isEmpty() && !pattern.matcher(ip).matches()){
+        if (ip == null || (!ip.isEmpty() && !pattern.matcher(ip).matches())){
             return false;
         }
         return true;
@@ -825,15 +836,18 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "content in update ipList is invalid");
         }
         try {
-            if (type.equals(PntlInfo.PNTL_UPDATE_TYPE_ADD)) {
+            if (PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type)) {
                 appendIpListConfig(updateHostsList);
+                ///todo:check result
                 installStartAgent(updateHostsList);
-            } else if (type.equals(PntlInfo.PNTL_UPDATE_TYPE_DEL)) {
+            } else if (PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)) {
                 /*
                 * 1. 更新hostList(pingMesh, pingList),ipList.yml
-                * 2. stop agent
+                * 2. 通知agent获取pingMesh
                 * 3. 更新agentIpMap(ipList)
+                * 4. stop agent
                 * */
+                ///todo:notify agents to get pingMesh
                 List<PntlHostContext> delHostsList = delIpListConfig(updateHostsList);
                 updateAgentIpMap(delHostsList);
                 result = stopAgent(delHostsList);
