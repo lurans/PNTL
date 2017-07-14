@@ -96,6 +96,6 @@ public class Constants {
     public static final String FALSE = "false";
 
     public static final long IPLIST_FILE_MAX_SIZE = 1000 * 1000; // 1Mb
-    public static final long AGENT_FILE_MAX_SIZE = 2 * 1000 * 1000; //10Mb
+    public static final long AGENT_FILE_MAX_SIZE = 8 * 1000 * 1000; //8Mb
 
 }
