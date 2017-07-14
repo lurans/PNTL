@@ -419,6 +419,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
         DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
         CommonInfo.setRepoUrl(pntlConfig.getModel().getRepoUrl());
+        CommonInfo.setReportPeriod(Integer.valueOf(pntlConfig.getModel().getReportPeriod()));
         /*恢复仓库地址到内存*/
         Pntl.setDownloadUrl(pntlConfig.getModel().getEulerRepoUrl());
         Pntl.setDownloadUrl(pntlConfig.getModel().getSuseRepoUrl());
@@ -461,6 +462,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      */
     private void monitorPntlWarn(){
         Long count = 0L;
+        int reportPeriod = CommonInfo.getReportPeriod(); /* second */
+        int refleshPeriod = reportPeriod + PntlInfo.MONITOR_INTERVAL_TIME_NEWEST; /* add 5min */
         while (true){
             LossRate.refleshLossRateWarning();
             DelayInfo.refleshDelayInfoWarning();
@@ -474,7 +477,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 }
             }
             try{
-                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME_NEWEST * 1000);//5min
+                Thread.sleep(refleshPeriod * 1000);
                 count++;
             } catch (InterruptedException e) {
                 e.printStackTrace();
