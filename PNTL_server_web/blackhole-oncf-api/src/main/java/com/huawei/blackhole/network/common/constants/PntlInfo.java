@@ -50,4 +50,7 @@ public class PntlInfo {
 
     public static final String PNTL_AGENT_STATUS_SUCC = "success";
     public static final String PNTL_AGENT_STATUS_FAIL = "fail";
+
+    public static final String OS_SUSE = "SUSE";
+    public static final String OS_EULER = "EULER";
 }

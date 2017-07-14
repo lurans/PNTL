@@ -40,19 +40,17 @@ public class Pntl {
     private static final String PAGESIZE = "pageSize";
     private static final String PAGEINDEX = "pageIndex";
     private static final String PORT = "33000";
-    private static final String OS_SUSE = "SUSE";
-    private static final String OS_EULER = "EULER";
     private static final String FILETYPE_SCRIPT = "SCRIPT";
     private static final String FILETYPE_AGENT = "AGENT";
     private static final String PNTL_PATH = "/root";
 
     private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
-        put(OS_SUSE, PntlInfo.AGENT_SUSE);
-        put(OS_EULER, PntlInfo.AGENT_EULER);
+        put(PntlInfo.OS_SUSE, PntlInfo.AGENT_SUSE);
+        put(PntlInfo.OS_EULER, PntlInfo.AGENT_EULER);
     }};
     private static final Map<String, String> SCRIPT_FILENAME= new HashMap<String, String>(){{
-        put(OS_SUSE, PntlInfo.AGENT_INSTALL_FILENAME);
-        put(OS_EULER, PntlInfo.AGENT_INSTALL_FILENAME);
+        put(PntlInfo.OS_SUSE, PntlInfo.AGENT_INSTALL_FILENAME);
+        put(PntlInfo.OS_EULER, PntlInfo.AGENT_INSTALL_FILENAME);
     }};
     private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){{
         put(FILETYPE_AGENT, AGENT_FILENAME);
@@ -66,10 +64,10 @@ public class Pntl {
     }
 
     public static void setDownloadUrl(String downloadUrl){
-        if (downloadUrl.toUpperCase().contains(OS_EULER)) {
-            DownloadUrl.put(OS_EULER, downloadUrl);
+        if (downloadUrl.toUpperCase().contains(PntlInfo.OS_EULER)) {
+            DownloadUrl.put(PntlInfo.OS_EULER, downloadUrl);
         } else if (downloadUrl.toUpperCase().contains("SLES"))  {
-            DownloadUrl.put(OS_SUSE, downloadUrl);
+            DownloadUrl.put(PntlInfo.OS_SUSE, downloadUrl);
         } else if (downloadUrl.endsWith(".sh")){
             DownloadUrl.put(FILETYPE_SCRIPT, downloadUrl);
         }
@@ -219,13 +217,13 @@ public class Pntl {
         setCommonHeaderForAgent(header, token);
 
         Map<String, List<String>> agentSnList= new HashMap<String, List<String>>(){{
-            put(OS_SUSE, new ArrayList<>());
-            put(OS_EULER, new ArrayList<>());
+            put(PntlInfo.OS_SUSE, new ArrayList<>());
+            put(PntlInfo.OS_EULER, new ArrayList<>());
         }};
 
         Map<String, ScriptSendJson> body = new HashMap<String, ScriptSendJson>(){{
-            put(OS_SUSE, new ScriptSendJson());
-            put(OS_EULER, new ScriptSendJson());
+            put(PntlInfo.OS_SUSE, new ScriptSendJson());
+            put(PntlInfo.OS_EULER, new ScriptSendJson());
         }};
 
         /*两类文件：agent、安装脚本*/
@@ -237,12 +235,12 @@ public class Pntl {
                     continue;
                 }
                 String key = host.getOs().toUpperCase();
-                if (!key.equalsIgnoreCase(OS_SUSE) && !key.equalsIgnoreCase(OS_EULER)){
+                if (!key.equalsIgnoreCase(PntlInfo.OS_SUSE) && !key.equalsIgnoreCase(PntlInfo.OS_EULER)){
                     continue;
                 }
                 /*根据不同的文件，获取仓库地址*/
                 body.get(key).setFilename(file.get((key)));
-                if (fileType.equals(FILETYPE_SCRIPT)){
+                if (FILETYPE_SCRIPT.equals(fileType)){
                      body.get(key).setRepoUrl(getDownloadUrl(FILETYPE_SCRIPT));
                 } else {
                     body.get(key).setRepoUrl(getDownloadUrl(key));
@@ -370,7 +368,7 @@ public class Pntl {
     public RestResp installAgent(List<PntlHostContext> pntlHostList, String token) throws ClientException{
         List<String> snList = new ArrayList<>();
         for (PntlHostContext host : pntlHostList){
-            if (host.getAgentSN() != null && !host.getAgentStatus().equals(PntlInfo.PNTL_AGENT_STATUS_FAIL)) {
+            if (host.getAgentSN() != null && !PntlInfo.PNTL_AGENT_STATUS_FAIL.equals(host.getAgentStatus())) {
                 snList.add(host.getAgentSN());
             }
         }
