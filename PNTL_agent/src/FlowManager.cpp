@@ -824,14 +824,14 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
 
     pstAgentFlowEntry = &(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex]);
     pstAgentFlowEntry->stFlowDetectResult.lDropNotesCounter ++;
+
     iRet = CreateDropReportData(pstAgentFlowEntry, &ssReportData);
     if (iRet)
     {
-        FLOW_MANAGER_ERROR("Creat Drop Report Data failed[%d]", iRet);
+        FLOW_MANAGER_ERROR("Create Drop Report Data failed[%d]", iRet);
         return iRet;
     }
 
-    SAVE_LOSS_INFO("%s", ssReportData.str().c_str());
 
     iRet = ReportDataToServer(&ssReportData, REPORT_LOSSPKT_URL);
     if (iRet)
@@ -839,6 +839,8 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
         return iRet;
     }
+	SaveLossRateToFile(pstAgentFlowEntry);
+	
     return AGENT_OK;
 }
 
