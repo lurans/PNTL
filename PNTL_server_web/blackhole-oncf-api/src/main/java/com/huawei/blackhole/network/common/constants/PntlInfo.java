@@ -26,8 +26,8 @@ public class PntlInfo {
     public static final String AUTH = "Authorization";
     public static final String GRANT_TYPE = "grant_type";
     public static final int    MONITOR_INTERVAL_TIME_NEWEST = 5*60;//second
-    public static final int    MONITOR_INTERVAL_TIME_HISTORY = 7*24*60*60;//seven days
-    public static final int    NOTIFY_AGENT_TO_GET_PINGLIST_TIME = 1*10;
+    public static final int    MONITOR_INTERVAL_TIME_HISTORY = 7*24*60*12;//seven days
+    public static final int    NOTIFY_AGENT_TO_GET_PINGLIST_TIME = 10;
 
     //public static final String REPOURL = "http://8.15.4.10";//beta
     //private static final String REPOURL = "http://192.168.212.16/";//alpha

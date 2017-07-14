@@ -33,6 +33,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     @javax.annotation.Resource(name = "pntlConfigService")
     private PntlConfigService pntlConfigService;
+
     /**
      * 首次启动
      * @return
@@ -67,6 +68,38 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     /**
+     * 通知所有的agent获取pingMesh
+     * @param hostList
+     * @return
+     */
+    private Result<String> notfiyAllAgentsToGetPingList(List<PntlHostContext> hostList){
+        Result<String> result = new Result<>();
+        if (hostList == null){
+            result.addError("", "host is null");
+            return result;
+        }
+        for (PntlHostContext host : hostList){
+            try {
+                RestResp resp = pntlRequest.notifyAgentToGetPingList(host.getAgentIp());
+                if (resp.getStatusCode().isError()){
+                    result.addError("", "Notify agent to get pingList failed");
+                }
+            } catch (ClientException e){
+                String errMsg = "Notify agent to get pingList failed:" + e.getMessage();
+                LOG.error(errMsg);
+                result.addError("", errMsg);
+            }
+            try {
+                Thread.sleep(Constants.PNTL_WAIT_TIME_PINGMESH);
+            } catch (InterruptedException e) {
+                LOG.warn("ignore : interrupted sleep");
+                result.addError("", "ignore : interrupted sleep");
+            }
+        }
+        return result;
+    }
+
+    /**
      * 保存业务ip，生成pingMesh
      * @param agentIp
      * @param vbondIp
@@ -89,25 +122,22 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         agentIpMap.put(agentIp, vbondIp);
         addVbondIpToHostList(agentIp, vbondIp);
 
-        if (notifyAgentToGetPingList == false){
+        /* 首次上报等10s后通知，若已等待中，则直接返回 */
+        if (notifyAgentToGetPingList){
+            return result;
+        } else {
             try {
+                notifyAgentToGetPingList = true;
                 Thread.sleep(PntlInfo.NOTIFY_AGENT_TO_GET_PINGLIST_TIME * 1000);//second
             } catch(InterruptedException e){
                 result.addError("", "Sleep error " + e.getMessage());
             }
         }
-        try {
-            RestResp resp = pntlRequest.notifyAgentToGetPingList(agentIp);
-            if (resp.getStatusCode().isError()){
-                result.addError("", "Notify agent to get pingList failed");
-            } else{
-                notifyAgentToGetPingList = true;
-            }
-        } catch (ClientException e){
-            String errMsg = "Notify agent to get pingList failed:" + e.getMessage();
-            LOG.error(errMsg);
-            result.addError("", errMsg);
-        }
+
+        result = notfiyAllAgentsToGetPingList(hostList);
+        /* 全部通知完成之后，重新开始一个周期，等待10s，然后全量通知 */
+        notifyAgentToGetPingList = false;
+
         return result;
     }
 
@@ -125,6 +155,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     private void updatePingMesh(){
+        if (hostList == null){
+            return;
+        }
         for (PntlHostContext host : hostList){
             host.setPingMeshList(host.getAgentIp(), hostList);
         }
@@ -148,6 +181,10 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     public Result<String> setAgentConf(PntlConfig config){
         Result<String> result = new Result<>();
+        if (hostList == null){
+            result.addError("", "host is null");
+            return result;
+        }
         for (int i = 0; i < hostList.size(); i++){
             String agentIp = hostList.get(i).getAgentIp();
             try {
@@ -174,8 +211,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         ProbeInterval interval = new ProbeInterval();
         interval.setProbe_interval(timeInterval);
 
-        if (hostList == null || hostList.size() == 0){
-            result.addError("", "no hosts");
+        if (hostList == null){
+            result.addError("", "host is null");
             return result;
         }
         LOG.info("Set probe interval:" + timeInterval);
@@ -264,6 +301,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     private void resetAgentStatus(List<PntlHostContext> hosts){
+        if (hosts == null){
+            return;
+        }
         for (PntlHostContext h : hosts){
             h.setReason(null);
             h.setAgentStatus(null);
@@ -307,7 +347,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 Thread.sleep(Constants.PNTL_WATI_TIME);
             } catch (InterruptedException e) {
                 LOG.warn("ignore : interrupted sleep");
-                return null;
+                result.addError("", "ignore : interrupted sleep");
+                return result;
             }
         }
 
@@ -357,21 +398,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     private void startMonitor(){
          /* 启动轮询监控*/
-        Runnable monitorPntlNewestWarnTask = new Runnable() {
+        Runnable monitorPntlWarnTask = new Runnable() {
             @Override
             public void run() {
-                monitorPntlNewestWarn();
+                monitorPntlWarn();
             }
         };
-        resultService.execute(monitorPntlNewestWarnTask);
-
-        Runnable monitorPntlHistoryWarnTask = new Runnable() {
-            @Override
-            public void run() {
-                monitorPntlHistoryWarn();
-            }
-        };
-        resultService.execute(monitorPntlHistoryWarnTask);
+        resultService.execute(monitorPntlWarnTask);
     }
 
     private Result<String> initPntlConfig(){
@@ -424,27 +457,26 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     /**
      * 监控当前告警，对于长时间没有上报的告警，设置老化时间，超时则删除
+     * 每5min一个周期
      */
-    private void monitorPntlNewestWarn(){
+    private void monitorPntlWarn(){
+        Long count = 0L;
         while (true){
             LossRate.refleshLossRateWarning();
             DelayInfo.refleshDelayInfoWarning();
-            try{
-                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME_NEWEST * 1000);//second
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
-    private void monitorPntlHistoryWarn(){
-        while (true){
+            /* 7 days */
+            if (count%(PntlInfo.MONITOR_INTERVAL_TIME_HISTORY) == 0){
+                try {
+                    PntlWarning.refleshHistoryWarning();
+                } catch (ParseException e){
+                    e.printStackTrace();
+                }
+            }
             try{
-                PntlWarning.refleshHistoryWarning();
-                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME_HISTORY * 1000);//second
+                Thread.sleep(PntlInfo.MONITOR_INTERVAL_TIME_NEWEST * 1000);//5min
+                count++;
             } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
@@ -456,7 +488,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @return
      * @throws ClientException
      */
-    public Result<String> installAgent(List<PntlHostContext> pntlHostList) throws ClientException{
+    private Result<String> installAgent(List<PntlHostContext> pntlHostList) throws ClientException{
         Result<String> result = new Result<>();
         RestResp resp = null;
         try{
@@ -526,7 +558,6 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             hostContext.setOs(host.getOs());
             hostContext.setPodId(host.getPodId());
             hostContext.setZoneId(host.getZoneId());
-            //hostContext.setPingMeshList(host.getIp(), hostInfo.getHostsInfoList());
             hostsList.add(hostContext);
         }
 
@@ -574,7 +605,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 String sn = Pntl.getAgentSnByIp(ip);
                 host.setAgentSN(sn);
             } catch (ClientException e){
-                // 获取sn异常，不退出
+                /* 获取sn异常，不退出 */
                 LOG.error("Get sn fail: " + e.getMessage());
             }
 
@@ -631,7 +662,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     private void appendToHostListMem(List<PntlHostContext> updateHostsList){
-        if (hostList.isEmpty()){
+        if (hostList == null){
             return;
         }
         hostList.addAll(updateHostsList);
@@ -655,7 +686,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private void updateIpListConfig() throws ApplicationException{
         Map<String, List<Map<String, String>>> data = new HashMap<>();
         List<Map<String, String>> list = new ArrayList<>();
-        if (hostList.isEmpty() || hostList.size() == 0){
+        if (hostList == null || hostList.isEmpty() || hostList.size() == 0){
             return;
         }
         for (PntlHostContext h : hostList){
@@ -679,7 +710,14 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @param delHostsList
      */
     private void removeHostsList(List<PntlHostContext> delHostsList){
+        if (hostList == null || hostList.isEmpty()){
+            return;
+        }
         hostList.removeAll(delHostsList);
+
+        if (agentIpMap == null || agentIpMap.isEmpty()){
+            return;
+        }
         for (PntlHostContext host : delHostsList){
             String vbondIp = agentIpMap.get(host.getAgentIp());
             if (vbondIp == null){
@@ -701,6 +739,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private List<PntlHostContext> delIpListConfig(List<PntlHostContext> updateHostsList)
         throws ApplicationException{
         List<PntlHostContext> delHostsList = new ArrayList<>();
+        if (hostList == null){
+            return null;
+        }
         for (PntlHostContext host : updateHostsList){
             if (hostList.contains(host)){
                 PntlHostContext h = new PntlHostContext();
@@ -732,7 +773,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      */
     private Result<String> stopAgent(List<PntlHostContext> delHostsList){
         Result<String> result = new Result<>();
-        if (delHostsList.isEmpty()){
+        if (delHostsList == null || delHostsList.isEmpty()){
             return result;
         }
         try{
@@ -750,6 +791,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     private void updateAgentIpMap(List<PntlHostContext> hosts){
+        if (hosts == null){
+            return;
+        }
         for (PntlHostContext h : hosts){
             if (agentIpMap.get(h.getAgentIp()) != null){
                 agentIpMap.remove(h.getAgentIp());
@@ -766,10 +810,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Pattern pattern = Pattern
                 .compile("^((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]"
                         + "|[*])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]|[*])$");
-        if (ip == null || (!ip.isEmpty() && !pattern.matcher(ip).matches())){
-            return false;
-        }
-        return true;
+        return !(ip == null || (!ip.isEmpty() && !pattern.matcher(ip).matches()));
     }
 
     /**
@@ -835,12 +876,11 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "content in update ipList is invalid");
         }
 
-        filterDuplicateHosts(hostList, updateHostsList);
         try {
             if (PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type)) {
+                filterDuplicateHosts(hostList, updateHostsList);
                 appendIpListConfig(updateHostsList);
-                ///todo:check result
-                installStartAgent(updateHostsList);
+                result = installStartAgent(updateHostsList);
             } else if (PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)) {
                 /*
                 * 1. 更新hostList(pingMesh, pingList),ipList.yml
@@ -848,8 +888,12 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 * 3. 更新agentIpMap(ipList)
                 * 4. stop agent
                 * */
-                ///todo:notify agents to get pingMesh
                 List<PntlHostContext> delHostsList = delIpListConfig(updateHostsList);
+                result = notfiyAllAgentsToGetPingList(hostList);
+                if (!result.isSuccess()){
+                    LOG.error(result.getErrorMessage());
+                }
+
                 updateAgentIpMap(delHostsList);
                 result = stopAgent(delHostsList);
                 if (!result.isSuccess()){

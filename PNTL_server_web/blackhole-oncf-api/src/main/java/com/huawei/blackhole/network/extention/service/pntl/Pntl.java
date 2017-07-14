@@ -263,14 +263,11 @@ public class Pntl {
             }
 
             for (String key : body.keySet()){
-//                if (body.get(key).getRepoUrl() == null || agentSnList.get(key.toUpperCase()) == null){
-//                    continue;
-//                }
                 body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
                     if ((Integer)resp.getRespBody().get("code") != 0){
-                        //agent返回失败，1000部分成功，2000全部失败，其他非0值，调用接口失败
+                        /* agent返回失败，1000部分成功，2000全部失败，其他非0值，调用接口失败 */
                         setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, resp.getRespBody().get("reason").toString());
                         result.addError("", "send file to agent failed " + resp.getRespBody().get("reason").toString());
                     } else {
@@ -344,7 +341,7 @@ public class Pntl {
         }
     }
 
-    public RestResp sendCommandToAgents(List<String> snList, String token, String command, String cmdType)
+    private RestResp sendCommandToAgents(List<String> snList, String token, String command, String cmdType)
         throws ClientException{
         CmdSetJson reqBody = new CmdSetJson();
         String url = PntlInfo.URL_IP + PntlInfo.CMD_SET_URL_SUFFIX;

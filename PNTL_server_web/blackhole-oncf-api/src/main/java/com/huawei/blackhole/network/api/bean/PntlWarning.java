@@ -166,11 +166,8 @@ public class PntlWarning implements Serializable{
     }
 
     private static boolean isGetAllWaringList(PntlWarnInfo param){
-        if (param.getAzId().isEmpty() && param.getPodId().isEmpty() && param.getSrcIp().isEmpty()
-                && param.getDstIp().isEmpty() && param.getStarTime().isEmpty() && param.getEndTime().isEmpty()){
-            return true;
-        }
-        return false;
+        return param.getAzId().isEmpty() && param.getPodId().isEmpty() && param.getSrcIp().isEmpty()
+                && param.getDstIp().isEmpty() && param.getStarTime().isEmpty() && param.getEndTime().isEmpty();
     }
 
     private static boolean validParamCheck(PntlWarnInfo param){

@@ -96,11 +96,7 @@ public class PntlWarnService {
     private boolean needTracerouteLossRate(LossRateAgent.Flow flow){
         float rate = Float.parseFloat(flow.getSt().getPacketDrops()) / Float.parseFloat(flow.getSt().getPacketSent());
         rate *= 100;
-        if (rate >= 50){///TODO:阈值需要再考虑
-            return true;
-        }
-
-        return false;
+        return rate >= 50;
     }
 
 }

@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 public class PntlConfigService {
     private static Logger LOGGER = LoggerFactory.getLogger(PntlConfigService.class);
     @javax.annotation.Resource(name = "keystoneService")
-    protected Keystone identityWrapperService;
+    private Keystone identityWrapperService;
 
     @javax.annotation.Resource(name = "pntlService")
     private PntlService pntlService;
@@ -78,7 +78,7 @@ public class PntlConfigService {
      * @param value
      * @return
      */
-    public Result<String> saveElemToPntlConfigFile(String key, String value){
+    private Result<String> saveElemToPntlConfigFile(String key, String value){
         Result<String> result = new Result<String>();
         if (key == null){
             result.addError("", "key is null");
@@ -233,7 +233,7 @@ public class PntlConfigService {
         }
     }
 
-    public String genBasicToken(String ak, String sk){
+    private String genBasicToken(String ak, String sk){
         String str = ak + ":" + sk;
         byte[] encodeBasic64 = Base64.encodeBase64(str.getBytes());
         return new String(encodeBasic64);
@@ -244,7 +244,7 @@ public class PntlConfigService {
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "invalid request to upload ipList file");
         }
         String contentDisposition = file.getHeader("Content-Disposition");
-        if ((contentDisposition == null) || (contentDisposition.indexOf("filename") == -1)) {
+        if ((contentDisposition == null) || (!contentDisposition.contains("filename"))) {
             // 附件是否上传
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "ipList file required");
         }
@@ -397,9 +397,9 @@ public class PntlConfigService {
             } else {
                if (resp.getRespBody().getInt("code") == 0){
                    String downloadUrl = resp.getRespBody().getJSONObject("data").getString("downloadUrl");
-                   //保存到内存
+                   /* 保存到内存 */
                    Pntl.setDownloadUrl(downloadUrl);
-                   //保存到文件
+                   /* 保存到文件 */
                    saveDownloadUrlToFile(attachment.getDataHandler().getName(), downloadUrl);
                } else {
                    result.addError("", resp.getRespBody().getString("reason"));

@@ -119,7 +119,7 @@ public class PntlHostContext {
         return pingMeshList;
     }
 
-    public void setPingMeshList(Map<String, List<String>> pingMeshList) {
+    private void setPingMeshList(Map<String, List<String>> pingMeshList) {
         this.pingMeshList = pingMeshList;
     }
 
@@ -134,7 +134,7 @@ public class PntlHostContext {
                 ips.add(host.getVbondIp());
             }
         }
-        if (ips == null || ips.isEmpty()){
+        if (ips.isEmpty()){
             return;
         }
         pingMeshList.put(srcIp, ips);
