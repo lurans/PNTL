@@ -413,7 +413,7 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
-        result = pntlService.setServerConf(config);
+        result = pntlService.setAgentConf(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -479,7 +479,7 @@ public class RouterApi {
     }
 
     /*重新启动探测，启动agent*/
-    @Path("/startAgent")
+    @Path("/startAgents")
     @POST
     public Response startAgent(){
         Result<String> result = pntlService.startAgent();
@@ -551,8 +551,8 @@ public class RouterApi {
         Result<String> result = new Result<>();
 
         String type = body.getAttachmentObject("operation", String.class);
-        if (!type.equals(PntlInfo.PNTL_UPDATE_TYPE_ADD) && !type.equals(PntlInfo.PNTL_UPDATE_TYPE_DEL)){
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, "operation is error:" + type);
+        if (!PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type) && !PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)){
+            return ResponseUtil.err(Response.Status.SERVICE_UNAVAILABLE, "operation is error:" + type);
         }
 
         Attachment file = body.getAttachment(Constants.FORM_FILE);

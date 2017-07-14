@@ -146,7 +146,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return result;
     }
 
-    public Result<String> setServerConf(PntlConfig config){
+    public Result<String> setAgentConf(PntlConfig config){
         Result<String> result = new Result<>();
         for (int i = 0; i < hostList.size(); i++){
             String agentIp = hostList.get(i).getAgentIp();
@@ -157,6 +157,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                     result.addError("", "stop probe failed[" + agentIp + "]");
                 }
             } catch (ClientException | JsonProcessingException e){
+                //异常不退出，继续发送其他agent
                 LOG.error("stop probe failed[" + agentIp + "] " + e.getMessage());
                 result.addError("", "stop probe failed[" + agentIp + "] "+ e.getMessage());
             }
@@ -200,6 +201,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                     result.addError("", "stop probe failed[" + agentIp + "]");
                 }
             } catch (ClientException | JsonProcessingException e){
+                //异常不退出，继续发送其他agent
                 LOG.error("stop probe failed[" + agentIp + "] " + e.getMessage());
                 result.addError("", "stop probe failed[" + agentIp + "] "+ e.getMessage());
             }
@@ -236,11 +238,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             return null;
         }
         if (hostList == null){
-            try {
-                hostList = readFileHostList(PntlInfo.PNTL_IPLIST_CONF);
-            } catch (Exception e){
-                LOG.error("get host list failed:" + e.getMessage());
-            }
+            LOG.error("no host");
+            return null;
         }
         String agentIp = config.getContent().getAgentIp();
          for (PntlHostContext host : hostList){
@@ -308,6 +307,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 Thread.sleep(Constants.PNTL_WATI_TIME);
             } catch (InterruptedException e) {
                 LOG.warn("ignore : interrupted sleep");
+                return null;
             }
         }
 
@@ -318,7 +318,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 continue;
             }
 
-            if (host.getAgentStatus().equals(PntlInfo.PNTL_AGENT_STATUS_SUCC)){
+            if (host.getAgentStatus().equals(PntlInfo.PNTL_AGENT_STATUS_FAIL)){
                 failAgentCount++;
             }
         }
@@ -476,30 +476,6 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     /**
-     * 通过从CMDB获取的host信息生成网络拓扑，根据pod
-     * @param hostList
-     * @return
-     */
-    private Result<String> genNetworkMap(List<PntlHostContext> hostList)
-            throws ClientException{
-        Result<String> result = new Result<>();
-        if (hostList == null){
-            return null;
-        }
-
-        for (PntlHostContext host : hostList){
-            try {
-                getTracerouteLog(host);
-            } catch (Exception e){
-
-            }
-        }
-        PntlNetworkMap networkMap = new PntlNetworkMap();
-
-        return result;
-    }
-
-    /**
      * 获取traceroute学习结果
      * @param host
      * @return
@@ -597,9 +573,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             try{
                 String sn = Pntl.getAgentSnByIp(ip);
                 host.setAgentSN(sn);
-            } catch (Exception e){
+            } catch (ClientException e){
                 // 获取sn异常，不退出
-                LOG.error("Get sn fail, " + e.getMessage());
+                LOG.error("Get sn fail: " + e.getMessage());
             }
 
             hostsList.add(host);
@@ -815,6 +791,29 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         return true;
     }
+
+    /**
+     * 判断updateHostsList中host是否和hostList重复，若有，则去重
+     * @param hostList
+     * @param updateHostsList
+     */
+    private void filterDuplicateHosts(List<PntlHostContext> hostList, List<PntlHostContext> updateHostsList){
+        if (hostList == null || hostList.isEmpty() || updateHostsList == null || updateHostsList.isEmpty()){
+            return;
+        }
+
+        Iterator<PntlHostContext> it = updateHostsList.iterator();
+        while (it.hasNext()){
+            for (PntlHostContext host : hostList){
+                PntlHostContext h = it.next();
+                if (host.equals(h)){
+                    it.remove();
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * 更新agent，读取上传的配置文件，先刷新ipList，再刷新agent
      * @return
@@ -835,6 +834,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         if (!validUpdateIpListConf(updateHostsList)){
             result.addError("", "content in update ipList is invalid");
         }
+
+        filterDuplicateHosts(hostList, updateHostsList);
         try {
             if (PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type)) {
                 appendIpListConfig(updateHostsList);

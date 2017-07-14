@@ -32,6 +32,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service("pntlConfigService")
 public class PntlConfigService {
@@ -98,11 +99,29 @@ public class PntlConfigService {
         return result;
     }
 
+    private boolean checkAkSkValid(String ak, String sk){
+        if (ak == null || ak.isEmpty() || sk == null || sk.isEmpty()){
+            return false;
+        }
+
+        Pattern pattern = Pattern
+                .compile("[a-zA-Z0-9_]+");
+        if (!pattern.matcher(ak).matches() || !pattern.matcher(sk).matches()){
+            return false;
+        }
+
+        return true;
+    }
+
     public Result<String> setPntlAkSkConfig(PntlConfig pntlConfig) {
         //Get PntlConfig
         Result<String> result = new Result<String>();
-        try{
+        if (!checkAkSkValid(pntlConfig.getAk(), pntlConfig.getSk())){
+            result.addError("", "ak or sk is invalid");
+            return result;
+        }
 
+        try{
             Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
             dataObj.put("ak", pntlConfig.getAk());
             dataObj.put("sk", pntlConfig.getSk());
@@ -119,8 +138,10 @@ public class PntlConfigService {
             String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
             result.addError("", e.prefix() + errMsg);
+            return result;
         } catch (Exception e){
             result.addError("", "parameter is invalid");
+            return result;
         }
         //保存在内存公共信息
         CommonInfo.setRepoUrl(pntlConfig.getRepoUrl());
@@ -134,8 +155,12 @@ public class PntlConfigService {
         Result<String> result = new Result<String>();
         try {
             Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
-            pntlConfig.setAk((String) dataObj.get("ak"));
-            pntlConfig.setSk((String) dataObj.get("sk"));
+            pntlConfig.setAk(dataObj.get("ak").toString());
+            pntlConfig.setSk(dataObj.get("sk").toString());
+            pntlConfig.setBasicToken(dataObj.get("basicToken").toString());
+            pntlConfig.setEulerRepoUrl(dataObj.get("eulerRepoUrl").toString());
+            pntlConfig.setSuseRepoUrl(dataObj.get("suseRepoUrl").toString());
+            pntlConfig.setInstallScriptRepoUrl(dataObj.get("installScriptRepoUrl").toString());
 
             validPntlConfig(pntlConfig);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
@@ -145,8 +170,10 @@ public class PntlConfigService {
             String errMsg = "set config [" + Resource.NAME_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
             result.addError("", e.prefix() + errMsg);
+            return result;
         } catch (Exception e){
             result.addError("", "parameter is invalid");
+            return result;
         }
 
         LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getLossRateThreshold()));
@@ -156,8 +183,7 @@ public class PntlConfigService {
         return result;
     }
 
-    private void validPntlConfig(PntlConfig pntlConfig)
-            throws InvalidParamException, Exception {
+    private void validPntlConfig(PntlConfig pntlConfig) throws Exception {
         if (pntlConfig == null){
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "no data provided");
         }
@@ -176,6 +202,12 @@ public class PntlConfigService {
             if (report_period < 60 || report_period > 1800){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "report period is invalid");
             }
+
+            /*上报周期需要>=探测周期*/
+            if (report_period < probe_period){
+                throw new InvalidParamException(ExceptionType.CLIENT_ERR, "report period shoud be bigger then probe period");
+            }
+
             int pkg_count = Integer.valueOf(pntlConfig.getPkgCount());
             if (pkg_count !=0 && pkg_count != 100){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "package count is invalid");
@@ -297,11 +329,6 @@ public class PntlConfigService {
         String name = file.getDataHandler().getName();
         if (!name.equalsIgnoreCase(PntlInfo.AGENT_EULER) && !name.equalsIgnoreCase(PntlInfo.AGENT_SUSE)
                 && !name.equalsIgnoreCase(PntlInfo.AGENT_INSTALL_FILENAME)){
-            throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of agent file");
-        }
-
-        if (!name.equalsIgnoreCase(PntlInfo.AGENT_EULER) && !name.equalsIgnoreCase(PntlInfo.AGENT_SUSE)
-                && !name.equalsIgnoreCase(PntlInfo.AGENT_INSTALL_FILENAME)){
             throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid filename:" + name);
         }
 
@@ -327,7 +354,6 @@ public class PntlConfigService {
     }
 
     public Result<String> uploadAgentPkgFile(Attachment attachment) {
-        final String BOUNDARY = "----WebKitFormBoundaryzOYdpFxbuIoovXYf";
         Result<String> result = new Result<String>();
         try {
             validAgentPkgAttachment(attachment);
@@ -345,6 +371,7 @@ public class PntlConfigService {
             String errMsg = "get token failed:" + e.getMessage();
             LOGGER.error("", errMsg);
             result.addError("", errMsg);
+            return result;
         }
         String url = CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
         Map<String, String> header = new HashMap<>();
