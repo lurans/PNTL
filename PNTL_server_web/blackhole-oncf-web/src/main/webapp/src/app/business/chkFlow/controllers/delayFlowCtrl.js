@@ -10,7 +10,7 @@ define(["language/chkFlow",
 
                 $scope.button = {
                     "id":"resetBtn_id",
-                    "text" : i18n.chkFlow_term_reset_btn,
+                    "text" : i18n.chkFlow_term_reset_btn
                 };
 
                 $scope.ipList=[];
@@ -25,7 +25,7 @@ define(["language/chkFlow",
                 var width = 640,
                     height = 640;
                 var colors = ['#750000','#92DD92', '#60EE97', '#FFBB77','#FF8000', '#FF2D2D'];
-                var delayTimeLevel = [-1, 0, 100, 200, 500, 1000];
+                var delayTimeLevel = [-1, 0, 10, 20, 50, 100];
                 var legendElementWidth = width/delayTimeLevel.length;
                 function statusColor(delayTime)
                 {
@@ -198,6 +198,7 @@ define(["language/chkFlow",
                             //var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
                             //var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['recv_delay']);
                             var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_round_delay']);
+                            sendRoundDelay=sendRoundDelay/1000;
                             //var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['recv_round_delay']);
                             //var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
                             //var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
