@@ -19,7 +19,8 @@ define(["language/chkFlow",
                     "src_ip":"",
                     "dst_ip":"",
                     "start_time":"",
-                    "end_time":""
+                    "end_time":"",
+                    "type":""
                 };
                 $scope.search = {
                     "id":"search_id",
@@ -35,17 +36,31 @@ define(["language/chkFlow",
                         var pod = $("#podTextBox_id").widget().getValue();
                         var src = $("#src_ip_id").widget().getValue();
                         var dst = $("#dst_ip_id").widget().getValue();
-                        var starttime = $("#start_time_id").widget().getDateTime();
+                        var startTime = $("#start_time_id").widget().getDateTime();
                         var endTime = $("#end_time_id").widget().getDateTime();
-                        searchData.az_id = az;
-                        searchData.dst_ip = dst;
-                        searchData.src_ip = src;
-                        searchData.pod_id = pod;
-                        searchData.start_time = starttime;
-                        searchData.end_time = endTime;
-                        console.log(searchData);
-                        postData(searchData);
+                        var type = $("#type_id").widget().getSelectedLabel();
+                        if((startTime<endTime&&startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
+                            searchData.az_id = az;
+                            searchData.dst_ip = dst;
+                            searchData.src_ip = src;
+                            searchData.pod_id = pod;
+                            searchData.start_time = startTime;
+                            searchData.end_time = endTime;
+                            searchData.type = type;
+                            console.log(searchData);
+                            postData(searchData);
+                       }else if(startTime === ""){
+                            alert(i18n.chkFlow_term_tip1);
+                            $scope.search.disable = false;
+                        }else if (endTime === ""){
+                            alert(i18n.chkFlow_term_tip2);
+                            $scope.search.disable = false;
+                        }else if(startTime>endTime){
+                            alert(i18n.chkFlow_term_tip3);
+                            $scope.search.disable = false;
+                        }
                     }
+
                 };
                 var postData = function(para){
                     var promise = warnFlowServ.postSearchData(para);
@@ -68,6 +83,22 @@ define(["language/chkFlow",
                     "value": "",
                     "tooltip":i18n.chkFlow_term_ak_tooltip,
                     "width":"170px"
+                };
+                $scope.type = {
+                    "id":"type_id",
+                    "values":[{
+                        selectId : "1",
+                        label : i18n.chkFlow_term_choose,
+                        checked : true
+                    }, {
+                            selectId : "2",
+                            label : i18n.chkFlow_term_delayTime,
+                            checked : false
+                    },{
+                        selectId : "3",
+                        label : i18n.chkFlow_term_packetsLossRate,
+                        checked : false
+                    }]
                 };
                 $scope.start_time = {
                     "id": "start_time_id",
@@ -98,7 +129,6 @@ define(["language/chkFlow",
                     "id":"directivetableId",
                     data : [], //初始数据为空
                     totalRecords:0,
-                    "width":"600px",
                     "columns" : [{
                         "sTitle" : i18n.chkFlow_term_DateTime,
                         "sWidth":"20%",
@@ -124,14 +154,14 @@ define(["language/chkFlow",
                         "mData":"dst_ip",
                         "bSortable":false
                     },{
-                        "sTitle" : i18n.chkFlow_term_DelayTime,
+                        "sTitle" : i18n.chkFlow_term_Type,
                         "sWidth":"15%",
-                        "mData":"delay",
+                        "mData":"type",
                         "bSortable":false
                     },{
-                        "sTitle" : i18n.chkFlow_term_PacketsLossRate,
-                        "sWidth":"15%",
-                        "mData":"lossRate",
+                        "sTitle" : i18n.chkFlow_term_Value,
+                        "sWidth":"150px",
+                        "mData":"value",
                         "bSortable":false
                     }
                     ]};
@@ -144,9 +174,19 @@ define(["language/chkFlow",
                 {
                     var textInfoPromise = warnFlowServ.getTextInfo();
                     textInfoPromise.then(function(responseData){
-                        console.log(responseData[0].PacketsLossRate=(Math.random()*100));
-                        $scope.model.data = [];
-                        $scope.model.data = responseData;
+                        for (var i = 0;i<responseData.length;i++){
+                            if(responseData[i].delay != ""){
+                                responseData[i].value = responseData[i].delay + "ms";
+                                responseData[i].type = i18n.chkFlow_term_delayTime;
+                                $scope.model.data = [];
+                                $scope.model.data = responseData;
+                            }else if(responseData[i].lossRate != ""){
+                                responseData[i].value = responseData[i].lossRate;
+                                responseData[i].type = i18n.chkFlow_term_packetsLossRate;
+                                $scope.model.data = [];
+                                $scope.model.data = responseData;
+                            }
+                        }
                         $scope.model.totalRecords = responseData.length;
 
                     },function(responseData){
@@ -167,7 +207,6 @@ define(["language/chkFlow",
                     }
                 }
                 $scope.$on('$destroy', function (angularEvent, current, previous) {
-                    //console.log("haha");
                     $scope.stopAutoRefresh();
                 });
 
