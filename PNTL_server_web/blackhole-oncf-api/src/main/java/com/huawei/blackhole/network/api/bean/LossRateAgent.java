@@ -48,23 +48,17 @@ public class LossRateAgent implements Serializable {
         @JsonProperty("sport")
         private String sport;
 
-        @JsonProperty("dport")
-        private String dport;
+        @JsonProperty("time")
+        private String time;
 
-        @JsonProperty("ip-protocol")
-        private String ipProtocol;
+        @JsonProperty("packet-sent")
+        private String packetSent;
 
-        @JsonProperty("dscp")
-        private String dscp;
+        @JsonProperty("packet-drops")
+        private String packetDrops;
 
-        @JsonProperty("urgent-flag")
-        private String urgentFlag;
-
-        @JsonProperty("topology-tag")
-        private TopologyTag topo;
-
-        @JsonProperty("statistics")
-        private Statistics st;
+        @JsonProperty("package-size")
+        private String packageSize;
 
         public String getSip() {
             return sip;
@@ -90,128 +84,36 @@ public class LossRateAgent implements Serializable {
             this.sport = sport;
         }
 
-        public String getDport() {
-            return dport;
+        public String getTime() {
+            return time;
         }
 
-        public void setDport(String dport) {
-            this.dport = dport;
+        public void setTime(String time) {
+            this.time = time;
         }
 
-        public String getIpProtocol() {
-            return ipProtocol;
+        public String getPacketSent() {
+            return packetSent;
         }
 
-        public void setIpProtocol(String ipProtocol) {
-            this.ipProtocol = ipProtocol;
+        public void setPacketSent(String packetSent) {
+            this.packetSent = packetSent;
         }
 
-        public String getDscp() {
-            return dscp;
+        public String getPacketDrops() {
+            return packetDrops;
         }
 
-        public void setDscp(String dscp) {
-            this.dscp = dscp;
+        public void setPacketDrops(String packetDrops) {
+            this.packetDrops = packetDrops;
         }
 
-        public String getUrgentFlag() {
-            return urgentFlag;
+        public String getPackageSize() {
+            return packageSize;
         }
 
-        public void setUrgentFlag(String urgentFlag) {
-            this.urgentFlag = urgentFlag;
-        }
-
-        public TopologyTag getTopo() {
-            return topo;
-        }
-
-        public void setTopo(TopologyTag topo) {
-            this.topo = topo;
-        }
-
-        public Statistics getSt() {
-            return st;
-        }
-
-        public void setSt(Statistics st) {
-            this.st = st;
-        }
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public static final class TopologyTag implements Serializable{
-            private static final long serialVersionUID = 1759625151186404547L;
-
-            @JsonProperty("level")
-            private String level;
-
-            @JsonProperty("sid")
-            private String sid;
-
-            @JsonProperty("did")
-            private String did;
-
-            public String getLevel() {
-                return level;
-            }
-
-            public void setLevel(String level) {
-                this.level = level;
-            }
-
-            public String getSid() {
-                return sid;
-            }
-
-            public void setSid(String sid) {
-                this.sid = sid;
-            }
-
-            public String getDid() {
-                return did;
-            }
-
-            public void setDid(String did) {
-                this.did = did;
-            }
-        }
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public static final class Statistics implements Serializable{
-            private static final long serialVersionUID = 8880859779396250759L;
-
-            @JsonProperty("t")
-            private String t;
-
-            @JsonProperty("packet-sent")
-            private String packetSent;
-
-            @JsonProperty("packet-drops")
-            private String packetDrops;
-
-            public String getT() {
-                return t;
-            }
-
-            public void setT(String t) {
-                this.t = t;
-            }
-
-            public String getPacketSent() {
-                return packetSent;
-            }
-
-            public void setPacketSent(String packetSent) {
-                this.packetSent = packetSent;
-            }
-
-            public String getPacketDrops() {
-                return packetDrops;
-            }
-
-            public void setPacketDrops(String packetDrops) {
-                this.packetDrops = packetDrops;
-            }
+        public void setPackageSize(String packageSize) {
+            this.packageSize = packageSize;
         }
     }
 

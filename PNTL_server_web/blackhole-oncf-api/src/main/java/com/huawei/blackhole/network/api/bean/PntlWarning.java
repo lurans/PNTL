@@ -142,9 +142,7 @@ public class PntlWarning implements Serializable{
             warn.setDstIp(r.getDstIp());
             warn.setDelay("");
             warn.setLossRate(r.getSendLossRate());
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            warn.setTime(dateFormat.format(r.getTimestamp()));
+            warn.setTime(r.getTimestamp());
 
             PntlWarning.getResult().add(warn);
         } else if (newData instanceof DelayInfo.DelayInfoResult){
