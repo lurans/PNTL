@@ -461,6 +461,44 @@ INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstre
 }
 
 
+// 生成json格式的字符串, 用于向Analyzer上报丢包信息.
+void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry)
+{
+    char   acCurTime[32]   = {0};                      // 缓存时间戳
+    stringstream ssWriteLossData;
+
+    ssWriteLossData.clear();
+    ssWriteLossData.str("");
+    ssWriteLossData << "{ flow:[ ";
+    ssWriteLossData << " sip:";
+    ssWriteLossData << sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP);
+    ssWriteLossData << " dip:";
+    ssWriteLossData << sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP);
+    ssWriteLossData << " sport:";
+    ssWriteLossData << pstAgentFlowEntry->stFlowKey.uiSrcPort;
+    ssWriteLossData << " time:";
+    ssWriteLossData << acCurTime;
+    ssWriteLossData << " packet-sent:";
+    ssWriteLossData << pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter;
+    ssWriteLossData << " packet-drops:";
+    ssWriteLossData << pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter;
+    ssWriteLossData << " packet-size:";
+    if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
+    {
+        ssWriteLossData << 1000;
+    }
+    else
+    {
+        ssWriteLossData << 40;
+    }
+    ssWriteLossData << " ] }";
+
+    SAVE_LOSS_INFO("%s", ssWriteLossData.str().c_str());
+
+    return;
+}
+
+
 /*
 ServerAntServer 下发的紧急探测流格式
 post
