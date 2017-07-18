@@ -157,10 +157,21 @@ public class PntlHostContext {
 
     @Override
     public boolean equals(Object obj){
+        if (obj == this){
+            return true;
+        }
         if (obj instanceof PntlHostContext){
             PntlHostContext p = (PntlHostContext)obj;
             return this.getAgentIp().equals(p.getAgentIp());
         }
         return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode(){
+        int result = 17;
+        int c = agentIp.hashCode();
+
+        return  37*result + c;
     }
 }
