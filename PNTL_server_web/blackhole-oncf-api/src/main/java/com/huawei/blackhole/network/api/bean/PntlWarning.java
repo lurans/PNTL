@@ -155,9 +155,7 @@ public class PntlWarning implements Serializable{
             warn.setDstIp(r.getDstIp());
             warn.setLossRate("");
             warn.setDelay(r.getSendRoundDelay());
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            warn.setTime(dateFormat.format(r.getTimestamp()));
+            warn.setTime(r.getTimestamp());
 
             PntlWarning.getResult().add(warn);
         }

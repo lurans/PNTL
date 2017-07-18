@@ -8,7 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,7 +60,7 @@ public class DelayInfo implements Serializable {
         @JsonProperty("recv_round_delay")
         private String recvRoundDelay;
 
-        private Long timestamp;
+        private String timestamp;
         public String getSrcIp() {
             return srcIp;
         }
@@ -105,11 +109,11 @@ public class DelayInfo implements Serializable {
             this.recvRoundDelay = recvRoundDelay;
         }
 
-        public Long getTimestamp() {
+        public String getTimestamp() {
             return timestamp;
         }
 
-        public void setTimestamp(Long timestamp) {
+        public void setTimestamp(String timestamp) {
             this.timestamp = timestamp;
         }
     }
@@ -117,10 +121,10 @@ public class DelayInfo implements Serializable {
     public static void saveInfo(DelayInfoAgent.Flow flow){
         String srcIp = flow.getSip();
         String dstIp = flow.getDip();
-        Long t1 = Long.valueOf(flow.getTime().getT1());
-        Long t2 = Long.valueOf(flow.getTime().getT2());
-        Long t3 = Long.valueOf(flow.getTime().getT3());//对端接收到发送时间
-        Long t4 = Long.valueOf(flow.getTime().getT4());//本端发送到接收时间
+        Long t1 = Long.valueOf(flow.getTimes().getT1());
+        Long t2 = Long.valueOf(flow.getTimes().getT2());
+        Long t3 = Long.valueOf(flow.getTimes().getT3());//对端接收到发送时间
+        Long t4 = Long.valueOf(flow.getTimes().getT4());//本端发送到接收时间
         boolean hasData = false;
 
         if (t4 < DelayInfo.getDelayThreshold()){
@@ -134,7 +138,7 @@ public class DelayInfo implements Serializable {
         newData.setRecvDelay(String.valueOf(t3));
         newData.setSendRoundDelay(String.valueOf(t4));
         newData.setRecvRoundDelay("0");
-        newData.setTimestamp(System.currentTimeMillis()/1000);
+        newData.setTimestamp(flow.getTime());
 
         PntlWarning.saveWarnToWarningList(newData);
 
@@ -158,13 +162,19 @@ public class DelayInfo implements Serializable {
             return;
         }
 
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Iterator<DelayInfoResult> it = resultList.iterator();
         while (it.hasNext()){
             DelayInfoResult delayInfo = it.next();
-            Long intervalTime = System.currentTimeMillis()/1000 - delayInfo.getTimestamp();
-            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME_NEWEST){
-                LOG.info("Remove warning:" + delayInfo.getSrcIp() +" -> " + delayInfo.getDstIp());
-                it.remove();
+            try {
+                Date dt = df.parse(delayInfo.getTimestamp());
+                Long intervalTime = System.currentTimeMillis() / 1000 - dt.getTime()/1000;
+                if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME_NEWEST) {
+                    LOG.info("Remove warning:" + delayInfo.getSrcIp() + " -> " + delayInfo.getDstIp());
+                    it.remove();
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
         }
     }

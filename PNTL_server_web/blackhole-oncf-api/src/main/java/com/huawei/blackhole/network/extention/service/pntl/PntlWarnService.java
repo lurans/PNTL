@@ -81,10 +81,10 @@ public class PntlWarnService {
     }
 
     private boolean needTracerouteDelay(DelayInfoAgent.Flow flow){
-        Long t1 = Long.valueOf(flow.getTime().getT1());
-        Long t2 = Long.valueOf(flow.getTime().getT2());
-        Long t3 = Long.valueOf(flow.getTime().getT3());
-        Long t4 = Long.valueOf(flow.getTime().getT4());
+        Long t1 = Long.valueOf(flow.getTimes().getT1());
+        Long t2 = Long.valueOf(flow.getTimes().getT2());
+        Long t3 = Long.valueOf(flow.getTimes().getT3());
+        Long t4 = Long.valueOf(flow.getTimes().getT4());
 
         if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0){
             return true;
