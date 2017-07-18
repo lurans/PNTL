@@ -963,8 +963,3 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
     }
     return AGENT_OK;
 }
-
-void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry)
-{
-}
-
