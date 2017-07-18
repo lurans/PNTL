@@ -56,10 +56,9 @@ typedef struct tagServerAntAgentProtocolUDP
 class ServerAntAgentCfg_C
 {
 private:
-    /* ServerAnt地址信息,管理通道 */
+	/* ServerAnt地址信息,管理通道 */
     UINT32 uiServerIP;                //  ServerAntServer的IP地址, Agent向Server发起查询会话时使用.
     UINT32 uiServerDestPort;          //  ServerAntServer的端口地址, Agent向Server发起查询会话时使用.
-
     CollectorProtocolType_E eCollectorProtocol; // 与Collector通讯协议类型, 见CollectorProtocolType_E.
     KafkaConnectInfo_S stCollectorKafkaInfo; // 当使用Kafka建立连接时需要的信息
 
@@ -88,6 +87,7 @@ private:
     sal_mutex_t AgentCfgLock;               // 互斥锁保护
 
 public:
+	
     ServerAntAgentCfg_C();                  // 类构造函数, 填充默认值.
     ~ServerAntAgentCfg_C();                 // 类析构函数, 释放必要资源.
 
@@ -151,7 +151,7 @@ public:
     {
         if (MIN_REPORT_PERIOD > uiNewPeriod || MAX_REPORT_PERIOD < uiNewPeriod || uiNewPeriod < GetDetectPeriod())
         {
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
         uiAgentReportPeriod = uiNewPeriod;
         return AGENT_OK;
@@ -175,7 +175,7 @@ public:
     {
         if (MIN_LOSS_TIMEOUT > uiNewPeriod || MAX_LOSS_TIMEOUT < uiNewPeriod)
         {
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
         uiAgentDetectTimeout = uiNewPeriod;
         return AGENT_OK;
@@ -220,7 +220,7 @@ public:
     {
         if (MIN_PORT_COUNT > newPortCount || MAX_PORT_COUNT < newPortCount)
         {
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
         uiPortCount = newPortCount;
         return AGENT_OK;
@@ -234,7 +234,7 @@ public:
     {
         if (MIN_DSCP > newDscp || MAX_DSCP < newDscp)
         {
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
         uiDscp = newDscp;
         return AGENT_OK;
@@ -247,9 +247,19 @@ public:
 
     INT32 SetBigPkgRate(UINT32 newRate)
     {
-        if (MIN_BIG_PACKAGE_RATE > newRate || MAX_BIG_PACKAGE_RATE < newRate)
+        if (MIN_BIG_PACKAGE_RATE == newRate)
         {
-            return AGENT_E_ERROR;
+            SEND_BIG_PKG = 0;
+            CLEAR_BIG_PKG = 1;
+        }
+        else if (MAX_BIG_PACKAGE_RATE == newRate)
+        {
+            SEND_BIG_PKG = 1;
+            CLEAR_BIG_PKG = 0;
+        }
+        else
+        {
+            return AGENT_E_PARA;
         }
         uiBigPkgRate = newRate;
         return AGENT_OK;

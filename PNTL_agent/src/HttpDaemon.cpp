@@ -246,9 +246,7 @@ INT32 HttpDaemonHandlerCallback (void *cls,
             {
                 HTTP_DAEMON_ERROR("MHD post process failed. Post Buffer Size[%u], Get data size[%u]", POSTBUFFERSIZE, *upload_data_size);
             }
-
             *upload_data_size = 0;
-
             return MHD_YES;
         }
         // connection->state 为 MHD_CONNECTION_FOOTERS_RECEIVED 时调用, upload_data中无数据, 通知handler发送响应数据.
@@ -315,7 +313,6 @@ HttpDaemon_C::HttpDaemon_C()
 HttpDaemon_C::~HttpDaemon_C()
 {
     HTTP_DAEMON_INFO("Destroy an old Http Daemon.");
-
 
     if (pstDaemon) // 停止http daemon
         MHD_stop_daemon (pstDaemon);
@@ -449,13 +446,13 @@ INT32 HttpDaemon_C::ProcessPostIterate(const char * pcKey, const char * pcData, 
 
 string HttpDaemon_C::loadFile(string path)
 {
-    HTTP_DAEMON_ERROR("Read file at [%s]", path.c_str());
+    HTTP_DAEMON_INFO("Read file at [%s]", path.c_str());
     string content = "";
     ifstream in;
     in.open(path.c_str(), ios::in);
     if(in.fail())
     {
-        return NULL;
+        return content;
     }
     string line = "";
     while (getline(in, line))

@@ -6,7 +6,6 @@
 
 #include "ThreadClass.h"
 #include "DetectWorker.h"
-#include "KafkaClient.h"    // 提供kafka客户端类
 #include "ServerAntAgentCfg.h"
 
 
@@ -225,6 +224,8 @@ public:
     (ServerFlowKey_S stServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
 
     INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
+    INT32 preSendBigPkg(ServerAntAgentCfg_C* config);
+    INT32 clearBigPkgConf();
 };
 
 #endif

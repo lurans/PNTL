@@ -15,7 +15,18 @@ define([], function () {
             return promise;
         };
         this.postVariableConfig = function(data){
-            var uri = rest_prefix + "/chkflow/pntlConf";
+            var uri = rest_prefix + "/chkflow/pntlVariableConf";
+            var promise = camel.post({
+                "url": {
+                    "s": uri
+                },
+                "params":data,
+                "timeout":60000
+            });
+            return promise;
+        };
+        this.postAkSk = function(data){
+            var uri = rest_prefix + "/chkflow/pntlAkSkConf";
             var promise = camel.post({
                 "url": {
                     "s": uri

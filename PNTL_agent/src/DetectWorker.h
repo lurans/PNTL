@@ -55,6 +55,7 @@ typedef struct tagFlowKey
     UINT32    uiSrcPort;          // 探测源端口号. 添加会话时根据协议类型决定是否与DetectWorker属性进行比较.
     UINT32    uiDestPort;         // 探测目的端口号.添加会话时根据协议类型决定是否与DetectWorker属性进行比较.
     UINT32    uiDscp;             // 探测报文的DSCP.
+    UINT32    uiIsBigPkg;        // 是否大包
 
     ServerTopo_S    stServerTopo;          // ServerAnt定义的拓扑信息, 来源于Server, Agent不做处理, 但是作为key的一部分.
 

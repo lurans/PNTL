@@ -9,59 +9,11 @@ using namespace std;
 
 #include "Log.h"
 #include "AgentJsonAPI.h"
+#include "ServerAntAgentCfg.h"
 #include "MessagePlatformClient.h"
 
 // http 请求处理超时时间,单位s, 避免因为Server未响应数据导致挂死
 #define AGENT_REQUEST_TIMEOUT 5
-
-const CHAR* SERVER_CERT_PATH = "/opt/huawei/ServerAntAgent/server_cert.pem";
-/*
-ServerAntServer 下发的紧急探测流格式
-post
-key = ServerAntAgent
-data =
-{
-    "orgnizationSignature": "HuaweiDC3ServerAntsProbelistIssue",
-    "serverIP": "10.1.1.1",
-    "action": "post",
-    "content": "probe-list",
-
-    "flow": [
-        {
-        "urgent": "true:false",
-        "sip": "",
-        "dip": "",
-        "ip-protocol": "icmp:tcp:udp",
-        "sport-min": "",
-        "sport-max": "",
-        "sport-range": "1",
-        "dscp": "",
-        "topology-tag": {
-            level": "1:2:3:4",
-            svid": "",
-            dvid": "",
-        },
-
-        {
-        "urgent": "true:false",
-        "sip": "",
-        "dip": "",
-        "ip-protocol": "icmp:tcp:udp",
-        "sport-min": "",
-        "sport-max": "",
-        "sport-range": "1",
-        "dscp": "",
-        "topology-tag": {
-            level": "1:2:3:4",
-            svid": "",
-            dvid": "",
-        },
-        ]
-    },
-}
-理论上支持多个flow, 但是两个flow时data长度超过512byte, 会被http daemon截断,导致json parser失败.
-*/
-
 
 size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssResponce)
 {
@@ -89,6 +41,12 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
     return size*nmemb;
 }
 
+const CHAR* SERVER_CERT_PATH = "/opt/huawei/ServerAntAgent/server_cert.pem";
+const CHAR* AGENT_CERT_PATH = "/opt/huawei/ServerAntAgent/server.pem";
+const CHAR* AGENT_KEY_PATH = "/opt/huawei/ServerAntAgent/server.key";
+const CHAR* PEM_KEY_TYPE = "pem";
+const CHAR* ACCEPT_TYPE = "Accept:application/json";
+const CHAR* CONTENT_TYPE = "Content-Type:application/json";
 
 // 通过http post操作提交数据
 INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstream *pssResponceData)
@@ -106,8 +64,6 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
     curl = curl_easy_init();
     if (curl)
     {
-        // MSG_CLIENT_INFO("URL [%s]", pssUrl->str().c_str());
-        // MSG_CLIENT_INFO("PostData [%s]", pssPostData->str().c_str());
 
         // 开始配置curl句柄.
         // 可选打印详细信息, 帮助定位.
@@ -126,20 +82,20 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         }
 
 
-        headers = curl_slist_append(headers, "Accept:application/json");
-        headers = curl_slist_append(headers, "Content-Type:application/json");
+        headers = curl_slist_append(headers, ACCEPT_TYPE);
+        headers = curl_slist_append(headers, CONTENT_TYPE);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
+		// 设置服务端证书，用户认证服务端
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
         curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH);
 
-        curl_easy_setopt(curl,CURLOPT_SSLCERT,"/home/wangjian/server.pem");
-        curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE,"PEM");
-        curl_easy_setopt(curl,CURLOPT_SSLKEY,"/home/wangjian/server.key");
-        curl_easy_setopt(curl,CURLOPT_SSLKEYTYPE,"PEM");
-
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		// 设置客户端证书和私钥
+        curl_easy_setopt(curl,CURLOPT_SSLCERT,AGENT_CERT_PATH);
+        curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE, PEM_KEY_TYPE);
+        curl_easy_setopt(curl,CURLOPT_SSLKEY,AGENT_KEY_PATH);
+        curl_easy_setopt(curl,CURLOPT_SSLKEYTYPE, PEM_KEY_TYPE);
 
         // 设定超时时间, 避免因为SERVER无响应而挂死.
         res = curl_easy_setopt(curl, CURLOPT_TIMEOUT, AGENT_REQUEST_TIMEOUT);
@@ -230,7 +186,6 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
 
 // POST 提交的key必须为ServerAntAgentName, 否则会返回错误.
 #define ServerAntServerName          "ServerAntsServer"
-//#define ServerAntServerName          "name"
 
 // 向ServerAnrServer请求新的probe列表
 INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
@@ -257,22 +212,16 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     ssUrl.clear();
     ssUrl << "https://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << "/rest/chkflow/pingList";
 
-    //MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
-
-
     // 生成post数据
     ssPostData.clear();
     ssPostData.str("");
-    //ssPostData << ServerAntServerName << "=";
 
-    iRet = CreatProbeListRequestPostData(pcFlowManager->pcAgentCfg, &ssPostData);
+    iRet = CreateProbeListRequestPostData(pcFlowManager->pcAgentCfg, &ssPostData);
     if (iRet)
     {
         MSG_CLIENT_ERROR("Creat Probe-List Request Post Data failed[%d]", iRet);
         return iRet;
     }
-
-    //MSG_CLIENT_INFO("PostData [%s]", ssPostData.str().c_str());
 
     ssResponceData.clear();
     ssResponceData.str("");
@@ -288,8 +237,6 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     pcJsonData = (char *)strResponceData.c_str();
 
     // 处理response数据
-    //MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
-
     iRet = ProcessNormalFlowFromServer( pcJsonData, pcFlowManager);
     if (iRet)
     {
@@ -297,19 +244,16 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
         return iRet;
     }
     return iRet;
-
 }
 
 
 // 向ServerAnrServer请求新的probe列表
-INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrReportData, string strUrl)
+INT32 ReportDataToServer(stringstream * pstrReportData, string strUrl)
 {
     INT32 iRet = AGENT_OK;
 
     // 用于提交的URL地址
     stringstream ssUrl;
-    // 保存需要post的数据,json格式字符串, 由json模块生成.
-    stringstream ssPostData;
     // 保存post的response(查询结果),json格式字符串, 后续交给json模块处理.
     stringstream ssResponceData;
     const char * pcJsonData = NULL;
@@ -318,8 +262,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
 
-
-    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+    iRet = ServerAntAgentCfg_C().GetServerAddress(&uiServerIP, &uiServerPort);
     if (iRet)
     {
         MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
@@ -327,14 +270,6 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
     }
     ssUrl.clear();
     ssUrl << "https://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << strUrl;
-
-    //MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
-
-
-    //ssPostData << ServerAntServerName << "=";
-
-
-    //MSG_CLIENT_INFO("PostData [%s]", ssPostData.str().c_str());
 
     ssResponceData.clear();
     ssResponceData.str("");
@@ -352,9 +287,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C * pcAgentCfg,stringstream * pstrRep
     // 处理response数据
     MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
 
-
     return iRet;
-
 }
 
 INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)

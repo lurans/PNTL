@@ -15,18 +15,20 @@ extern INT32 ProcessUrgentFlowFromServer(const CHAR * pcJsonData, FlowManager_C*
 extern INT32 ProcessNormalFlowFromServer(CHAR * pcJsonData, FlowManager_C* pcFlowManager);
 
 // 生成json格式的字符串, 用于发起向Server请求Probe-list时提交的post data.
-extern INT32 CreatProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData);
+extern INT32 CreateProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData);
 
 // 生成json格式的字符串, 用于向Analyzer上报延时信息.
-extern INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay);
+extern INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay);
 
 // 生成json格式的字符串, 用于向Analyzer上报丢包信息.
-extern INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData);
+extern INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData);
 
 extern INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
 
 extern INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData);
 
 extern INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
+
+extern void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry);
 
 #endif

@@ -24,10 +24,15 @@
                     <div class="tab_title4">{{i18n.follow_term_title4}}</div>
                 </li>
                 <!--在线配置-->
-                <li ng-click="go('blackhole.manager.configFlow')"
+                <li ng-click="go('blackhole.manager.configFlow.deployConfig')"
                     ng-class="{leftCurrent:$state.includes('blackhole.manager.configFlow')
                      || $stateParams.state === 'blackhole.manager.configFlow'}" class="default_tab">
                     <div class="tab_title5">{{i18n.follow_term_sc}}</div>
+                </li>
+                <li ng-click="go('blackhole.manager.warnFlow')"
+                    ng-class="{leftCurrent:$state.includes('blackhole.manager.warnFlow')
+                     || $stateParams.state === 'blackhole.manager.warnFlow'}" class="default_tab">
+                    <div class="tab_title6">{{i18n.follow_term_jg}}</div>
                 </li>
             </ul>
         </div>

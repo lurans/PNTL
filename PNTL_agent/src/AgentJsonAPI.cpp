@@ -76,16 +76,11 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 
         // 解析ServerAntCollector数据.
         ptDataTmp.clear();
-        ptDataTmp = ptDataRoot.get_child("ServerAntCollector");
-
-        strTemp = ptDataTmp.get<string>("Protocol");
-
 
         // 解析ServerAntAgent数据.
         ptDataTmp.clear();
         ptDataTmp = ptDataRoot.get_child("ServerAntAgent");
         strTemp = ptDataTmp.get<string>("MgntIP");
-
         uiIp = sal_inet_aton(strTemp.c_str());
         iRet = pcCfg->SetMgntIP(uiIp);
         if (iRet)
@@ -182,7 +177,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 #define NormalFlowRequestAction       "RequestServerProbeList"
 
 // 生成json格式的字符串, 用于发起向Server请求Probe-list时提交的post data.
-INT32 CreatProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData)
+INT32 CreateProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * pssPostData)
 {
     INT32 iRet = AGENT_OK;
 
@@ -211,7 +206,7 @@ INT32 CreatProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * 
     }
     catch (exception const & e)
     {
-        JSON_PARSER_ERROR("Caught exception [%s] when CreatProbeListRequestPostData.", e.what());
+        JSON_PARSER_ERROR("Caught exception [%s] when CreateProbeListRequestPostData.", e.what());
         return AGENT_E_ERROR;
     }
 
@@ -255,23 +250,12 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 
 /*
 {
-    "orgnizationSignature": "HuaweiDC3ServerAntsFull",
     "flow":
     {
 
         "sip": "",
         "dip": "",
         "sport": "",
-        "dport": ""
-        "ip-protocol": "icmp:udp",
-        "dscp": "",
-        "urgent-flag": "0:1",
-        "topology-tag":
-        {
-            "level": "",
-            "svid": "",
-            "dvid": ""
-        },
         "time":
         {
             "t1": "",
@@ -294,11 +278,12 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 #define LatencyReportSignature    "HuaweiDC3ServerAntsFull"
 
 // 生成json格式的字符串, 用于向Analyzer上报延时信息.
-INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay)
+INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay)
 {
     INT64 max = pstAgentFlowEntry->stFlowDetectResult.lLatencyMax;
     if (0 != maxDelay && maxDelay > max)
     {
+        JSON_PARSER_INFO("Max delay is [%d], less than threshold[%d], does not report.", max, maxDelay);
         return AGENT_FILTER_DELAY;
     }
 
@@ -307,6 +292,7 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
     {
         ptree ptDataRoot, ptDataFlowArray, ptDataFlowEntry;
         ptree ptDataFlowEntryTemp;
+        char            acCurTime[32]   = {0};                      // 缓存时间戳
 
         stringstream ssJsonData;
 
@@ -318,45 +304,12 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
 
         // 生成一个Flow Entry的数据
         {
+            GetPrintTime(acCurTime);
             ptDataFlowEntry.clear();
             ptDataFlowEntry.put("sip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP));
             ptDataFlowEntry.put("dip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP));
             ptDataFlowEntry.put("sport", pstAgentFlowEntry->stFlowKey.uiSrcPort);
-            ptDataFlowEntry.put("dport", pstAgentFlowEntry->stFlowKey.uiDestPort);
-            switch (pstAgentFlowEntry->stFlowKey.eProtocol)
-            {
-            case AGENT_DETECT_PROTOCOL_UDP:
-                ptDataFlowEntry.put("ip-protocol","udp");
-                break;
-            case AGENT_DETECT_PROTOCOL_TCP:
-                ptDataFlowEntry.put("ip-protocol","tcp");
-                break;
-            case AGENT_DETECT_PROTOCOL_ICMP:
-                ptDataFlowEntry.put("ip-protocol","icmp");
-                break;
-            default:
-                ptDataFlowEntry.put("ip-protocol","null");
-                break;
-            }
-            ptDataFlowEntry.put("dscp",pstAgentFlowEntry->stFlowKey.uiDscp);
-            ptDataFlowEntry.put("urgent-flag",pstAgentFlowEntry->stFlowKey.uiUrgentFlow);
-
-            // 处理topology-tag信息
-            ptDataFlowEntryTemp.clear();
-            ptDataFlowEntryTemp.put("level", pstAgentFlowEntry->stFlowKey.stServerTopo.uiLevel);
-#if 0
-            ssJsonData.str("");
-            ssJsonData <<"0x" << hex << setw(8) << setfill('0') << pstAgentFlowEntry->stFlowKey.stServerTopo.uiSvid;
-            ptDataFlowEntryTemp.put("svid", ssJsonData.str().c_str());
-            ssJsonData.str("");
-            ssJsonData <<"0x" << hex << setw(8) << setfill('0') << pstAgentFlowEntry->stFlowKey.stServerTopo.uiDvid;
-            ptDataFlowEntryTemp.put("dvid", ssJsonData.str().c_str());
-#else
-            ptDataFlowEntryTemp.put("sid", pstAgentFlowEntry->stFlowKey.stServerTopo.uiSvid);
-            ptDataFlowEntryTemp.put("did", pstAgentFlowEntry->stFlowKey.stServerTopo.uiDvid);
-#endif
-
-            ptDataFlowEntry.put_child("topology-tag", ptDataFlowEntryTemp);
+            ptDataFlowEntry.put("time", acCurTime);
 
             // 处理time信息
             ptDataFlowEntryTemp.clear();
@@ -364,7 +317,7 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntryTemp.put("t2", pstAgentFlowEntry->stFlowDetectResult.lT2);
             ptDataFlowEntryTemp.put("t3", pstAgentFlowEntry->stFlowDetectResult.lT3);
             ptDataFlowEntryTemp.put("t4", pstAgentFlowEntry->stFlowDetectResult.lT4);
-            ptDataFlowEntry.put_child("time", ptDataFlowEntryTemp);
+            ptDataFlowEntry.put_child("times", ptDataFlowEntryTemp);
 
             // 处理statistics信息
             ptDataFlowEntryTemp.clear();
@@ -377,13 +330,20 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
             ptDataFlowEntryTemp.put("max", max);
             ptDataFlowEntryTemp.put("drop-notices", pstAgentFlowEntry->stFlowDetectResult.lDropNotesCounter);
             ptDataFlowEntry.put_child("statistics", ptDataFlowEntryTemp);
+            if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
+            {
+                ptDataFlowEntry.put("package-size", 1000);
+            }
+            else
+            {
+                ptDataFlowEntry.put("package-size", sizeof(PacketInfo_S));
+            }
 
             // 加入json数组, 暂不使用数组, Collector不支持.
             ptDataFlowArray.push_back(make_pair("", ptDataFlowEntry));
         }
 
         ptDataRoot.put_child("flow", ptDataFlowArray);
-        //ptDataRoot.put_child("flow", ptDataFlowEntry);
 
         ssJsonData.clear();
         ssJsonData.str("");
@@ -392,7 +352,7 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
     }
     catch (exception const & e)
     {
-        JSON_PARSER_ERROR("Caught exception [%s] when CreatLatencyReportData.", e.what());
+        JSON_PARSER_ERROR("Caught exception [%s] when CreateLatencyReportData.", e.what());
         return AGENT_E_ERROR;
     }
 
@@ -425,18 +385,32 @@ INT32 CreatLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringst
         }
     ]
 }
+
+{
+    "flow": [
+        {
+            "sip": "10.78.221.45",
+            "dip": "10.78.221.46",
+            "sport": "5002",
+            "packet-sent": "5",
+            "packet-drops": "5"
+        }
+    ]
+}
+
+
 */
 #define DropReportSignature    "HuaweiDC3ServerAntsDropNotice"
 
 // 生成json格式的字符串, 用于向Analyzer上报丢包信息.
-INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData)
+INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData)
 {
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
+    char            acCurTime[32]   = {0};                      // 缓存时间戳
+
     try
     {
         ptree ptDataRoot, ptDataFlowArray, ptDataFlowEntry;
-        ptree ptDataFlowEntryTemp;
-
         stringstream ssJsonData;
 
         ptDataRoot.clear();
@@ -448,58 +422,30 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
         // 生成一个Flow Entry的数据
         {
             ptDataFlowEntry.clear();
-
+            GetPrintTime(acCurTime);
             ptDataFlowEntry.put("sip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP));
             ptDataFlowEntry.put("dip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP));
             ptDataFlowEntry.put("sport", pstAgentFlowEntry->stFlowKey.uiSrcPort);
-            ptDataFlowEntry.put("dport", pstAgentFlowEntry->stFlowKey.uiDestPort);
-            switch (pstAgentFlowEntry->stFlowKey.eProtocol)
+          
+            ptDataFlowEntry.put("time", acCurTime);
+            ptDataFlowEntry.put("packet-sent", pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter);
+            ptDataFlowEntry.put("packet-drops", pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter);
+
+            if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
             {
-            case AGENT_DETECT_PROTOCOL_UDP:
-                ptDataFlowEntry.put("ip-protocol","udp");
-                break;
-            case AGENT_DETECT_PROTOCOL_TCP:
-                ptDataFlowEntry.put("ip-protocol","tcp");
-                break;
-            case AGENT_DETECT_PROTOCOL_ICMP:
-                ptDataFlowEntry.put("ip-protocol","icmp");
-                break;
-            default:
-                ptDataFlowEntry.put("ip-protocol","null");
-                break;
+                ptDataFlowEntry.put("package-size", 1000);
             }
-            ptDataFlowEntry.put("dscp",pstAgentFlowEntry->stFlowKey.uiDscp);
-            ptDataFlowEntry.put("urgent-flag",pstAgentFlowEntry->stFlowKey.uiUrgentFlow);
-
-            // 处理topology-tag信息
-            ptDataFlowEntryTemp.clear();
-            ptDataFlowEntryTemp.put("level", pstAgentFlowEntry->stFlowKey.stServerTopo.uiLevel);
-#if 0
-            ssJsonData.str("");
-            ssJsonData <<"0x" << hex << setw(8) << setfill('0') << pstAgentFlowEntry->stFlowKey.stServerTopo.uiSvid;
-            ptDataFlowEntryTemp.put("svid", ssJsonData.str().c_str());
-            ssJsonData.str("");
-            ssJsonData <<"0x" << hex << setw(8) << setfill('0') << pstAgentFlowEntry->stFlowKey.stServerTopo.uiDvid;
-            ptDataFlowEntryTemp.put("dvid", ssJsonData.str().c_str());
-#else
-            ptDataFlowEntryTemp.put("sid", pstAgentFlowEntry->stFlowKey.stServerTopo.uiSvid);
-            ptDataFlowEntryTemp.put("did", pstAgentFlowEntry->stFlowKey.stServerTopo.uiDvid);
-#endif
-            ptDataFlowEntry.put_child("topology-tag", ptDataFlowEntryTemp);
-
-            // 处理statistics信息
-            ptDataFlowEntryTemp.clear();
-            ptDataFlowEntryTemp.put("t", pstAgentFlowEntry->stFlowDetectResult.lT5);
-            ptDataFlowEntryTemp.put("packet-sent", pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter);
-            ptDataFlowEntryTemp.put("packet-drops", pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter);
-            ptDataFlowEntry.put_child("statistics", ptDataFlowEntryTemp);
+            else
+            {
+                ptDataFlowEntry.put("package-size", 40);
+            }
+            
 
             // 加入json数组
             ptDataFlowArray.push_back(make_pair("", ptDataFlowEntry));
         }
 
         ptDataRoot.put_child("flow", ptDataFlowArray);
-        //ptDataRoot.put_child("flow", ptDataFlowEntry);
 
         ssJsonData.clear();
         ssJsonData.str("");
@@ -513,6 +459,44 @@ INT32 CreatDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstrea
     }
 
     return AGENT_OK;
+}
+
+
+// 生成json格式的字符串, 用于向Analyzer上报丢包信息.
+void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry)
+{
+    char   acCurTime[32]   = {0};                      // 缓存时间戳
+    stringstream ssWriteLossData;
+
+    ssWriteLossData.clear();
+    ssWriteLossData.str("");
+    ssWriteLossData << "{ flow:[ ";
+    ssWriteLossData << " sip:";
+    ssWriteLossData << sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP);
+    ssWriteLossData << " dip:";
+    ssWriteLossData << sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP);
+    ssWriteLossData << " sport:";
+    ssWriteLossData << pstAgentFlowEntry->stFlowKey.uiSrcPort;
+    ssWriteLossData << " time:";
+    ssWriteLossData << acCurTime;
+    ssWriteLossData << " packet-sent:";
+    ssWriteLossData << pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter;
+    ssWriteLossData << " packet-drops:";
+    ssWriteLossData << pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter;
+    ssWriteLossData << " packet-size:";
+    if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
+    {
+        ssWriteLossData << 1000;
+    }
+    else
+    {
+        ssWriteLossData << 40;
+    }
+    ssWriteLossData << " ] }";
+
+    SAVE_LOSS_INFO("%s", ssWriteLossData.str().c_str());
+
+    return;
 }
 
 
@@ -611,21 +595,21 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
         pstNewServerFlowKey->uiSrcPortRange  = ptFlowEntry.get<UINT32>("sport-range");
 
         ptFlowEntryTopo = ptFlowEntry.get_child("topology-tag");
-#if 0
-        //pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("svid");
-        uiDataTemp = 0;
-        strTemp = ptFlowEntryTopo.get<string>("svid");
-        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
-        pstNewServerFlowKey->stServerTopo.uiSvid   = uiDataTemp;
-        //pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dvid");
-        uiDataTemp = 0;
-        strTemp = ptFlowEntryTopo.get<string>("dvid");
-        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
-        pstNewServerFlowKey->stServerTopo.uiDvid   = uiDataTemp;
-#else
-        pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("src-id");
-        pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dst-id");
-#endif
+        #if 0
+            //pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("svid");
+            uiDataTemp = 0;
+            strTemp = ptFlowEntryTopo.get<string>("svid");
+            sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
+            pstNewServerFlowKey->stServerTopo.uiSvid   = uiDataTemp;
+            //pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dvid");
+            uiDataTemp = 0;
+            strTemp = ptFlowEntryTopo.get<string>("dvid");
+            sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
+            pstNewServerFlowKey->stServerTopo.uiDvid   = uiDataTemp;
+        #else
+            pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("src-id");
+            pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dst-id");
+        #endif
 
         pstNewServerFlowKey->stServerTopo.uiLevel  = ptFlowEntryTopo.get<UINT32>("level");
     }
@@ -863,21 +847,21 @@ INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 
     // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot;
-    UINT32 interval;
+	UINT32 interval;
     try
-    {
+	{
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
         // 防止没有设值，传入空值
         interval = ptDataRoot.get<UINT32>("probe_interval");
     }
-    catch (exception const & e)
-    {
+	catch (exception const & e)
+	{
         JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
         return AGENT_E_ERROR;
-    }
-    INT32 iRet = pcFlowManager -> FlowManagerAction((INT32)interval);
-    return iRet;
+	}
+	INT32 iRet = pcFlowManager -> FlowManagerAction((INT32)interval);
+	return iRet;
 }
 
 /*
@@ -902,74 +886,80 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 
     // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot;
-    UINT32 interval;
-    INT32 iRet = AGENT_OK;
+	UINT32 interval;
+	INT32 iRet = AGENT_OK;
     try
-    {
+	{
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
         interval = ptDataRoot.get<UINT32>("probe_period");
-        iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
-            return AGENT_E_ERROR;
-        }
+		iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
+		if (iRet)
+		{
+		    JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
+		    return AGENT_E_PARA;
+		}
+		JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
 
         interval = ptDataRoot.get<UINT32>("port_count");
         iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
         if (iRet)
         {
             JSON_PARSER_ERROR("SetPortCount[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PORT_COUNT, MAX_PORT_COUNT);
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
+        JSON_PARSER_INFO("Current port count is %u", pcFlowManager->pcAgentCfg->GetPortCount());
 
         interval = ptDataRoot.get<UINT32>("report_period");
         iRet = pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
         if (iRet)
         {
             JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u] and >= than detectPeriod[%u]", interval, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD, pcFlowManager->pcAgentCfg->GetDetectPeriod());
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
+        JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
         interval = ptDataRoot.get<UINT32>("delay_threshold");
         iRet = pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
         if (iRet)
         {
             JSON_PARSER_ERROR("SetMaxDelay[%u] failed[%d]");
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
+        JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
 
         interval = ptDataRoot.get<UINT32>("dscp");
         iRet = pcFlowManager->pcAgentCfg->SetDscp(interval);
         if (iRet)
         {
             JSON_PARSER_ERROR("SetDscp[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_DSCP, MAX_DSCP);
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
+        JSON_PARSER_INFO("Current dscp is %u", pcFlowManager->pcAgentCfg->getDscp());
 
         interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
         iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
         if (iRet)
         {
             JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
-            return AGENT_E_ERROR;
+            return AGENT_E_PARA;
         }
+        JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 
         interval = ptDataRoot.get<UINT32>("package_rate");
         iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
-            return AGENT_E_ERROR;
+            JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], range should be %u or %u.", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
+            return AGENT_E_PARA;
         }
+        JSON_PARSER_INFO("Current package rate is %u", pcFlowManager->pcAgentCfg->GetBigPkgRate());
     }
     catch (exception const & e)
     {
         JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
+		
         return AGENT_E_ERROR;
     }
     return AGENT_OK;
 }
-
-
