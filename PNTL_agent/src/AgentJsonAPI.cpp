@@ -304,6 +304,7 @@ INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, strings
 
         // 生成一个Flow Entry的数据
         {
+            GetPrintTime(acCurTime);
             ptDataFlowEntry.clear();
             ptDataFlowEntry.put("sip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP));
             ptDataFlowEntry.put("dip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP));
@@ -316,7 +317,7 @@ INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, strings
             ptDataFlowEntryTemp.put("t2", pstAgentFlowEntry->stFlowDetectResult.lT2);
             ptDataFlowEntryTemp.put("t3", pstAgentFlowEntry->stFlowDetectResult.lT3);
             ptDataFlowEntryTemp.put("t4", pstAgentFlowEntry->stFlowDetectResult.lT4);
-            ptDataFlowEntry.put_child("time", ptDataFlowEntryTemp);
+            ptDataFlowEntry.put_child("times", ptDataFlowEntryTemp);
 
             // 处理statistics信息
             ptDataFlowEntryTemp.clear();
@@ -919,9 +920,13 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
     catch (exception const & e)
     {
         JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
+		
         return AGENT_E_ERROR;
     }
     return AGENT_OK;
 }
 
+void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry)
+{
+}
 
