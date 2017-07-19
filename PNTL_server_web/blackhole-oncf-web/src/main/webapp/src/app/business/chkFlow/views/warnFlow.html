@@ -26,7 +26,7 @@
                            time-format="start_time.timeFormat">
             </tiny-datetime>
         </div>
-        <div style="float:left;margin-right:88px;">
+        <div style="float:left;margin-right:70px;">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_src_ip}}
             </div>
@@ -35,6 +35,15 @@
                      value="src_ip.value"
                      tooltip = "src_ip.tooltip"
             > </tiny-ip>
+        </div>
+        <div style="float:left;">
+            <div class="span1 input_label1" style="width: 40px;">
+                {{i18n.chkFlow_term_Type}}
+            </div>
+            <tiny-select id="type.id"
+                         values="type.values"
+                         width="135"
+                         ></tiny-select>
         </div>
 </div><br>
     <div class="row-fluid">
@@ -77,6 +86,10 @@
 </div>
 <div class="dashboard_title"></div>
 <div style="width:1000px;margin-top: 20px">
-    <tiny-table id="model.id" data='model.data' columns='model.columns' width="model.width"
-                    total-records="model.totalRecords" columns-draggable="true" tips="true" ></tiny-table>
+    <tiny-table id="table.id"
+                data='table.data'
+                columns='table.columns'
+                total-records="table.totalRecords"
+                columns-draggable="true"
+                tips="true" ></tiny-table>
 </div>

@@ -6,7 +6,6 @@
 
 #include "ThreadClass.h"
 #include "DetectWorker.h"
-#include "KafkaClient.h"    // 提供kafka客户端类
 #include "ServerAntAgentCfg.h"
 
 
