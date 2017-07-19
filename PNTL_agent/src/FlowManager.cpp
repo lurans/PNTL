@@ -833,7 +833,7 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
     }
 
 
-    iRet = ReportDataToServer(&ssReportData, REPORT_LOSSPKT_URL);
+    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LOSSPKT_URL);
     if (iRet)
     {
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
@@ -889,7 +889,7 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
 
     SAVE_LATENCY_INFO("%s", ssReportData.str().c_str());
 
-    iRet = ReportDataToServer(&ssReportData, REPORT_LATENCY_URL);
+    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LATENCY_URL);
     if (iRet)
     {
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
