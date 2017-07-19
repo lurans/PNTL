@@ -73,7 +73,7 @@ INT32 GetLocalCfg(ServerAntAgentCfg_C * pcCfg)
     return AGENT_OK;
 }
 
-void RecoverLossPktData()
+void RecoverLossPktData(ServerAntAgentCfg_C *pcAgentCfg)
 {
 
     INT32  iRet = AGENT_OK;
@@ -99,7 +99,7 @@ void RecoverLossPktData()
 
         HTTP_DAEMON_INFO("RecoverLossPktData Read file content is:  [%s]", line.c_str());
 
-        iRet = ReportDataToServer(&ssReportData, REPORT_LOSSPKT_URL);
+        iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LOSSPKT_URL);
         if (AGENT_OK != iRet)
         {
                 break;

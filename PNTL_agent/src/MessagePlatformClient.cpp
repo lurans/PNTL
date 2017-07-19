@@ -248,7 +248,7 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
 
 
 // 向ServerAnrServer请求新的probe列表
-INT32 ReportDataToServer(stringstream * pstrReportData, string strUrl)
+INT32 ReportDataToServer(ServerAntAgentCfg_C *pcAgentCfg, stringstream * pstrReportData, string strUrl)
 {
     INT32 iRet = AGENT_OK;
 
@@ -262,7 +262,7 @@ INT32 ReportDataToServer(stringstream * pstrReportData, string strUrl)
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
 
-    iRet = ServerAntAgentCfg_C().GetServerAddress(&uiServerIP, &uiServerPort);
+    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
     if (iRet)
     {
         MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);

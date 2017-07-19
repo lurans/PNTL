@@ -7,4 +7,6 @@
 // 获取Agent本地配置信息
 extern INT32 GetLocalCfg(ServerAntAgentCfg_C * pcCfg);
 
+extern void RecoverLossPktData(ServerAntAgentCfg_C *pcAgentCfg);
+
 #endif
