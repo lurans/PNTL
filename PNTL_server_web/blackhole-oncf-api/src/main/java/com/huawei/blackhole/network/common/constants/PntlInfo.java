@@ -21,6 +21,7 @@ public class PntlInfo {
 
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String SERVER_ANTS_AGENT_ACTION = "ServerAntsAgentAction";
+    public static final String SERVER_ANTS_AGENT_IP = "ServerAntsAgentIp";
     public static final String SERVER_ANTS_AGENT_CONF = "ServerAntsAgentConf";
     public static final String X_FORM_URLENCODED = "application/x-www-form-urlencoded";
     public static final String AUTH = "Authorization";

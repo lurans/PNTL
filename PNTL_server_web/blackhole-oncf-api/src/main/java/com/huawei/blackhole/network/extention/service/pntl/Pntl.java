@@ -185,7 +185,7 @@ public class Pntl {
 
         String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
         List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_ACTION, ""));
+        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_IP, ""));
 
         return RestClientExt.post(url, null, formBody,  header);
     }
