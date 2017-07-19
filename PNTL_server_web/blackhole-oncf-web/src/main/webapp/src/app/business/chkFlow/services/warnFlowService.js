@@ -7,7 +7,7 @@ define([], function () {
         var rest_prefix = window.rest_prefix;
         this.getTextInfo = function(){
             var uri = rest_prefix + "/chkflow/warningList";
-            var promise = camel.post({
+            var promise = camel.get({
                 "url": {
                     "s": uri
                 },

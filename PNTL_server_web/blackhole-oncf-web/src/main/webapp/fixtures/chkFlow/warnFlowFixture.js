@@ -20,10 +20,10 @@ define(["can/util/fixture/fixture", "tiny-lib/underscore"], function (fixture, _
     }];
 
     fixture({
-        "POST /rest/chkflow/warningList":function(original, response) {
+        "GET /rest/chkflow/warningList":function(original, response) {
             response(200, "success", textData, {})
         },
-        "POST /rest/chkflow/warningListe":function(original, response) {
+        "POST /rest/chkflow/warningList":function(original, response) {
             response(200, "success", textData, {})
         },
     });
