@@ -78,6 +78,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "host is null");
             return result;
         }
+
+        //由于agent无法主动接收server信息，这里设置标记，用于返回给agent响应，通知agent来取pingList
+        CommonInfo.setGetPingList("1");
         for (PntlHostContext host : hostList){
             try {
                 RestResp resp = pntlRequest.notifyAgentToGetPingList(host.getAgentIp());

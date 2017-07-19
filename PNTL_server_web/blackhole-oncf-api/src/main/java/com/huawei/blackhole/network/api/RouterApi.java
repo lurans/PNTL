@@ -16,6 +16,7 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.core.service.*;
 import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
 import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
+import com.huawei.blackhole.network.extention.bean.pntl.CommonInfo;
 import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
 import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
@@ -567,5 +568,28 @@ public class RouterApi {
         } else {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
+    }
+
+    @Path("/pntlServerInfo")
+    @GET
+    public Response getPntlServerInfo(){
+        PntlServerInfo info = new PntlServerInfo();
+        Result<PntlConfig> result = pntlConfigService.getPntlConfig();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        info.setDelayThreshold(result.getModel().getDelayThreshold());
+        info.setDscp(result.getModel().getDscp());
+        info.setLossPkgTimeout(result.getModel().getLossPkgTimeout());
+        info.setPkgCount(result.getModel().getPkgCount());
+        info.setPortCount(result.getModel().getPortCount());
+        info.setProbePeriod(result.getModel().getProbePeriod());
+        info.setReportPeriod(result.getModel().getReportPeriod());
+        info.setPingListFlag(CommonInfo.getGetPingList());
+
+        //通知完agent之后，重新设置取pingList标记为0，避免agent一直取
+        CommonInfo.setGetPingList("0");
+
+        return ResponseUtil.succ(info);
     }
 }

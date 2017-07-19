@@ -6,6 +6,8 @@ public class CommonInfo {
 
     private static int reportPeriod;
 
+    private static String getPingList;
+
     public static int getReportPeriod() {
         return reportPeriod;
     }
@@ -18,7 +20,16 @@ public class CommonInfo {
         return repoUrl;
     }
 
-    public static void setRepoUrl(String repoUrl) {
+    public static String getGetPingList() {
+        return getPingList;
+    }
+
+    public static void setGetPingList(String getPingList) {
+        CommonInfo.getPingList = getPingList;
+    }
+
+    public static void setRepoUrl(String repoUrl)
+    {
         CommonInfo.repoUrl = repoUrl;
     }
 }
