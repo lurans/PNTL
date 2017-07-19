@@ -16,6 +16,10 @@ define(["language/chkFlow",
                     {
                         state : "blackhole.manager.configFlow.variableConfig",
                         text : i18n.chkFlow_term_variable_config
+                    },
+                    {
+                        state : "blackhole.manager.configFlow.upgradeConfig",
+                        text : i18n.chkFlow_term_upgrade_config
                     }
                 ];
 

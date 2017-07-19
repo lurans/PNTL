@@ -18,7 +18,7 @@
     }
 
     //the first is the defualt
-    var supportLanguage = ['en-us', 'zh-cn'];
+    var supportLanguage = ['zh-cn','en-us'];
 
     function getLanguage(key) {
         var result = getUrlParameter(key);

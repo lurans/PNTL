@@ -16,7 +16,7 @@ define(["language/chkFlow",
                     "disable":false,
                     "multi" : "true",
                     "method": "post",
-                    "fileType":".tar;.gz;.sh;.yml;.txt",
+                    "fileType":".tar.gz;.sh;.yml",
                     "action" : "/rest/chkflow/uploadFiles", //文件上传地址路径
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
@@ -52,7 +52,7 @@ define(["language/chkFlow",
                 };
                 var divTip = new tinyWidget.Tip({
                     content : "",
-                    element : ("#variableBtnId"),
+                    element : ("#akSkBtnId"),
                     position : "right",
                     width: 300,
                     id : "searchTip",
@@ -67,9 +67,10 @@ define(["language/chkFlow",
                 // };
                 $scope.akSkBtnOK = function () {
                     $scope.akSkBtn.disable = true;
-                    if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
+                    if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){
                         divTip.option("content",i18n.chkFlow_term_input_valid);
                         divTip.show(30000);
+                        $scope.akSkBtn.disable = false;
                         return;
                     }
                     var para = getParaFromInput();
