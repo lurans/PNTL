@@ -129,7 +129,7 @@ public class Pntl {
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
 
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
+        String url = Constants.HTTP_PREFIX + agentIp + ":" + PORT;
         ObjectMapper mapper = new ObjectMapper();
         ServerConf json = new ServerConf();
         json.setProbePeriod(config.getProbePeriod());
@@ -161,7 +161,7 @@ public class Pntl {
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
 
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
+        String url = Constants.HTTP_PREFIX + agentIp + ":" + PORT;
         ObjectMapper mapper = new ObjectMapper();
         String jsonInString = mapper.writeValueAsString(json);
 
@@ -183,7 +183,7 @@ public class Pntl {
         Map<String, String> header = new HashMap<>();
         header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
 
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
+        String url = Constants.HTTP_PREFIX + agentIp + ":" + PORT;
         List<NameValuePair> formBody = new ArrayList<NameValuePair>();
         formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_IP, ""));
 
