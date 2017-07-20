@@ -43,6 +43,7 @@ public class Pntl {
     private static final String FILETYPE_SCRIPT = "SCRIPT";
     private static final String FILETYPE_AGENT = "AGENT";
     private static final String PNTL_PATH = "/root";
+    private static final String FILE_RIRHT = "644";
 
     private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_SUSE);
@@ -232,10 +233,14 @@ public class Pntl {
              /*两种os，agent不同*/
             for (PntlHostContext host : pntlHostList) {
                 if (host.getOs() == null){
+                    host.setReason("os is null");
+                    host.setAgentStatus(PntlInfo.PNTL_AGENT_STATUS_FAIL);
                     continue;
                 }
                 String key = host.getOs().toUpperCase();
                 if (!key.equalsIgnoreCase(PntlInfo.OS_SUSE) && !key.equalsIgnoreCase(PntlInfo.OS_EULER)){
+                    host.setReason("os is not Suse or Euler");
+                    host.setAgentStatus(PntlInfo.PNTL_AGENT_STATUS_FAIL);
                     continue;
                 }
                 /*根据不同的文件，获取仓库地址*/
@@ -256,7 +261,7 @@ public class Pntl {
                 }
 
                 body.get(key).setPath(PNTL_PATH);
-                body.get(key).setMode("644");
+                body.get(key).setMode(FILE_RIRHT);
                 if (host.getAgentSN() != null) {
                     agentSnList.get(key).add(host.getAgentSN());
                 }
@@ -274,7 +279,7 @@ public class Pntl {
                         setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_SUCC, "send files to agent success");
                     }
                 } catch (ClientException | JSONException e){
-                    LOG.error("Send script to suse os agent failed");
+                    LOG.error("Send script to agent failed");
                     result.addError("", e.getMessage());
                 }
             }
