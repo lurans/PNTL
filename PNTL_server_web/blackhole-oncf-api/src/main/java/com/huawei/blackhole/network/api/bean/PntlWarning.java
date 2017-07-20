@@ -183,15 +183,17 @@ public class PntlWarning implements Serializable{
             return false;
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
-        try {
-            Long d1 = df.parse(param.getStarTime()).getTime();
-            Long d2 = df.parse(param.getEndTime()).getTime();
-            if (d1 > d2){
+        if(!StringUtils.isEmpty(param.getStarTime())&&!StringUtils.isEmpty(param.getStarTime())){
+            try {
+                Long d1 = df.parse(param.getStarTime()).getTime();
+                Long d2 = df.parse(param.getEndTime()).getTime();
+                if (d1 > d2){
+                    return false;
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
                 return false;
             }
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return false;
         }
 
         return true;
