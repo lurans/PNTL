@@ -16,6 +16,7 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.core.service.*;
 import com.huawei.blackhole.network.core.thread.ChkflowServiceStartup;
 import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
+import com.huawei.blackhole.network.extention.bean.pntl.CommonInfo;
 import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 import com.huawei.blackhole.network.extention.service.conf.OncfConfigService;
 import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
@@ -413,7 +414,7 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
-        result = pntlService.setServerConf(config);
+        result = pntlService.setAgentConf(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -479,7 +480,7 @@ public class RouterApi {
     }
 
     /*重新启动探测，启动agent*/
-    @Path("/startAgent")
+    @Path("/startAgents")
     @POST
     public Response startAgent(){
         Result<String> result = pntlService.startAgents();
@@ -551,8 +552,8 @@ public class RouterApi {
         Result<String> result = new Result<>();
 
         String type = body.getAttachmentObject("operation", String.class);
-        if (!type.equals(PntlInfo.PNTL_UPDATE_TYPE_ADD) && !type.equals(PntlInfo.PNTL_UPDATE_TYPE_DEL)){
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, "operation is error:" + type);
+        if (!PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type) && !PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)){
+            return ResponseUtil.err(Response.Status.SERVICE_UNAVAILABLE, "operation is error:" + type);
         }
 
         Attachment file = body.getAttachment(Constants.FORM_FILE);
@@ -567,5 +568,28 @@ public class RouterApi {
         } else {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
+    }
+
+    @Path("/pntlServerInfo")
+    @POST
+    public Response getPntlServerInfo(){
+        PntlServerInfo info = new PntlServerInfo();
+        Result<PntlConfig> result = pntlConfigService.getPntlConfig();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        info.setDelayThreshold(result.getModel().getDelayThreshold());
+        info.setDscp(result.getModel().getDscp());
+        info.setLossPkgTimeout(result.getModel().getLossPkgTimeout());
+        info.setBigPkg_rate(result.getModel().getPkgCount());
+        info.setPortCount(result.getModel().getPortCount());
+        info.setProbePeriod(result.getModel().getProbePeriod());
+        info.setReportPeriod(result.getModel().getReportPeriod());
+        info.setPingListFlag(CommonInfo.getGetPingList());
+
+        //通知完agent之后，重新设置取pingList标记为0，避免agent一直取
+        CommonInfo.setGetPingList("0");
+
+        return ResponseUtil.succ(info);
     }
 }

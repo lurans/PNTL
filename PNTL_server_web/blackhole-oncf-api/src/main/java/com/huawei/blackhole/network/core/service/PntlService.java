@@ -28,5 +28,5 @@ public interface PntlService {
 
     Result<String> updateAgents(String type);
 
-    Result<String> setServerConf(PntlConfig config);
+    Result<String> setAgentConf(PntlConfig config);
 }
