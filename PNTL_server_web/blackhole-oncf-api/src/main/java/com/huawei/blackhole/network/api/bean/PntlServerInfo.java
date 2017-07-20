@@ -18,8 +18,8 @@ public class PntlServerInfo implements Serializable{
     private String portCount;
     @JsonProperty("report_period")
     private String reportPeriod;
-    @JsonProperty("pkg_count")
-    private String pkgCount;
+    @JsonProperty("bigPkg_rate")
+    private String bigPkg_rate;
     @JsonProperty("delay_threshold")
     private String delayThreshold;
     @JsonProperty("dscp")
@@ -59,12 +59,12 @@ public class PntlServerInfo implements Serializable{
         this.reportPeriod = reportPeriod;
     }
 
-    public String getPkgCount() {
-        return pkgCount;
+    public String getBigPkg_rate() {
+        return bigPkg_rate;
     }
 
-    public void setPkgCount(String pkgCount) {
-        this.pkgCount = pkgCount;
+    public void setBigPkg_rate(String bigPkg_rate) {
+        this.bigPkg_rate = bigPkg_rate;
     }
 
     public String getDelayThreshold() {

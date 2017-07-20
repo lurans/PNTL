@@ -6,7 +6,7 @@ public class CommonInfo {
 
     private static int reportPeriod;
 
-    private static String getPingList;
+    private static String getPingList = "0";
 
     public static int getReportPeriod() {
         return reportPeriod;

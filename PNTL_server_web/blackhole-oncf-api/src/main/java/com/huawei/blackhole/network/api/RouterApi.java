@@ -571,7 +571,7 @@ public class RouterApi {
     }
 
     @Path("/pntlServerInfo")
-    @GET
+    @POST
     public Response getPntlServerInfo(){
         PntlServerInfo info = new PntlServerInfo();
         Result<PntlConfig> result = pntlConfigService.getPntlConfig();
@@ -581,7 +581,7 @@ public class RouterApi {
         info.setDelayThreshold(result.getModel().getDelayThreshold());
         info.setDscp(result.getModel().getDscp());
         info.setLossPkgTimeout(result.getModel().getLossPkgTimeout());
-        info.setPkgCount(result.getModel().getPkgCount());
+        info.setBigPkg_rate(result.getModel().getPkgCount());
         info.setPortCount(result.getModel().getPortCount());
         info.setProbePeriod(result.getModel().getProbePeriod());
         info.setReportPeriod(result.getModel().getReportPeriod());
