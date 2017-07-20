@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.extention.service.pntl.Pntl;
-import javafx.scene.input.DataFormat;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +13,6 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -162,25 +160,26 @@ public class PntlWarning implements Serializable{
     }
 
     private static boolean isGetAllWaringList(PntlWarnInfo param){
-        return param.getAzId().isEmpty() && param.getPodId().isEmpty() && param.getSrcIp().isEmpty()
-                && param.getDstIp().isEmpty() && param.getStarTime().isEmpty() && param.getEndTime().isEmpty();
+        return StringUtils.isEmpty(param.getAzId()) && StringUtils.isEmpty(param.getPodId())
+                && StringUtils.isEmpty(param.getSrcIp()) && StringUtils.isEmpty(param.getDstIp())
+                && StringUtils.isEmpty(param.getStarTime())&& StringUtils.isEmpty(param.getEndTime());
     }
 
     private static boolean validParamCheck(PntlWarnInfo param){
         Pattern pattern = Pattern
                 .compile("^((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]"
                         + "|[*])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]|[*])$");
-        if (!param.getSrcIp().isEmpty() && !pattern.matcher(param.getSrcIp()).matches()){
+        if (!StringUtils.isEmpty(param.getSrcIp()) && !pattern.matcher(param.getSrcIp()).matches()){
             return false;
         }
 
-        if (!param.getDstIp().isEmpty() && !pattern.matcher(param.getDstIp()).matches()){
+        if (!StringUtils.isEmpty(param.getDstIp()) && !pattern.matcher(param.getDstIp()).matches()){
             return false;
         }
 
         /*时间不能一个空，一个不空*/
-        if ((!param.getStarTime().isEmpty() && param.getEndTime().isEmpty())
-                || (param.getStarTime().isEmpty() && !param.getEndTime().isEmpty())){
+        if ((!StringUtils.isEmpty(param.getStarTime()) && StringUtils.isEmpty(param.getEndTime()))
+                || (StringUtils.isEmpty(param.getStarTime()) && !StringUtils.isEmpty(param.getEndTime()))){
             return false;
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
@@ -201,7 +200,7 @@ public class PntlWarning implements Serializable{
     private static List<PntlWarnInfo> getFilteredResultsByTime(String starTime, String endTime){
         List<PntlWarnInfo> filteredResult = new ArrayList<>();
         /*return all results*/
-        if (starTime.isEmpty() && endTime.isEmpty()){
+        if (StringUtils.isEmpty(starTime) && StringUtils.isEmpty(endTime)){
             return PntlWarning.getResult();
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
@@ -223,15 +222,15 @@ public class PntlWarning implements Serializable{
 
     private static List<PntlWarnInfo> getFilteredResultsByIps(List<PntlWarnInfo> result, String srcIp, String dstIp){
         List<PntlWarnInfo> filteredResult = new ArrayList<>();
-        if (srcIp.isEmpty() && dstIp.isEmpty()){
+        if (StringUtils.isEmpty(srcIp) && StringUtils.isEmpty(dstIp)){
             return result;
         }
         for (PntlWarnInfo info : result){
-            if (!srcIp.isEmpty() && dstIp.isEmpty()){
+            if (!StringUtils.isEmpty(srcIp) && StringUtils.isEmpty(dstIp)){
                 if (srcIp.equals(info.getSrcIp())){
                     filteredResult.add(info);
                 }
-            } else if (srcIp.isEmpty() && !dstIp.isEmpty()){
+            } else if (StringUtils.isEmpty(srcIp) && !StringUtils.isEmpty(dstIp)){
                 if (dstIp.equals(info.getDstIp())){
                     filteredResult.add(info);
                 }

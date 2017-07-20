@@ -19,6 +19,7 @@ import com.huawei.blackhole.network.extention.bean.pntl.CommonInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -100,7 +101,7 @@ public class PntlConfigService {
     }
 
     private boolean checkAkSkValid(String ak, String sk){
-        if (ak == null || ak.isEmpty() || sk == null || sk.isEmpty()){
+        if (StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk)){
             return false;
         }
 
@@ -284,7 +285,7 @@ public class PntlConfigService {
 
     public Result<String> uploadIpListFile(Attachment file, String othername){
         Result<String> result = new Result<String>();
-        String name = othername.isEmpty() ? file.getDataHandler().getName() : othername;
+        String name = StringUtils.isEmpty(othername) ? file.getDataHandler().getName() : othername;
         try {
             validIpListAttachment(file, name);
         } catch (InvalidParamException | InvalidFormatException e) {
@@ -296,7 +297,7 @@ public class PntlConfigService {
 
         File destinationFile = new File(getFileName(name));
         try {
-            if (othername.isEmpty()) {
+            if (StringUtils.isEmpty(othername)) {
                 deleteOldIpListFile();
             }
             file.transferTo(destinationFile);

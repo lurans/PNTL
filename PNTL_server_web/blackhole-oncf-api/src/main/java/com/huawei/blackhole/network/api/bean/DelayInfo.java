@@ -164,8 +164,9 @@ public class DelayInfo implements Serializable {
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Iterator<DelayInfoResult> it = resultList.iterator();
+        DelayInfoResult delayInfo = null;
         while (it.hasNext()){
-            DelayInfoResult delayInfo = it.next();
+            delayInfo = it.next();
             try {
                 Date dt = df.parse(delayInfo.getTimestamp());
                 Long intervalTime = System.currentTimeMillis() / 1000 - dt.getTime()/1000;

@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.extention.service.pntl.Pntl;
+import org.apache.commons.lang3.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +135,7 @@ public class LossRate implements Serializable{
         String dstIp = flow.getDip();
         boolean hasData = false;
 
-        if (srcIp.isEmpty() || dstIp.isEmpty()){
+        if (StringUtils.isEmpty(srcIp) || StringUtils.isEmpty(dstIp)){
             return;
         }
 
@@ -187,8 +188,9 @@ public class LossRate implements Serializable{
         }
 
         Iterator<LossRateResult> it = resultList.iterator();
+        LossRateResult lossRate = null;
         while (it.hasNext()){
-            LossRateResult lossRate = it.next();
+            lossRate = it.next();
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try{
                 Date dt = df.parse(lossRate.getTimestamp());

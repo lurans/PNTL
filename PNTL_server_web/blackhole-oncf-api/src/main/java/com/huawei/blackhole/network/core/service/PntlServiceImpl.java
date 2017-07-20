@@ -16,6 +16,7 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -596,7 +597,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 throw new InvalidFormatException(ExceptionType.CLIENT_ERR, errMsg);
             }
 
-            if (os == null || os.isEmpty() ||
+            if (StringUtils.isEmpty(os) ||
                     (!PntlInfo.OS_EULER.equalsIgnoreCase(os) && !PntlInfo.OS_SUSE.equalsIgnoreCase(os))){
                 String errMsg = "os is error in ipList.yml";
                 LOG.error(errMsg);
@@ -832,7 +833,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             if (!checkIpValid(host.getAgentIp())){
                 return false;
             }
-            if (host.getOs().isEmpty() || host.getZoneId().isEmpty() || host.getPodId().isEmpty()){
+            if (StringUtils.isEmpty(host.getOs()) || StringUtils.isEmpty(host.getZoneId())
+                    || StringUtils.isEmpty(host.getPodId())){
                 return false;
             }
         }
