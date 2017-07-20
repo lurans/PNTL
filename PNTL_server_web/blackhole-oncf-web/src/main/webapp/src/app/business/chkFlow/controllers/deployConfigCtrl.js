@@ -12,11 +12,11 @@ define(["language/chkFlow",
                     "id":"installFileUpload_id",
                     "inputValue":"",
                     "fileObjName":"X-File",
-                    "maxSize":2*2*1024*1024,//文件大小不超过 2M
+                    "minSize":2*1024*1024,//文件大小不超过 2M
                     "disable":false,
                     "multi" : "true",
                     "method": "post",
-                    "fileType":".tar.gz;.sh;.yml",
+                    "fileType":".tar.gz;.sh;.yml;",
                     "action" : "/rest/chkflow/uploadFiles", //文件上传地址路径
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
@@ -26,10 +26,12 @@ define(["language/chkFlow",
                         }
                     },
                     "completeDefa" : function(event, result, selectFileQueue) {
-                        selectFileQueue.forEach(function(item,index){
-                            $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath,"success");
-                            $("#installFileUpload_id").widget().setTotalProgress(index+1,selectFileQueue.length);
-                        })
+                        if(result.state === "success") {
+                            $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
+                            $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
+                        }else {
+                            commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
+                        }
                     }
                 };
                 $scope.akTextBox = {
@@ -58,13 +60,6 @@ define(["language/chkFlow",
                     id : "searchTip",
                     auto:false
                 });
-                // $scope.akSkBtn = function () {
-                //     if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
-                //         divTip.option("content",i18n.chkFlow_term_input_valid);
-                //         divTip.show(30000);
-                //         return;
-                //     }
-                // };
                 $scope.akSkBtnOK = function () {
                     $scope.akSkBtn.disable = true;
                     if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){

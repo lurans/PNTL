@@ -14,7 +14,7 @@
         <tiny-fileupload id="installFileUpload.id"
                          input-value="installFileUpload.inputValue"
                          file-obj-name="installFileUpload.fileObjName"
-                         max-size = "installFileUpload.maxSize"
+                         min-size = "installFileUpload.minSize"
                          disable = "installFileUpload.disable"
                          multi="installFileUpload.multi"
                          file-type = "installFileUpload.fileType"
@@ -27,20 +27,28 @@
 </div>
 <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_install_file_upload2}}</div>
 <div class="installFileUpload level2Content" style="overflow: hidden; zoom:1;">
+    <tiny-radiogroup values="singleFileUpload.values"
+                     layout = "singleFileUpload.layout"
+                     spacing="singleFileUpload.spacing"
+                     id = "singleFileUpload.id1" ></tiny-radiogroup></br></br>
+    <div style="float:left; margin-right:50px;">
         <tiny-fileupload id = "singleFileUpload.id"
                          action="singleFileUpload.action"
+                         file-obj-name="singleFileUpload.fileObjName"
                          method = "singleFileUpload.method"
                          file-type = "singleFileUpload.fileType"
+                         min-size = "singleFileUpload.minSize"
                          show-submit-btn = "singleFileUpload.showSubmitBtn"
                          select-error = "singleFileUpload.selectError"
                          enable-detail = "singleFileUpload.enableDetail"
                          before-submit = "singleFileUpload.beforeSubmit"
                          complete="singleFileUpload.completeDefa">
-        </tiny-fileupload></br></br>
-        <tiny-textbox id = "singleFileUpload.textboxId"
-                      value = "singleFileUpload.value"></tiny-textbox>
+        </tiny-fileupload>
+    </div>
+    <div style="float:left;">
         <tiny-button text = "singleFileUpload.text"
                       click = "singleFileUpload.submitClick()"></tiny-button>
+    </div>
 </div>
 
 

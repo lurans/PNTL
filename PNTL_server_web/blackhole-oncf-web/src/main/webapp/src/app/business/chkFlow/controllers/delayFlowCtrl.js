@@ -4,8 +4,8 @@ define(["language/chkFlow",
     function (i18n,commonException,Step, _StepDirective, ViewMode) {
         "use strict";
 
-        var delayFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "delayFlowServ",
-            function ($scope, $rootScope, $state, $sce, $compile, $timeout, delayFlowServ) {
+        var delayFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "delayFlowServ","$interval",
+            function ($scope, $rootScope, $state, $sce, $compile, $timeout, delayFlowServ,$interval) {
                 $scope.i18n = i18n;
 
                 $scope.button = {
@@ -232,6 +232,16 @@ define(["language/chkFlow",
                     getIpList(para);
                 };
                 init();
+                var autoRefresh = $interval(getIpList, 60000);
+                $scope.stopAutoRefresh = function () {
+                    if (autoRefresh) {
+                        $interval.cancel(autoRefresh);
+                        autoRefresh = null;
+                    }
+                }
+                $scope.$on('$destroy', function (angularEvent, current, previous) {
+                    $scope.stopAutoRefresh();
+                });
             }];
 
 
