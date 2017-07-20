@@ -81,10 +81,10 @@ public class PntlWarnService {
     }
 
     private boolean needTracerouteDelay(DelayInfoAgent.Flow flow){
-        Long t1 = Long.valueOf(flow.getTime().getT1());
-        Long t2 = Long.valueOf(flow.getTime().getT2());
-        Long t3 = Long.valueOf(flow.getTime().getT3());
-        Long t4 = Long.valueOf(flow.getTime().getT4());
+        Long t1 = Long.valueOf(flow.getTimes().getT1());
+        Long t2 = Long.valueOf(flow.getTimes().getT2());
+        Long t3 = Long.valueOf(flow.getTimes().getT3());
+        Long t4 = Long.valueOf(flow.getTimes().getT4());
 
         if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0){
             return true;
@@ -94,13 +94,9 @@ public class PntlWarnService {
     }
 
     private boolean needTracerouteLossRate(LossRateAgent.Flow flow){
-        float rate = Float.parseFloat(flow.getSt().getPacketDrops()) / Float.parseFloat(flow.getSt().getPacketSent());
+        float rate = Float.parseFloat(flow.getPacketDrops()) / Float.parseFloat(flow.getPacketSent());
         rate *= 100;
-        if (rate >= 50){///TODO:阈值需要再考虑
-            return true;
-        }
-
-        return false;
+        return rate >= 50;
     }
 
 }
