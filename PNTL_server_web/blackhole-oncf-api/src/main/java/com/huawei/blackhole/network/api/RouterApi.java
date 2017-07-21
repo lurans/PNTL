@@ -585,10 +585,6 @@ public class RouterApi {
         info.setPortCount(result.getModel().getPortCount());
         info.setProbePeriod(result.getModel().getProbePeriod());
         info.setReportPeriod(result.getModel().getReportPeriod());
-        info.setPingListFlag(CommonInfo.getGetPingList());
-
-        //通知完agent之后，重新设置取pingList标记为0，避免agent一直取
-        CommonInfo.setGetPingList("0");
 
         return ResponseUtil.succ(info);
     }

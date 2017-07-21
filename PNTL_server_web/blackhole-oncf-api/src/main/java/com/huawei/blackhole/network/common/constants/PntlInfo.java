@@ -20,9 +20,10 @@ public class PntlInfo {
     //this is beta environment's address
 
     public static final String CONTENT_TYPE = "Content-Type";
-    public static final String SERVER_ANTS_AGENT_ACTION = "ServerAntsAgentAction";
-    public static final String SERVER_ANTS_AGENT_IP = "ServerAntsAgentIp";
-    public static final String SERVER_ANTS_AGENT_CONF = "ServerAntsAgentConf";
+    public static final String AGENT_TIME_INTERVAL = "0";
+    public static final String AGENT_VBONDIP = "1";
+    public static final String AGENT_CONF = "2";
+    public static final String AGENT_PINGLIST = "3";
     public static final String X_FORM_URLENCODED = "application/x-www-form-urlencoded";
     public static final String AUTH = "Authorization";
     public static final String GRANT_TYPE = "grant_type";
@@ -54,4 +55,6 @@ public class PntlInfo {
 
     public static final String OS_SUSE = "SUSE";
     public static final String OS_EULER = "EULER";
+
+    public static final int SOCKET_PORT = 33001;
 }
