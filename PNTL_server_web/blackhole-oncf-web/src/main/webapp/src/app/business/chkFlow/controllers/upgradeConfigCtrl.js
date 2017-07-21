@@ -11,7 +11,8 @@ define(["language/chkFlow",
                     "id":"installFileUpload_id1",
                     "inputValue":"",
                     "fileObjName":"X-File",
-                    "minSize":20*1024*1024,//文件大小不小于 20M
+                    "maxSize":8*1024*1024,//单文件大小不超过 8M
+                    "maxTotalSize":16*1024*1024,//总文件大小不小于 16M
                     "disable":false,
                     "multi" : "true",
                     "method": "post",
@@ -19,14 +20,24 @@ define(["language/chkFlow",
                     "action" : "/rest/chkflow/updateAgents", //文件上传地址路径
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
-                            alert("please select .tar.gz file");
+                            alert(i18n.chkFlow_term_upload_err2);
                         } else if ("EXCEED_FILE_SIZE" === errorMsg) {
-                            alert("error", "文件大小不小于20M");
+                            alert(i18n.chkFlow_term_upload_err4);
+                        } else if("MAX_TOTAL_SIZE" === errorMsg){
+                            alert(i18n.chkFlow_term_upload_err4);
+                        }
+                    },
+                    "select" :  function(event,file,selectFileQueue) {
+                        for(var i = 0;i<selectFileQueue.length;i++){
+                            if(selectFileQueue[i].fileName != "ServerAntAgentForEuler.tar.gz"
+                                || selectFileQueue[i].fileName != "ServerAntAgentForSles.tar.gz"){
+                                alert(i18n.chkFlow_term_upload_err5);
+                            }
                         }
                     },
                     "completeDefa" : function(event, result, selectFileQueue) {
                         selectFileQueue.forEach(function(item,index){
-                            if(result.state === "success") {
+                            if(result.result === "success") {
                                 $("#installFileUpload_id1").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
                                 $("#installFileUpload_id1").widget().setTotalProgress(index + 1, selectFileQueue.length);
                             }else {
@@ -37,10 +48,11 @@ define(["language/chkFlow",
                         })
                     }
                 };
+
                 $scope.singleFileUpload = {
                     "id" : "singleFileUpload_id",
                     "id1" : "radioGroup_id",
-                    "minSize":8*1024*1024,//文件大小不小于 20M
+                    "maxSize":2*1024*1024,//文件大小小于 2M
                     "action" : "/rest/chkflow/updateAgents", //文件上传地址路径
                     "fileObjName":"X-File",
                     "showSubmitBtn" : false,
@@ -48,7 +60,7 @@ define(["language/chkFlow",
                     "method": "post",
                     "fileType":".yml",
                     "completeDefa" : function(event, result, selectFileQueue) {
-                            if(result.state === "success") {
+                            if(result.result === "success") {
                                 commonException.showMsg(i18n.chkFlow_term_upload_success, "success");
                             }else {
                                 commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
@@ -56,19 +68,16 @@ define(["language/chkFlow",
                     },
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
-                            alert("please select .yml file");
+                            alert(i18n.chkFlow_term_upload_err3);
                         } else if ("EXCEED_FILE_SIZE" === errorMsg) {
-                            alert("error", "文件大小不小于8M");
+                            alert(i18n.chkFlow_term_upload_err4);
                         }
                     },
                     "beforeSubmit" : function() {
                         var checkedkey = $("#radioGroup_id").widget().opChecked("checked");
                         //console.log(checkedkey);
                         var checkValue;
-                        if(checkedkey === false){
-                            alert("请选择添加和删除信息");
-                            return;
-                        }else if(checkedkey === "1"){
+                        if(checkedkey === "1"){
                             checkValue = "添加";
                         }else if(checkedkey === "2"){
                             checkValue = "删除";
@@ -80,7 +89,7 @@ define(["language/chkFlow",
                     "values" : [{
                         "key" : "1",
                         "text" : i18n.chkFlow_term_add,
-                        "checked" : false,
+                        "checked" : true,
                         "disable" : false
                     },{
                         "key" : "2",

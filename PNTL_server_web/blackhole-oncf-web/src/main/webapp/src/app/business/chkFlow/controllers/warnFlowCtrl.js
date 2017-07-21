@@ -23,8 +23,13 @@ define(["language/chkFlow",
                         var startTime = $("#start_time_id").widget().getDateTime();
                         var endTime = $("#end_time_id").widget().getDateTime();
                         var type = $("#type_id").widget().getSelectedLabel();
-                        if(type === "请选择" || type === "Please choose"){
-                            type = "";
+                        var selectType = "";
+                        if(type === i18n.chkFlow_term_delayTime){
+                            selectType ="2"
+                        } else if(type === i18n.chkFlow_term_packetsLossRate){
+                            selectType = "1"
+                        }else{
+                            selectType = "";
                         }
                         if((startTime < endTime&&startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
                             var searchData = {
@@ -34,9 +39,8 @@ define(["language/chkFlow",
                                 "dst_ip":dst,
                                 "start_time":startTime,
                                 "end_time":endTime,
-                                "type":type
+                                "type":selectType
                             };
-                            console.log(searchData);
                             postData(searchData);
                        }else if(startTime === ""){
                             alert(i18n.chkFlow_term_tip1);
