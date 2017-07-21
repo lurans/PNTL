@@ -16,7 +16,7 @@ using namespace boost::property_tree;
     },
 "ServerAntServer" :
     {^M
-        "IP"    : "8.15.4.11", 
+        "IP"    : "8.15.4.11",
         "Port"  : 8888
     },
 "ServerAntAgent" :
@@ -25,14 +25,14 @@ using namespace boost::property_tree;
         "MgntIP"     : "0.0.0.0",
         "Hostname"      :       "SZV1000278559",
         "Port"  : 31001,
-        
+
         "PollingTimerPeriod"    : 100000,
         "ReportPeriod"          : 300,
         "QueryPeriod"           : 120,
         "DetectPeriod"          : 60,
         "DetectTimeoutPeriod"   : 1,
-        "DetectDropThresh"      : 2,       
-        
+        "DetectDropThresh"      : 2,
+
         "ProtocolUDP" :^M
             {
                 "DestPort"  : 6000,
@@ -49,9 +49,9 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
     INT32 iRet = AGENT_OK;
     UINT32 uiIp, uiPort, uiData;
     string strTemp;
-	// boost::property_tree对象, 用于存储json格式数据.
+    // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot, ptDataTmp;
-	
+
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
     {
@@ -127,7 +127,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             JSON_PARSER_ERROR("SetQueryPeriod failed[%d]", iRet);
             return iRet;
         }
-		
+
         uiData = ptDataTmp.get<UINT32>("DetectPeriod");
         iRet = pcCfg->SetDetectPeriod(uiData);
         if (iRet)
@@ -135,7 +135,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             JSON_PARSER_ERROR("set detect period[%u] faild[%d], range should be in [%u, %u]", uiData, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
             return iRet;
         }
-		
+
         uiData = ptDataTmp.get<UINT32>("DetectTimeoutPeriod");
         iRet = pcCfg->SetDetectTimeout(uiData);
         if (iRet)
@@ -143,7 +143,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", uiData, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
             return iRet;
         }
-		
+
         uiData = ptDataTmp.get<UINT32>("DetectDropThresh");
         iRet = pcCfg->SetDetectDropThresh(uiData);
         if (iRet)
@@ -234,7 +234,7 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
         iRet = pcCfg->GetMgntIP(&uiMgntIp);
         ptDataRoot.put("vbond_ip", sal_inet_ntoa(uiIp));    // 数据面IP
         ptDataRoot.put("agent_ip", sal_inet_ntoa(uiMgntIp));
-		
+
         write_json(ssJsonData, ptDataRoot);
         (*pssPostData) << ssJsonData.str();
     }
@@ -420,7 +420,7 @@ INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstre
             ptDataFlowEntry.put("sip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiSrcIP));
             ptDataFlowEntry.put("dip", sal_inet_ntoa(pstAgentFlowEntry->stFlowKey.uiDestIP));
             ptDataFlowEntry.put("sport", pstAgentFlowEntry->stFlowKey.uiSrcPort);
-          
+
             ptDataFlowEntry.put("time", acCurTime);
             ptDataFlowEntry.put("packet-sent", pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter);
             ptDataFlowEntry.put("packet-drops", pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter);
@@ -433,7 +433,7 @@ INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstre
             {
                 ptDataFlowEntry.put("package-size", NORMAL_PACKAGE_SIZE);
             }
-            
+
 
             // 加入json数组
             ptDataFlowArray.push_back(make_pair("", ptDataFlowEntry));
@@ -550,21 +550,21 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
         pstNewServerFlowKey->uiSrcPortRange  = ptFlowEntry.get<UINT32>("sport-range");
 
         ptFlowEntryTopo = ptFlowEntry.get_child("topology-tag");
-        #if 0
-            //pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("svid");
-            uiDataTemp = 0;
-            strTemp = ptFlowEntryTopo.get<string>("svid");
-            sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
-            pstNewServerFlowKey->stServerTopo.uiSvid   = uiDataTemp;
-            //pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dvid");
-            uiDataTemp = 0;
-            strTemp = ptFlowEntryTopo.get<string>("dvid");
-            sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
-            pstNewServerFlowKey->stServerTopo.uiDvid   = uiDataTemp;
-        #else
-            pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("src-id");
-            pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dst-id");
-        #endif
+#if 0
+        //pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("svid");
+        uiDataTemp = 0;
+        strTemp = ptFlowEntryTopo.get<string>("svid");
+        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
+        pstNewServerFlowKey->stServerTopo.uiSvid   = uiDataTemp;
+        //pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dvid");
+        uiDataTemp = 0;
+        strTemp = ptFlowEntryTopo.get<string>("dvid");
+        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
+        pstNewServerFlowKey->stServerTopo.uiDvid   = uiDataTemp;
+#else
+        pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("src-id");
+        pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dst-id");
+#endif
 
         pstNewServerFlowKey->stServerTopo.uiLevel  = ptFlowEntryTopo.get<UINT32>("level");
     }
@@ -802,21 +802,21 @@ INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 
     // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot;
-	UINT32 interval;
+    UINT32 interval;
     try
-	{
+    {
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
         // 防止没有设值，传入空值
         interval = ptDataRoot.get<UINT32>("probe_interval");
     }
-	catch (exception const & e)
-	{
+    catch (exception const & e)
+    {
         JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
         return AGENT_E_ERROR;
-	}
-	INT32 iRet = pcFlowManager -> FlowManagerAction((INT32)interval);
-	return iRet;
+    }
+    INT32 iRet = pcFlowManager -> FlowManagerAction((INT32)interval);
+    return iRet;
 }
 
 /*
@@ -839,30 +839,30 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
 
     // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot;
-	UINT32 interval;
-	INT32 iRet = AGENT_OK;
+    UINT32 interval;
+    INT32 iRet = AGENT_OK;
     try
-	{
+    {
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
 
-		interval = ptDataRoot.get<UINT32>("pingListFlag");
-		SHOULD_PROBE = interval;
-		JSON_PARSER_INFO("SHOULD_PROBE %d", SHOULD_PROBE);
+        interval = ptDataRoot.get<UINT32>("pingListFlag");
+        SHOULD_PROBE = interval;
+        JSON_PARSER_INFO("SHOULD_PROBE %d", SHOULD_PROBE);
         if (SHOULD_PROBE)
         {
             JSON_PARSER_INFO("will soon begin to get pingList");
         }
         interval = ptDataRoot.get<UINT32>("probe_period");
-		iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
-		if (iRet)
-		{
-		    JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
-		    return AGENT_E_PARA;
-		}
-		JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
-		iRet = pcFlowManager->FlowManagerAction((INT32)interval);
-		
+        iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
+            return AGENT_E_PARA;
+        }
+        JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
+        iRet = pcFlowManager->FlowManagerAction((INT32)interval);
+
         interval = ptDataRoot.get<UINT32>("port_count");
         iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
         if (iRet)
@@ -909,7 +909,6 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
         JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 
         interval = ptDataRoot.get<UINT32>("pkg_count");
-		//interval = ptDataRoot.get<UINT32>("bigPkg_rate");
         iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
         if (iRet)
         {
@@ -933,20 +932,20 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 
     // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot;
-	UINT32 interval;
-	INT32 iRet = AGENT_OK;
+    UINT32 interval;
+    INT32 iRet = AGENT_OK;
     try
-	{
+    {
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
         interval = ptDataRoot.get<UINT32>("probe_period");
-		iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
-		if (iRet)
-		{
-		    JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
-		    return AGENT_E_PARA;
-		}
-		JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
+        iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
+        if (iRet)
+        {
+            JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
+            return AGENT_E_PARA;
+        }
+        JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
 
         interval = ptDataRoot.get<UINT32>("port_count");
         iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
@@ -1005,7 +1004,7 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
     catch (exception const & e)
     {
         JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
-		
+
         return AGENT_E_ERROR;
     }
     return AGENT_OK;

@@ -153,7 +153,7 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
     if (iRet)
     {
         FLOW_MANAGER_ERROR("Init UDP target worker failed[%d], SIP[%s],SPort[%d]",
-                iRet, sal_inet_ntoa(stNewWorker.uiSrcIP), stNewWorker.uiSrcPort);
+                           iRet, sal_inet_ntoa(stNewWorker.uiSrcIP), stNewWorker.uiSrcPort);
         return AGENT_E_PARA;
     }
 
@@ -176,8 +176,8 @@ INT32 FlowManager_C::AgentClearFlowTable(UINT32 uiAgentFlowTableNumber)
     // 清空每个流中的结果表.
     vector<AgentFlowTableEntry_S>::iterator pAgentFlowEntry;
     for(pAgentFlowEntry = AgentFlowTable[uiAgentFlowTableNumber].begin();
-        pAgentFlowEntry != AgentFlowTable[uiAgentFlowTableNumber].end();
-        pAgentFlowEntry ++)
+            pAgentFlowEntry != AgentFlowTable[uiAgentFlowTableNumber].end();
+            pAgentFlowEntry ++)
     {
         pAgentFlowEntry->vFlowDetectResultPkt.clear();
     }
@@ -236,7 +236,7 @@ INT32 FlowManager_C::AgentFlowTableAdd(UINT32 uiAgentFlowTableNumber, ServerFlow
     pstServerFlowEntry->uiAgentFlowIndexMin = stNewAgentEntry.stFlowKey.uiAgentFlowTableIndex;
     pstServerFlowEntry->uiAgentFlowWorkingIndexMin = stNewAgentEntry.stFlowKey.uiAgentFlowTableIndex;
     pstServerFlowEntry->uiAgentFlowWorkingIndexMax = pstServerFlowEntry->uiAgentFlowWorkingIndexMin
-                                                + pstServerFlowEntry->stServerFlowKey.uiSrcPortRange - 1;
+            + pstServerFlowEntry->stServerFlowKey.uiSrcPortRange - 1;
 
     for (uiSrcPort = pstServerFlowEntry->stServerFlowKey.uiSrcPortMin; uiSrcPort <= pstServerFlowEntry->stServerFlowKey.uiSrcPortMax; uiSrcPort++)
     {
@@ -494,8 +494,8 @@ INT32 FlowManager_C::ServerWorkingFlowTableAdd(ServerFlowKey_S stNewServerFlowKe
     // 检查工作表中是否有重复表项, Urgent可以重复
     vector<ServerFlowTableEntry_S>::iterator pServerFlowEntry;
     for(pServerFlowEntry = ServerFlowTable[SERVER_WORKING_FLOW_TABLE].begin();
-        pServerFlowEntry != ServerFlowTable[SERVER_WORKING_FLOW_TABLE].end();
-        pServerFlowEntry++)
+            pServerFlowEntry != ServerFlowTable[SERVER_WORKING_FLOW_TABLE].end();
+            pServerFlowEntry++)
     {
         if (stNewServerFlowEntry.stServerFlowKey == pServerFlowEntry->stServerFlowKey)
         {
@@ -838,7 +838,7 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
     {
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
         return iRet;
-    }	
+    }
     return AGENT_OK;
 }
 
@@ -879,7 +879,7 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
 // 出现报文丢弃,又没有全部丢弃的场景记录一下, 调试使用.
 #if 0
     if (pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter
-        && (pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter < pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter))
+            && (pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter < pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter))
     {
         FLOW_MANAGER_INFO("Flow info:[%s]", strReportData.c_str());
     }
@@ -1104,7 +1104,7 @@ INT32 FlowManager_C::DoReport()
         {
             // 只处理enable的非Urgent Entry
             if ((FLOW_ENTRY_STATE_CHECK(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_ENABLE))
-                && (AGENT_TRUE != AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey.uiUrgentFlow))
+                    && (AGENT_TRUE != AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey.uiUrgentFlow))
             {
                 iRet = FlowLatencyReport(uiFlowTableIndex, pcAgentCfg->GetMaxDelay());
                 if (AGENT_FILTER_DELAY == iRet)
@@ -1219,11 +1219,11 @@ INT32 FlowManager_C::DoQuery()
         return iRet;
     }
 
-  // 检查工作表中是否有重复表项, Urgent可以重复
+    // 检查工作表中是否有重复表项, Urgent可以重复
     vector<ServerFlowTableEntry_S>::iterator pServerFlowEntry;
     for(pServerFlowEntry = ServerFlowTable[SERVER_WORKING_FLOW_TABLE].begin();
-        pServerFlowEntry != ServerFlowTable[SERVER_WORKING_FLOW_TABLE].end();
-        pServerFlowEntry++)
+            pServerFlowEntry != ServerFlowTable[SERVER_WORKING_FLOW_TABLE].end();
+            pServerFlowEntry++)
     {
         iRet =  AgentFlowTableAdd(AGENT_WORKING_FLOW_TABLE, &(*pServerFlowEntry));
         if (iRet)
@@ -1248,7 +1248,7 @@ INT32 FlowManager_C::ThreadHandler()
 {
     INT32 iRet = AGENT_OK;
     UINT32 counter = 0;
-	UINT32 randDelay = rand() % 5;
+    UINT32 randDelay = rand() % 5;
     uiLastCheckTimeCounter = counter;
     uiLastReportTimeCounter = counter;
     uiLastQuerytTimeCounter = counter;
@@ -1320,11 +1320,11 @@ INT32 FlowManager_C::ThreadHandler()
             }
         }
 
-		// 每 60s 查询一次配置
+        // 每 60s 查询一次配置
         if (0 != counter && 0 == counter % 60)
         {
             iRet = DoQueryConfig();
-			if (iRet)
+            if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query Config failed[%d]", iRet);
             }

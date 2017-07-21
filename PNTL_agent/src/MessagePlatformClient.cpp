@@ -81,14 +81,14 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
 
         headers = curl_slist_append(headers, ACCEPT_TYPE);
         headers = curl_slist_append(headers, CONTENT_TYPE);
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-		// 设置服务端证书，用户认证服务端
+        // 设置服务端证书，用户认证服务端
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH);
 
-		// 设置客户端证书和私钥
+        // 设置客户端证书和私钥
         curl_easy_setopt(curl,CURLOPT_SSLCERT,AGENT_CERT_PATH);
         curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE, PEM_KEY_TYPE);
         curl_easy_setopt(curl,CURLOPT_SSLKEY,AGENT_KEY_PATH);
@@ -118,7 +118,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_URL failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
-			curl_slist_free_all(headers);
+            curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -135,7 +135,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_POSTFIELDS failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
-			curl_slist_free_all(headers);
+            curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -146,7 +146,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_POSTFIELDS failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
-			curl_slist_free_all(headers);
+            curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -158,7 +158,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_POSTFIELDS failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
-			curl_slist_free_all(headers);
+            curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -169,7 +169,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy perform failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
-			curl_slist_free_all(headers);
+            curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -217,7 +217,7 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << PINGLIST_URL;
 
-	MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
+    MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
     // 生成post数据
     ssPostData.clear();
     ssPostData.str("");

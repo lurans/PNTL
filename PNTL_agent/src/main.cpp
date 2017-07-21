@@ -14,18 +14,18 @@ using namespace std;
 
 void destroyServerCfgObj(ServerAntAgentCfg_C * pcCfg)
 {
-     if (NULL != pcCfg)
-     {
+    if (NULL != pcCfg)
+    {
         delete pcCfg;
-     }
+    }
 }
 
 void destroyFlowManagerObj(FlowManager_C * pcFlowManager)
 {
-     if (NULL != pcFlowManager)
-     {
+    if (NULL != pcFlowManager)
+    {
         delete pcFlowManager;
-     }
+    }
 }
 
 // Æô¶¯ServerAntAgentÒµÎñ
@@ -48,7 +48,7 @@ INT32 ServerAntAgent()
         INIT_ERROR("GetLocalCfg failed [%d]", iRet);
         return iRet;
     }
-    
+
     UINT32 uiPort = 0;
     iRet = pcCfg->GetAgentAddress(NULL, &uiPort);
     if (iRet)
