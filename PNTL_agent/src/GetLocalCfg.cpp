@@ -102,7 +102,7 @@ void RecoverLossPktData(ServerAntAgentCfg_C *pcAgentCfg)
         iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LOSSPKT_URL);
         if (AGENT_OK != iRet)
         {
-                break;
+            break;
         }
         sal_usleep(1);
     }

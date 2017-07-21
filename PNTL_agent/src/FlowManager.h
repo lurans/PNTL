@@ -210,6 +210,7 @@ private:
     INT32 ThreadHandler();                        // 任务主处理函数
     INT32 PreStopHandler();                       // StopThread触发, 通知ThreadHandler主动退出.
     INT32 PreStartHandler();                      // StartThread触发, 通知ThreadHandler即将被调用.
+    INT32 DoQueryConfig();
 
 public:
     FlowManager_C();                               // 构造函数, 填充默认值.
@@ -224,8 +225,7 @@ public:
     (ServerFlowKey_S stServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
 
     INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
-    INT32 preSendBigPkg(ServerAntAgentCfg_C* config);
-    INT32 clearBigPkgConf();
+    INT32 SetPkgFlag(ServerAntAgentCfg_C* config, UINT32 flag);
 };
 
 #endif

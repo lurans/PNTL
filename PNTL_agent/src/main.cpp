@@ -14,26 +14,18 @@ using namespace std;
 
 void destroyServerCfgObj(ServerAntAgentCfg_C * pcCfg)
 {
-     if (NULL != pcCfg)
-     {
+    if (NULL != pcCfg)
+    {
         delete pcCfg;
-     }
+    }
 }
 
 void destroyFlowManagerObj(FlowManager_C * pcFlowManager)
 {
-     if (NULL != pcFlowManager)
-     {
+    if (NULL != pcFlowManager)
+    {
         delete pcFlowManager;
-     }
-}
-
-void destroyMessagePlatformServer(MessagePlatformServer_C * pcMsgServer)
-{
-    if (NULL != pcMsgServer)
-     {
-        delete pcMsgServer;
-     }
+    }
 }
 
 // 启动ServerAntAgent业务
@@ -56,7 +48,7 @@ INT32 ServerAntAgent()
         INIT_ERROR("GetLocalCfg failed [%d]", iRet);
         return iRet;
     }
-    
+
     UINT32 uiPort = 0;
     iRet = pcCfg->GetAgentAddress(NULL, &uiPort);
     if (iRet)
@@ -76,19 +68,6 @@ INT32 ServerAntAgent()
         destroyFlowManagerObj(pcFlowManager);
         destroyServerCfgObj(pcCfg);
         INIT_ERROR("FlowManager.init failed [%d]", iRet);
-        return iRet;
-    }
-
-    // 启动MessagePlatformServer端服务, 用于响应外部推送消息.
-    INIT_INFO("-------- Start MessagePlatformServer --------");
-    MessagePlatformServer_C * pcMsgServer = new MessagePlatformServer_C;
-    iRet = pcMsgServer->Init(uiPort, pcFlowManager);
-    if (iRet)
-    {
-        destroyFlowManagerObj(pcFlowManager);
-        destroyServerCfgObj(pcCfg);
-        destroyMessagePlatformServer(pcMsgServer);
-        INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
         return iRet;
     }
 
@@ -115,7 +94,6 @@ INT32 ServerAntAgent()
 
     destroyFlowManagerObj(pcFlowManager);
     destroyServerCfgObj(pcCfg);
-	destroyMessagePlatformServer(pcMsgServer);
 
     INIT_INFO("-------- ServerAntAgent Exit Now --------");
 

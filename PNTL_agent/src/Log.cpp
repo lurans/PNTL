@@ -119,7 +119,7 @@ INT32 SetNewLogDir(string strNewDirPath)
     // 当前日志记录到系统日志, 修改日志目录不生效
     if(AGENT_TRUE == g_stLogConfig.uiLogToSyslog)
     {
-       AGENT_LOG_ERROR_PRINT("[%s]: Set log dir to [%s] when enable LogToSyslog\n", __FUNCTION__, strNewDirPath.c_str());
+        AGENT_LOG_ERROR_PRINT("[%s]: Set log dir to [%s] when enable LogToSyslog\n", __FUNCTION__, strNewDirPath.c_str());
     }
 
     g_stLogConfig.strLogFileNameNormal = strNewDirPath + "/ServerAntAgent.log";
@@ -161,11 +161,11 @@ void GetPrintTime(char *timestr)
             tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
             tm->tm_min, tm->tm_sec);
 
-/*
-    sprintf((char *)timestr, "[%04u-%02u-%02u %02u:%02u:%02u.%03u]",
-            tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
-            tm->tm_min, tm->tm_sec, (UINT32)tv.tv_usec/1000);
-*/
+    /*
+        sprintf((char *)timestr, "[%04u-%02u-%02u %02u:%02u:%02u.%03u]",
+                tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
+                tm->tm_min, tm->tm_sec, (UINT32)tv.tv_usec/1000);
+    */
 
 }
 
@@ -208,8 +208,8 @@ void AgentLogPreParser(char * pcStr, UINT32 ulBufSize)
         }
         /* 处理用户日志开头的换行符等特殊字符串 */
         if (   ('\r' == pcStr[uiStrLen])
-            || ('\n' == pcStr[uiStrLen])
-            || (' '  == pcStr[uiStrLen]))
+                || ('\n' == pcStr[uiStrLen])
+                || (' '  == pcStr[uiStrLen]))
         {
             pcStr[uiStrLen] = ' ';
         }
@@ -231,25 +231,25 @@ void AgentLogPreParser(char * pcStr, UINT32 ulBufSize)
 
 INT32 WriteToLogFile(const char *pcFileName, const char *pcMsg )
 {
-        // 写入单独的日志文件
-        FILE  * pstFile         = NULL;
-        UINT32 uiLength   = 0;
-        UINT32 uiStrLen   = 0;
+    // 写入单独的日志文件
+    FILE  * pstFile         = NULL;
+    UINT32 uiLength   = 0;
+    UINT32 uiStrLen   = 0;
 
-        uiStrLen = sal_strlen(pcMsg);
+    uiStrLen = sal_strlen(pcMsg);
 
-        pstFile = fopen(pcFileName, "a+");
-        if(NULL == pstFile)
-        {
-            AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't open file[%s]: %s [%d]\n", __FUNCTION__,  __LINE__, pcFileName, strerror(errno), errno);
-            return AGENT_E_ERROR;
-        }
-        /* 将log写入文件 */
-        uiLength = fwrite(pcMsg, sizeof(char), uiStrLen, pstFile);
-        fflush(pstFile);
-        fclose(pstFile);
+    pstFile = fopen(pcFileName, "a+");
+    if(NULL == pstFile)
+    {
+        AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't open file[%s]: %s [%d]\n", __FUNCTION__,  __LINE__, pcFileName, strerror(errno), errno);
+        return AGENT_E_ERROR;
+    }
+    /* 将log写入文件 */
+    uiLength = fwrite(pcMsg, sizeof(char), uiStrLen, pstFile);
+    fflush(pstFile);
+    fclose(pstFile);
 
-        return AGENT_OK;
+    return AGENT_OK;
 }
 
 INT32 AgentLogSaveToFile(UINT32 ulLogType, const char *pcMsg )

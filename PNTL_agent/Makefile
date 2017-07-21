@@ -32,11 +32,8 @@ export SCRIPT_PATH = $(ROOT_DIR)/tools/script
 # 部分配置不合理的编译器(使用错误参数编译出的编译器)不会搜索/usr/local目录.
 # C++编译参数
 export CXXFLAGS  = -g -fPIC -shared  -I $(BOOSTS_PATH) -I /usr/local/include
-
 #链接参数
-export LDFLAGS = -lpthread  -lmicrohttpd -lcurl -lrdkafka -L /usr/local/lib
-
-
+export LDFLAGS = -lpthread -lmicrohttpd -lcurl -Wl,-rpath=libs
 # sles下需要安装 python-devel.x86_64 包
 #Python 信息
 #PYTHONINC := /usr/include/python
@@ -53,7 +50,7 @@ include ${ROOT_DIR}/make/Make.subdirs
 ALL_OBJ = $(shell find ${BUILD_DIR} -name *.o)
 
 all::
-	@$(ECHO) Linking ${ALL_OBJ}
+	@$(ECHO) Linking ${ALL_OBJ} third_group/libs/Sles/libcrypto.so.1.0.0 third_group/libs/Sles/libssl.so.1.0.0
 	$Q$(RM) ServerAntAgent
 	$(CXX) -o ./ServerAntAgent ${ALL_OBJ} $(LDFLAGS)
 

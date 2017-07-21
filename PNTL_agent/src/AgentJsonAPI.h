@@ -31,4 +31,6 @@ extern INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C*
 
 extern void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry);
 
+extern INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
+
 #endif

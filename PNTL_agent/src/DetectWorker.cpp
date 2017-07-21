@@ -241,11 +241,11 @@ INT32 DetectWorker_C::ThreadHandler()
                                                iSockFd, iRet, iTos);
 
 
-	                        pstSendMsg->stT4.uiSec = tm.tv_sec;
-	                        pstSendMsg->stT4.uiUsec = tm.tv_usec;
-	                        iRet = RxUpdateSession(pstSendMsg); //刷新sender的会话列表
+                            pstSendMsg->stT4.uiSec = tm.tv_sec;
+                            pstSendMsg->stT4.uiUsec = tm.tv_usec;
+                            iRet = RxUpdateSession(pstSendMsg); //刷新sender的会话列表
 
-                           // 若应答报文返回的太晚(Timeout), Sender会话列表已经删除会话, 会返回找不到.
+                            // 若应答报文返回的太晚(Timeout), Sender会话列表已经删除会话, 会返回找不到.
                             if ((AGENT_OK!= iRet) && (AGENT_E_NOT_FOUND != iRet))
                                 DETECT_WORKER_WARNING("RX: Update Session failed. iRet:[%d]", iRet);
                         }
@@ -563,7 +563,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
     sal_memset(&servaddr, 0, sizeof(servaddr));
     sal_memset(&tm, 0, sizeof(tm));
 
-	pstSendMsg = (PacketInfo_S *)aucBuff;
+    pstSendMsg = (PacketInfo_S *)aucBuff;
     gettimeofday(&tm,NULL); //获取当前时间
     DETECT_WORKER_WARNING("is big pkg [%u]", pNewSession->stFlowKey.uiIsBigPkg);
     if (pNewSession->stFlowKey.uiIsBigPkg)
