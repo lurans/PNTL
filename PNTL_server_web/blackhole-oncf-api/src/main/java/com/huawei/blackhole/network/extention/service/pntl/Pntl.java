@@ -43,7 +43,7 @@ public class Pntl {
     private static final String FILETYPE_SCRIPT = "SCRIPT";
     private static final String FILETYPE_AGENT = "AGENT";
     private static final String PNTL_PATH = "/root";
-    private static final String FILE_RIRHT = "644";
+    private static final String FILE_RIGHT = "644";
 
     private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_SUSE);
@@ -261,7 +261,7 @@ public class Pntl {
                 }
 
                 body.get(key).setPath(PNTL_PATH);
-                body.get(key).setMode(FILE_RIRHT);
+                body.get(key).setMode(FILE_RIGHT);
                 if (host.getAgentSN() != null) {
                     agentSnList.get(key).add(host.getAgentSN());
                 }

@@ -176,24 +176,24 @@ public class PntlWarning implements Serializable{
         if (!StringUtils.isEmpty(param.getDstIp()) && !pattern.matcher(param.getDstIp()).matches()){
             return false;
         }
-
+        if(!StringUtils.isEmpty(param.getStarTime())&&!StringUtils.isEmpty(param.getStarTime())){
+            return true;
+        }
         /*时间不能一个空，一个不空*/
         if ((!StringUtils.isEmpty(param.getStarTime()) && StringUtils.isEmpty(param.getEndTime()))
                 || (StringUtils.isEmpty(param.getStarTime()) && !StringUtils.isEmpty(param.getEndTime()))){
             return false;
         }
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
-        if(!StringUtils.isEmpty(param.getStarTime())&&!StringUtils.isEmpty(param.getStarTime())){
-            try {
-                Long d1 = df.parse(param.getStarTime()).getTime();
-                Long d2 = df.parse(param.getEndTime()).getTime();
-                if (d1 > d2){
-                    return false;
-                }
-            } catch (ParseException e) {
-                e.printStackTrace();
+        try {
+            Long d1 = df.parse(param.getStarTime()).getTime();
+            Long d2 = df.parse(param.getEndTime()).getTime();
+            if (d1 > d2){
                 return false;
             }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
         }
 
         return true;
