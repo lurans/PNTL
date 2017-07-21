@@ -3,8 +3,8 @@ define(["language/chkFlow",
         "fixtures/chkFlow/warnFlowFixture"],
     function (i18n, commonException, Step, _StepDirective, ViewMode) {
         "use strict";
-        var warnFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "warnFlowServ","$window","$interval",
-            function ($scope, $rootScope, $state, $sce, $compile, $timeout, warnFlowServ,$window,$interval) {
+        var warnFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "warnFlowServ","$window",
+            function ($scope, $rootScope, $state, $sce, $compile, $timeout, warnFlowServ,$window) {
                 $scope.i18n = i18n;
                 $scope.search = {
                     "id":"search_id",
@@ -23,8 +23,13 @@ define(["language/chkFlow",
                         var startTime = $("#start_time_id").widget().getDateTime();
                         var endTime = $("#end_time_id").widget().getDateTime();
                         var type = $("#type_id").widget().getSelectedLabel();
-                        if(type === "请选择" || type === "Please choose"){
-                            type = "";
+                        var selectType = "";
+                        if(type === i18n.chkFlow_term_delayTime){
+                            selectType ="2"
+                        } else if(type === i18n.chkFlow_term_packetsLossRate){
+                            selectType = "1"
+                        }else{
+                            selectType = "";
                         }
                         if((startTime < endTime&&startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
                             var searchData = {
@@ -34,9 +39,8 @@ define(["language/chkFlow",
                                 "dst_ip":dst,
                                 "start_time":startTime,
                                 "end_time":endTime,
-                                "type":type
+                                "type":selectType
                             };
-                            console.log(searchData);
                             postData(searchData);
                        }else if(startTime === ""){
                             alert(i18n.chkFlow_term_tip1);
@@ -180,19 +184,6 @@ define(["language/chkFlow",
                     getTextLink();
                 };
                 init();
-                var autoRefresh = $interval(getTextLink, 60000);
-                $scope.stopAutoRefresh = function () {
-                    if (autoRefresh) {
-                        $interval.cancel(autoRefresh);
-                        autoRefresh = null;
-                    }
-                }
-                $scope.$on('$destroy', function (angularEvent, current, previous) {
-                    $scope.stopAutoRefresh();
-                });
-
-
-
             }];
 
         var module = angular.module('common.config');

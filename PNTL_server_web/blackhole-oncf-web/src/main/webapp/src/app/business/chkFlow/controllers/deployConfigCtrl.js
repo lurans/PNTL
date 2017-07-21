@@ -12,24 +12,39 @@ define(["language/chkFlow",
                     "id":"installFileUpload_id",
                     "inputValue":"",
                     "fileObjName":"X-File",
-                    "maxSize":2*2*1024*1024,//文件大小不超过 2M
+                    "maxSize":8*1024*1024,//单文件大小不超过 8M
+                    "maxTotalSize":20*1024*1024,//总文件大小不小于 20M
                     "disable":false,
                     "multi" : "true",
                     "method": "post",
-                    "fileType":".tar;.gz;.sh;.yml;.txt",
+                    "fileType":".tar.gz;.sh;.yml;",
                     "action" : "/rest/chkflow/uploadFiles", //文件上传地址路径
-                    "selectError" : function(event,file,errorMsg) {
+                    "selectError" : function(event,file,errorMsg,selectFileQueue) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
-                            alert("please select .yml .sh or .tar.gz file");
+                            alert(i18n.chkFlow_term_upload_err1);
                         } else if ("EXCEED_FILE_SIZE" === errorMsg) {
-                            alert("error", "file size exceed");
+                            alert(i18n.chkFlow_term_upload_err4);
+                        } else if("MAX_TOTAL_SIZE" === errorMsg){
+                            alert(i18n.chkFlow_term_upload_err4);
+                        }
+                    },
+                    "select" :  function(event,file,selectFileQueue) {
+                        for(var i = 0;i<selectFileQueue.length;i++){
+                            if(selectFileQueue[i].fileName != "ServerAntAgentForEuler.tar.gz"
+                                || selectFileQueue[i].fileName != "ServerAntAgentForSles.tar.gz"
+                                || selectFileQueue[i].fileName != "install_pntl.sh"
+                                || selectFileQueue[i].fileName != "ipList.yml"){
+                                alert(i18n.chkFlow_term_upload_err5);
+                            }
                         }
                     },
                     "completeDefa" : function(event, result, selectFileQueue) {
-                        selectFileQueue.forEach(function(item,index){
-                            $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath,"success");
-                            $("#installFileUpload_id").widget().setTotalProgress(index+1,selectFileQueue.length);
-                        })
+                        if(result.result === "success") {
+                            $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
+                            $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
+                        }else {
+                            commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
+                        }
                     }
                 };
                 $scope.akTextBox = {
@@ -52,24 +67,18 @@ define(["language/chkFlow",
                 };
                 var divTip = new tinyWidget.Tip({
                     content : "",
-                    element : ("#variableBtnId"),
+                    element : ("#akSkBtnId"),
                     position : "right",
                     width: 300,
                     id : "searchTip",
                     auto:false
                 });
-                // $scope.akSkBtn = function () {
-                //     if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
-                //         divTip.option("content",i18n.chkFlow_term_input_valid);
-                //         divTip.show(30000);
-                //         return;
-                //     }
-                // };
                 $scope.akSkBtnOK = function () {
                     $scope.akSkBtn.disable = true;
-                    if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
+                    if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){
                         divTip.option("content",i18n.chkFlow_term_input_valid);
                         divTip.show(30000);
+                        $scope.akSkBtn.disable = false;
                         return;
                     }
                     var para = getParaFromInput();

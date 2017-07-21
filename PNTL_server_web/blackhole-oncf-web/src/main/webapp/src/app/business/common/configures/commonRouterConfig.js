@@ -117,6 +117,17 @@ define([
                 }
             },
             {
+                name:"blackhole.manager.configFlow.upgradeConfig",
+                url:"/upgradeConfig",
+                templateUrl:"src/app/business/chkFlow/views/upgradeConfig.html",
+                controller:"upgradeConfig.ctrl",
+                scripts: {
+                    'controllers': ['app/business/chkFlow/controllers/upgradeConfigCtrl'],
+                    'services': [
+                        'app/business/chkFlow/services/configFlowService']
+                }
+            },
+            {
                 name:"blackhole.manager.warnFlow",
                 url:"/warnFlow",
                 templateUrl:"src/app/business/chkFlow/views/warnFlow.html",

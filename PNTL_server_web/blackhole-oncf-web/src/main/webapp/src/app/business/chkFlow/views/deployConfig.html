@@ -14,12 +14,14 @@
                                      input-value="installFileUpload.inputValue"
                                      file-obj-name="installFileUpload.fileObjName"
                                      max-size = "installFileUpload.maxSize"
+                                     maxTotalSize = "installFileUpload.maxTotalSize"
                                      disable = "installFileUpload.disable"
                                      multi="installFileUpload.multi"
                                      file-type = "installFileUpload.fileType"
                                      action="installFileUpload.action"
                                      method = "installFileUpload.method"
                                      select-error = "installFileUpload.selectError"
+                                     select = "installFileUpload.select"
                                      complete="installFileUpload.completeDefa">
                     </tiny-fileupload>
                 </div>
@@ -45,10 +47,6 @@
                         </div>
                         <div style="float:left;margin-right:50px;">
                             <label>{{i18n.chkFlow_term_ip_name}}</label>
-                            <!--<tiny-textbox id="ipTextBox.id"-->
-                                          <!--value="ipTextBox.value"-->
-                                          <!--validate = "ipTextBox.validate"-->
-                                          <!--tooltip = "ipTextBox.tooltip"></tiny-textbox>-->
                             <tiny-ip id="ipTextBox.id"
                                      type="ipTextBox.type"
                                      value="ipTextBox.value"

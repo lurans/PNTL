@@ -86,7 +86,7 @@ define(["language/chkFlow",
                 $scope.packetsNumTextBox = {
                     "id": "packetsNumTextBoxId",
                     "value": "",
-                    "tooltip":i18n.chkFlow_term_packets_num_tooltip,
+                    "tooltip":i18n.chkFlow_term_max_loss_rate_tooltip,
                     "validate": [
                         {
                             "validFn" : "required"
@@ -95,8 +95,8 @@ define(["language/chkFlow",
                             "validFn" : "integer"
                         },
                         {
-                            "validFn" : "rangeValue",
-                            "params" : [0,100]
+                            "validFn" : "regularCheck",
+                            "params" : "/0|100/"
                         }]
                 };
                 $scope.timeDelayTextBox = {
@@ -118,14 +118,14 @@ define(["language/chkFlow",
                 $scope.packetsLossTextBox = {
                     "id": "packetsLossTextBoxId",
                     "value": "",
-                    "tooltip":i18n.chkFlow_term_max_loss_rate_tooltip,
+                    "tooltip":i18n.chkFlow_term_packets_num_tooltip,
                     "validate": [
                         {
                             "validFn" : "required"
                         },
                         {
-                            "validFn" : "regularCheck",
-                            "params" : "/0|100/"
+                            "validFn" : "rangeValue",
+                            "params" : [0,100]
                         }
                         ]
                 };
@@ -175,46 +175,17 @@ define(["language/chkFlow",
                         $scope.variableBtn.disable = false;
                         return;
                     }
-
-                    // $scope.variableBtn.disable = true;
                     var para = getParaFromInput();
-                    var probe_round=parseInt(para.probe_period);
-                    postVariableConfig(para);
-                    // if(probe_round<60&&probe_round>0)
-                    // {
-                    //     postVariableConfig(para);
-                    // }
-                    // else if(-1==probe_round||0==probe_round)
-                    // {
-                    //     var tinyWindowOptions = {
-                    //         title : i18n.chkFlow_term_confirm_window,
-                    //         height : "250px",
-                    //         width : "400px",
-                    //         content: "<p>"+i18n.chkFlow_term_negative+"</p><p>"+i18n.chkFlow_term_zero+"</p>",
-                    //         resizable:true,
-                    //         buttons:[{
-                    //             key:"btnOK",
-                    //             label : 'OK',//按钮上显示的文字
-                    //             focused : false,//默认焦点
-                    //             handler : function(event) {//点击回调函数
-                    //                 postVariableConfig(para);
-                    //                 win.destroy();
-                    //             }
-                    //         }, {
-                    //             key:"btnCancel",
-                    //             label : 'Cancel',
-                    //             focused : true,
-                    //             handler : function(event) {
-                    //                 win.destroy();
-                    //                 $scope.variableBtn.disable = false;
-                    //             }
-                    //         }]
-                    //     };
-                    //     var win = new tinyWidget.Window(tinyWindowOptions);
-                    //     win.show();
-                    // }
+                    if(para === ""){
+                        alert(i18n.chkFlow_term_dscp_tip);
+                        commonException.showMsg(i18n.chkFlow_term_config_err, "error");
+                    }else {
+                        postVariableConfig(para);
+                    }
+
+                    
                 };
-                // $scope.variableBtn.disable = true;
+
                 function getParaFromInput(){
                     var probeRound = $scope.probeRoundTextBox.value;
                     var probePort = $scope.probePortTextBox.value;
@@ -224,11 +195,12 @@ define(["language/chkFlow",
                     var packetsLoss = $scope.packetsLossTextBox.value;
                     var dscp = $scope.dscpTextBox.value;
                     var lossPkgTimeOut = $scope.lossPkgTimeOutTextBox.value;
-                    // var ak = $scope.akTextBox.value;
-                    // var sk = $scope.skTextBox.value;
-                    if(probeRound>reportRound){
-                        alert(i18n.chkFlow_term_alert_tip)
+                    var probeRoundNumber = parseInt(probeRound);
+                    var reportRoundNumber = parseInt(reportRound);
+                    if(probeRoundNumber>reportRoundNumber){
+                        var para1 = "";
                         $scope.variableBtn.disable = false;
+                        return para1;
                     }else{
                         var para = {"probe_period":probeRound,
                             "port_count":probePort,
@@ -238,11 +210,9 @@ define(["language/chkFlow",
                             "lossRate_threshold":packetsLoss,
                             "dscp":dscp,
                             "lossPkg_timeout":lossPkgTimeOut
-                            // "ak":ak,
-                            //  "sk":sk
                         };
+                        return para;
                     }
-                    return para;
                 };
                 var postVariableConfig = function(para){
                     var promise = configFlowServ.postVariableConfig(para);

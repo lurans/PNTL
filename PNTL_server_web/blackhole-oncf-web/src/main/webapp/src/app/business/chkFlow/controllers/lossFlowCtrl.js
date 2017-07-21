@@ -4,8 +4,8 @@ define(["language/chkFlow",
     function (i18n, commonException, Step, _StepDirective, ViewMode) {
         "use strict";
 
-        var lossFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "lossFlowServ",
-            function ($scope, $rootScope, $state, $sce, $compile, $timeout, lossFlowServ) {
+        var lossFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "lossFlowServ","$interval",
+            function ($scope, $rootScope, $state, $sce, $compile, $timeout, lossFlowServ,$interval) {
                 $scope.i18n = i18n;
 
                 $scope.button = {
@@ -226,6 +226,16 @@ define(["language/chkFlow",
                     getIpList(para);
                 };
                 init();
+                var autoRefresh = $interval(getIpList, 30000);
+                $scope.stopAutoRefresh = function () {
+                    if (autoRefresh) {
+                        $interval.cancel(autoRefresh);
+                        autoRefresh = null;
+                    }
+                }
+                $scope.$on('$destroy', function (angularEvent, current, previous) {
+                    $scope.stopAutoRefresh();
+                });
             }];
 
         var module = angular.module('common.config');
