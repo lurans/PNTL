@@ -11,4 +11,5 @@ extern INT32 ReportDataToServer(ServerAntAgentCfg_C *pcAgentCfg, stringstream * 
 // …œ±®AgentIP÷¡Server
 extern INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg);
 
+extern INT32 RequestConfigFromServer(FlowManager_C* pcFlowManager);
 #endif

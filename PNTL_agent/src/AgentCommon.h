@@ -31,6 +31,9 @@ extern INT32 SEND_BIG_PKG;
 
 extern INT32 CLEAR_BIG_PKG;
 
+const UINT32 BIG_PACKAGE_SIZE = 1000;
+const UINT32 NORMAL_PACKAGE_SIZE = 40;
+
 typedef enum  tagAgentDetectProtocolType
 {
     AGENT_DETECT_PROTOCOL_NULL = 0,   // Œ¥≈‰÷√

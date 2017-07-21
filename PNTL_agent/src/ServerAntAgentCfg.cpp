@@ -173,9 +173,12 @@ UINT32 ServerAntAgentCfg_C::GetPollingTimerPeriod()
 
 INT32 ServerAntAgentCfg_C::SetDetectPeriod(UINT32 uiNewPeriod)
 {
-    if (MIN_PROBE_PERIOD > uiNewPeriod || MAX_PROBE_PERIOD < uiNewPeriod)
+    if (STOP_PROBE_PERIOD != uiNewPeriod && EXIT_PROBE_PERIOD != (INT32)uiNewPeriod )
     {
-        return AGENT_E_ERROR;
+        if (MIN_PROBE_PERIOD > uiNewPeriod || MAX_PROBE_PERIOD < uiNewPeriod)
+        {
+            return AGENT_E_ERROR;
+        }
     }
     uiAgentDetectPeriod = uiNewPeriod;
     return AGENT_OK;

@@ -28,14 +28,6 @@ void destroyFlowManagerObj(FlowManager_C * pcFlowManager)
      }
 }
 
-void destroyMessagePlatformServer(MessagePlatformServer_C * pcMsgServer)
-{
-    if (NULL != pcMsgServer)
-     {
-        delete pcMsgServer;
-     }
-}
-
 // 启动ServerAntAgent业务
 INT32 ServerAntAgent()
 {
@@ -79,19 +71,6 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-    // 启动MessagePlatformServer端服务, 用于响应外部推送消息.
-    INIT_INFO("-------- Start MessagePlatformServer --------");
-    MessagePlatformServer_C * pcMsgServer = new MessagePlatformServer_C;
-    iRet = pcMsgServer->Init(uiPort, pcFlowManager);
-    if (iRet)
-    {
-        destroyFlowManagerObj(pcFlowManager);
-        destroyServerCfgObj(pcCfg);
-        destroyMessagePlatformServer(pcMsgServer);
-        INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
-        return iRet;
-    }
-
     iRet = ReportAgentIPToServer(pcCfg);
     int reportCount = 1;
     while (iRet)
@@ -115,7 +94,6 @@ INT32 ServerAntAgent()
 
     destroyFlowManagerObj(pcFlowManager);
     destroyServerCfgObj(pcCfg);
-	destroyMessagePlatformServer(pcMsgServer);
 
     INIT_INFO("-------- ServerAntAgent Exit Now --------");
 

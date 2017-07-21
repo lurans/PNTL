@@ -370,14 +370,12 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
      * @ingroup event
      */
     pstDaemon = MHD_start_daemon (
-                    MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_POLL | MHD_USE_SSL,
+                    MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_POLL,
                     uiNewPort,
                     0, 0,
                     &HttpDaemonHandlerCallback, this,
                     MHD_OPTION_NOTIFY_COMPLETED, request_completed, NULL,
                     MHD_OPTION_EXTERNAL_LOGGER, HttpDaemonLogCallback, this,
-                    MHD_OPTION_HTTPS_MEM_KEY, keyPem.c_str(),
-                    MHD_OPTION_HTTPS_MEM_CERT, certPem.c_str(),
                     MHD_OPTION_END
                 );
     if (NULL == pstDaemon)

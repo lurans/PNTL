@@ -7,6 +7,8 @@
 #include "AgentCommon.h"
 #include <vector>
 
+const INT32 EXIT_PROBE_PERIOD = -1;
+const UINT32 STOP_PROBE_PERIOD = 0;
 const UINT32 MIN_PROBE_PERIOD = 60;
 const UINT32 MAX_PROBE_PERIOD = 60 * 30;
 const UINT32 MIN_REPORT_PERIOD = 60;

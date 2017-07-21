@@ -13,7 +13,7 @@ using namespace std;
 #include "MessagePlatformClient.h"
 
 // http 请求处理超时时间,单位s, 避免因为Server未响应数据导致挂死
-#define AGENT_REQUEST_TIMEOUT 5
+#define AGENT_REQUEST_TIMEOUT 30
 
 size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssResponce)
 {
@@ -21,8 +21,7 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
 
     if (strlen(pStr) != (nmemb + 2))
     {
-        MSG_CLIENT_WARNING("ReceiveResponce.............wrong&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&.....");
-
+        MSG_CLIENT_WARNING("ReceiveResponce wrong pStr size is [%u]", strlen(pStr));
     }
 
     char* newPStr = (char*)malloc(size * nmemb + 1);
@@ -64,7 +63,6 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
     curl = curl_easy_init();
     if (curl)
     {
-
         // 开始配置curl句柄.
         // 可选打印详细信息, 帮助定位.
         res = curl_easy_setopt(curl, CURLOPT_VERBOSE, AGENT_FALSE);
@@ -80,7 +78,6 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_WARNING("curl easy setopt CURLOPT_ERRORBUFFER failed[%d][%s]", res, curl_easy_strerror(res));
         }
-
 
         headers = curl_slist_append(headers, ACCEPT_TYPE);
         headers = curl_slist_append(headers, CONTENT_TYPE);
@@ -121,6 +118,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_URL failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
+			curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -137,6 +135,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_POSTFIELDS failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
+			curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -147,6 +146,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_POSTFIELDS failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
+			curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -158,6 +158,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy setopt CURLOPT_POSTFIELDS failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
+			curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -168,6 +169,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         {
             MSG_CLIENT_ERROR("curl easy perform failed[%d][%s],detail info[%s]", res, curl_easy_strerror(res), error_msg);
             curl_easy_cleanup(curl);
+			curl_slist_free_all(headers);
             curl_global_cleanup();
             return AGENT_E_ERROR;
         }
@@ -184,8 +186,11 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
     return iRet;
 }
 
-// POST 提交的key必须为ServerAntAgentName, 否则会返回错误.
-#define ServerAntServerName          "ServerAntsServer"
+const string HTTPS_PREFIX = "https://";
+const string COLON = ":";
+const string PINGLIST_URL = "/rest/chkflow/pingList";
+const string AGENT_IP_URL = "/rest/chkflow/agentIp";
+const string AGENT_CONFIG_URL = "/rest/chkflow/pntlServerInfo";
 
 // 向ServerAnrServer请求新的probe列表
 INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
@@ -210,8 +215,9 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
         return iRet;
     }
     ssUrl.clear();
-    ssUrl << "https://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << "/rest/chkflow/pingList";
+    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << PINGLIST_URL;
 
+	MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
     // 生成post数据
     ssPostData.clear();
     ssPostData.str("");
@@ -269,7 +275,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C *pcAgentCfg, stringstream * pstrRep
         return iRet;
     }
     ssUrl.clear();
-    ssUrl << "https://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << strUrl;
+    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << strUrl;
 
     ssResponceData.clear();
     ssResponceData.str("");
@@ -313,7 +319,7 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
     }
 
     ssUrl.clear();
-    ssUrl << "https://" << sal_inet_ntoa(uiServerIP) << ":" << uiServerPort << "/rest/chkflow/agentIp";
+    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_IP_URL;
     MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
 
 
@@ -346,3 +352,54 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
     return iRet;
 }
 
+// 向ServerAnrServer请求新的配置
+INT32 RequestConfigFromServer(FlowManager_C* pcFlowManager)
+{
+    INT32 iRet = AGENT_OK;
+
+    // 用于提交的URL地址
+    stringstream ssUrl;
+    // 保存需要post的数据,json格式字符串, 由json模块生成.
+    stringstream ssPostData;
+    // 保存post的response(查询结果),json格式字符串, 后续交给json模块处理.
+    stringstream ssResponceData;
+    char * pcJsonData = NULL;
+
+    // 生成 URL
+    UINT32 uiServerIP = 0;
+    UINT32 uiServerPort = 0;
+    iRet = pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+    if (iRet)
+    {
+        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
+        return iRet;
+    }
+    ssUrl.clear();
+    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_CONFIG_URL;
+
+    // 生成post数据
+    ssPostData.clear();
+    ssPostData.str("{}");
+
+    ssResponceData.clear();
+    ssResponceData.str("");
+    iRet = HttpPostData(&ssUrl, &ssPostData, &ssResponceData);
+    if (iRet)
+    {
+        MSG_CLIENT_ERROR("Http Post Data failed[%d]", iRet);
+        return iRet;
+    }
+
+    // 字符串格式转换.
+    string strResponceData = ssResponceData.str();
+    pcJsonData = (char *)strResponceData.c_str();
+
+    // 处理response数据
+    iRet = ProcessServerConfigFlowFromServer( pcJsonData, pcFlowManager);
+    if (iRet)
+    {
+        MSG_CLIENT_ERROR("Process Server config Flow From Server failed[%d]", iRet);
+        return iRet;
+    }
+    return iRet;
+}
