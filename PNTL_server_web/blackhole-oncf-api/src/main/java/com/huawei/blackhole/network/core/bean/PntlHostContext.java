@@ -26,11 +26,22 @@ public class PntlHostContext {
 
     private String agentSN;
 
+    /*install 状态*/
     private String agentStatus;
+    /*install 失败原因*/
+    private String reason;
 
     private String hostClass;
 
     private Map<String, List<String>> pingMeshList;
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
 
     public String getId() {
         return id;
@@ -108,7 +119,7 @@ public class PntlHostContext {
         return pingMeshList;
     }
 
-    public void setPingMeshList(Map<String, List<String>> pingMeshList) {
+    private void setPingMeshList(Map<String, List<String>> pingMeshList) {
         this.pingMeshList = pingMeshList;
     }
 
@@ -123,7 +134,7 @@ public class PntlHostContext {
                 ips.add(host.getVbondIp());
             }
         }
-        if (ips == null || ips.isEmpty()){
+        if (ips.isEmpty()){
             return;
         }
         pingMeshList.put(srcIp, ips);
@@ -146,10 +157,21 @@ public class PntlHostContext {
 
     @Override
     public boolean equals(Object obj){
+        if (obj == this){
+            return true;
+        }
         if (obj instanceof PntlHostContext){
             PntlHostContext p = (PntlHostContext)obj;
             return this.getAgentIp().equals(p.getAgentIp());
         }
         return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode(){
+        int result = 17;
+        int c = agentIp.hashCode();
+
+        return  37*result + c;
     }
 }

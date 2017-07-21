@@ -1,0 +1,88 @@
+<html>
+<div id="deployCollapse">
+    <div ng-show="isDeployCollapsed">
+        <div class="collapse-body">
+            <div class="alertLabel">
+                <h2 style="color:#ff9955;">{{i18n.chkFlow_term_alert_label}}</h2>
+                <p>{{i18n.chkFlow_term_deploy_alert_label1}}</p>
+                <p>{{i18n.chkFlow_term_deploy_alert_label2}}</p>
+            </div>
+            <div class="deployFileUpload">
+                <div class="level2Head" ><span style="color:red">*</span>{{i18n.chkFlow_term_install_file_upload}}</div>
+                <div class="installFileUpload level2Content" style="overflow: hidden; zoom:1;">
+                    <tiny-fileupload id="installFileUpload.id"
+                                     input-value="installFileUpload.inputValue"
+                                     file-obj-name="installFileUpload.fileObjName"
+                                     max-size = "installFileUpload.maxSize"
+                                     maxTotalSize = "installFileUpload.maxTotalSize"
+                                     disable = "installFileUpload.disable"
+                                     multi="installFileUpload.multi"
+                                     file-type = "installFileUpload.fileType"
+                                     action="installFileUpload.action"
+                                     method = "installFileUpload.method"
+                                     select-error = "installFileUpload.selectError"
+                                     select = "installFileUpload.select"
+                                     complete="installFileUpload.completeDefa">
+                    </tiny-fileupload>
+                </div>
+            </div>
+            <div class="akSkConfig">
+                <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_ak_sk}}</div>
+                <div class="level2Content">
+                    <div style="overflow:auto;margin-bottom:20px;">
+                        <div style="float:left; margin-right:50px;">
+                            <label>{{i18n.chkFlow_term_ak_name}}</label>
+                            <tiny-textbox id="akTextBox.id"
+                                          value="akTextBox.value"
+                                          validate = "akTextBox.validate"
+                                          tooltip = "akTextBox.tooltip">
+                            </tiny-textbox>
+                        </div>
+                        <div style="float:left; margin-right:50px;">
+                            <label>{{i18n.chkFlow_term_sk_name}}</label>
+                            <tiny-textbox id="skTextBox.id"
+                                          value="skTextBox.value"
+                                          validate = "skTextBox.validate"
+                                          tooltip = "skTextBox.tooltip"></tiny-textbox>
+                        </div>
+                        <div style="float:left;margin-right:50px;">
+                            <label>{{i18n.chkFlow_term_ip_name}}</label>
+                            <tiny-ip id="ipTextBox.id"
+                                     type="ipTextBox.type"
+                                     value="ipTextBox.value"
+                                     validate = "ipTextBox.validate"
+                                     tooltip = "ipTextBox.tooltip"
+                            > </tiny-ip>
+                        </div>
+                        <div class="akSk"style="float:left;">
+                            <tiny-button id="akSkBtn.id"
+                                         text="akSkBtn.text"
+                                         disable="akSkBtn.disable"
+                                         click="akSkBtnOK()"></tiny-button>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="startOrStop" style="overflow:auto;">
+                    <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_start_stop}}</div>
+                    <div class="level2Content">
+                        <div class="deploy_btn" style="float:left; margin-right:40px;">
+                            <tiny-button id="deployBtn.id"
+                                         text="deployBtn.text"
+                                         disable="deployBtn.disable"
+                                         click="deployBtnOK()"></tiny-button>
+                        </div>
+                        <div class="probeExit_btn" style="float:left">
+                            <tiny-button id="probeExitBtn.id"
+                                         text="probeExitBtn.text"
+                                         disable="probeExitBtn.disable"
+                                         click="probeExitBtnOK()"></tiny-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

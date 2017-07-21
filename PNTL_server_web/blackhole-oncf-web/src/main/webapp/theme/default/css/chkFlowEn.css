@@ -65,9 +65,12 @@
     text-align: right;
     margin-top: 8px;
     width: 100px;
-}.input_label span{
-     color: #ff0000;
- }
+}
+.input_label1{
+    text-align: left;
+    margin-top: 8px;
+    width: 100px;
+}
 
 .input_content{
     width: 160px;
@@ -412,6 +415,13 @@ text.text-hover {
     width: 100%;
     word-wrap: break-word;
 }
+.tab_title6{
+    position: absolute;
+    text-align: center;
+    top: 396px;
+    width: 100%;
+    word-wrap: break-word;
+}
 
 .default_tab {
     background-color: white;
@@ -450,6 +460,25 @@ text.text-hover {
 }
 .grayWord{
     color: gray;
+}
+.level2Head{
+    margin-top:20px;
+    border-bottom: 1px solid #E0E0E0;
+}
+.level2Content{
+    margin-top:20px;
+}
+.ui-state-tabs-ul {
+    margin: 0px;
+}
+.tiny-file-multi-upload-remove{
+    display:none;
+}
+.tiny-file-multi-select-button{
+    height:30px;
+}
+.tiny_form_td_label {
+    vertical-align: middle;
 }
 .tiny-btn-text{
     width:60px;

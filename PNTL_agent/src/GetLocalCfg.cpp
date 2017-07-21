@@ -19,8 +19,6 @@ string GetJsonDataFromFile(string sFileName, string sFilePath)
 {
 
     INT32  iRet = AGENT_OK;
-
-    // ??¡§¡ã?a???????t
     stringstream ssCfgFileName;
     ifstream ifsAgentCfg;
 
@@ -31,7 +29,6 @@ string GetJsonDataFromFile(string sFileName, string sFilePath)
     {
         INIT_INFO("No cfg file[%s] in current dir, trying [%s] ...", sFileName.c_str(), sFilePath.c_str());
 
-        //3?¨¦¡§o??¡§2SERVER_ANT_CFG_FILE_PATH????2¡§|?¡§¡ã?¨¤?|¨¬????????t
         ssCfgFileName.clear();
         ssCfgFileName.str("");
         ssCfgFileName << sFilePath << sFileName;
@@ -42,12 +39,11 @@ string GetJsonDataFromFile(string sFileName, string sFilePath)
             return "";
         }
     }
+
     INIT_INFO("Using cfg file[%s]", ssCfgFileName.str().c_str());
 
-    // ?¡§¡é¡§¡§????t?¡§2¡§¡§Y
     string strCfgJsonData((istreambuf_iterator<char>(ifsAgentCfg)),  (istreambuf_iterator<char>()));
 
-    // 1??¨¤????t
     ifsAgentCfg.close();
 
     return strCfgJsonData;
@@ -77,7 +73,7 @@ INT32 GetLocalCfg(ServerAntAgentCfg_C * pcCfg)
     return AGENT_OK;
 }
 
-void RecoverLossPktData()
+void RecoverLossPktData(ServerAntAgentCfg_C *pcAgentCfg)
 {
 
     INT32  iRet = AGENT_OK;
@@ -85,7 +81,7 @@ void RecoverLossPktData()
     string content = "";
     ifstream fileStream;
     string line = "";
-    stringstream  ssReportData; // ¡§??¡§?¡§2¡§|¡§23¡§|json??¡§o?¡§|??¨¤?¡ì¡§oy?Y
+    stringstream  ssReportData; // ¨®?¨®¨²¨¦¨²3¨¦json??¨º?¨¦?¡À¡§¨ºy?Y
 
     sFilePath = GetLossLogFilePath();
 
@@ -103,10 +99,10 @@ void RecoverLossPktData()
 
         HTTP_DAEMON_INFO("RecoverLossPktData Read file content is:  [%s]", line.c_str());
 
-        iRet = ReportDataToServer(&ssReportData, REPORT_LOSSPKT_URL);
+        iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LOSSPKT_URL);
         if (AGENT_OK != iRet)
         {
-                break;
+            break;
         }
         sal_usleep(1);
     }

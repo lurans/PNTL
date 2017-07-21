@@ -29,4 +29,8 @@ extern INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstre
 
 extern INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
 
+extern void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry);
+
+extern INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
+
 #endif

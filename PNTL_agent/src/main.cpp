@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <errno.h>
 #include <pthread.h>
@@ -13,66 +12,21 @@ using namespace std;
 #include "MessagePlatformClient.h"
 #include "AgentCommon.h"
 
-void * MainTestTask(void * p)
-{
-    INT32 iRet = AGENT_OK;
-    FlowManager_C * pcFlowManager = (FlowManager_C *)p;
-
-    ServerFlowKey_S stNewServerFlowKey;
-    sal_memset(&stNewServerFlowKey, 0, sizeof(ServerFlowKey_S));
-
-    stNewServerFlowKey.eProtocol = AGENT_DETECT_PROTOCOL_UDP;
-    stNewServerFlowKey.uiSrcIP  = sal_inet_aton("172.25.3.15");
-    stNewServerFlowKey.uiDestIP = sal_inet_aton("172.25.3.16");
-    stNewServerFlowKey.uiSrcPortMin = 32769;
-    stNewServerFlowKey.uiSrcPortMax = 32868;
-    stNewServerFlowKey.uiSrcPortRange = 16;
-    stNewServerFlowKey.uiDscp = 10;
-    stNewServerFlowKey.uiUrgentFlow = AGENT_TRUE;
-
-    stNewServerFlowKey.stServerTopo.uiLevel = 1;
-    stNewServerFlowKey.stServerTopo.uiSvid = 9;
-    stNewServerFlowKey.stServerTopo.uiDvid = 11;
-
-
-
-    do
-    {
-        // 模拟Server下发紧急探测流
-        #if 0
-        iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
-        if (iRet)
-            INIT_ERROR("FlowManager.ServerWorkingFlowTableAdd failed [%d]", iRet);
-        #endif
-
-        // 模拟向ServerAntServer请求Server
-        #if 0
-        iRet = RequestProbeListFromServer(pcFlowManager);
-        if (iRet)
-            INIT_ERROR("RequestProbeListFromServer failed [%d]", iRet);
-        #endif
-        sal_sleep(120);
-
-    } while(1);
-}
-
 void destroyServerCfgObj(ServerAntAgentCfg_C * pcCfg)
 {
-     if (NULL != pcCfg)
-     {
+    if (NULL != pcCfg)
+    {
         delete pcCfg;
-     }
+    }
 }
 
 void destroyFlowManagerObj(FlowManager_C * pcFlowManager)
 {
-     if (NULL != pcFlowManager)
-     {
+    if (NULL != pcFlowManager)
+    {
         delete pcFlowManager;
-     }
+    }
 }
-
-
 
 // 启动ServerAntAgent业务
 INT32 ServerAntAgent()
@@ -86,41 +40,15 @@ INT32 ServerAntAgent()
     ServerAntAgentCfg_C * pcCfg = new ServerAntAgentCfg_C;
 
     // 获取本地配置信息
-    //INIT_INFO("-------- GetLocalCfg --------");
+    INIT_INFO("-------- GetLocalCfg --------");
     iRet = GetLocalCfg(pcCfg);
     if (iRet)
     {
         destroyServerCfgObj(pcCfg);
-
         INIT_ERROR("GetLocalCfg failed [%d]", iRet);
         return iRet;
     }
 
-    // 向Server注册Agent
-    //INIT_INFO("-------- ReportToServer --------");
-    iRet = ReportToServer(pcCfg);
-    if (iRet)
-    {
-        destroyServerCfgObj(pcCfg);
-
-        INIT_ERROR("ReportToServer failed [%d]", iRet);
-        return iRet;
-    }
-
-    // 获取Server端配置信息
-    //INIT_INFO("-------- GetCfgFromServer --------");
-    iRet = GetCfgFromServer(pcCfg);
-    if (iRet)
-    {
-        destroyServerCfgObj(pcCfg);
-
-        INIT_ERROR("GetCfgFromServer failed [%d]", iRet);
-        return iRet;
-    }
-
-
-    // 启动MessagePlatformServer端服务, 用于响应外部推送消息.
-    // INIT_INFO("-------- Start MessagePlatformServer --------");
     UINT32 uiPort = 0;
     iRet = pcCfg->GetAgentAddress(NULL, &uiPort);
     if (iRet)
@@ -131,50 +59,26 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-    pcFlowManager = new FlowManager_C;
     // 启动FlowManager对象
     INIT_INFO("-------- Start FlowManager --------");
+    pcFlowManager = new FlowManager_C;
     iRet = pcFlowManager->Init(pcCfg);
     if (iRet)
     {
         destroyFlowManagerObj(pcFlowManager);
         destroyServerCfgObj(pcCfg);
-
         INIT_ERROR("FlowManager.init failed [%d]", iRet);
         return iRet;
     }
 
-    MessagePlatformServer_C * pcMsgServer = new MessagePlatformServer_C;
-    iRet = pcMsgServer->Init(uiPort, pcFlowManager);
-    if (iRet)
-    {
-        destroyFlowManagerObj(pcFlowManager);
-
-        destroyServerCfgObj(pcCfg);
-
-        delete pcMsgServer;
-
-        INIT_ERROR("Init MessagePlatformServer_C  failed [%d]", iRet);
-        return iRet;
-    }
-
     iRet = ReportAgentIPToServer(pcCfg);
-    int reportCount = 0;
+    int reportCount = 1;
     while (iRet)
     {
         INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
         sleep(5);
-        INIT_ERROR("Retry to report Agent ip to Server, time [%d]", reportCount + 1);
+        INIT_ERROR("Retry to report Agent ip to Server, time [%d]", ++reportCount);
         iRet = ReportAgentIPToServer(pcCfg);
-        reportCount++;
-    }
-
-    if (AGENT_OK == iRet)
-    {
-        UINT32 delayTime = 10000 + rand() % 30;
-        INIT_INFO("Query pingList will be in [%u] seconds.", delayTime);
-        sleep(delayTime);
-        SHOULD_PROBE = 1;
     }
 
     // 所有对象已经启动完成, 开始工作.
@@ -187,10 +91,6 @@ INT32 ServerAntAgent()
     }
 
     INIT_INFO("-------- Stopping ServerAntAgent Now --------");
-
-    if (pcMsgServer)
-        delete pcMsgServer;
-    pcMsgServer = NULL;
 
     destroyFlowManagerObj(pcFlowManager);
     destroyServerCfgObj(pcCfg);
@@ -220,9 +120,8 @@ INT32 main (INT32 argc, char **argv)
     // 参数解析
     if ( 2 <= argc)
     {
-        INT32 iIndex = 0;
         string strTemp ;
-        for (iIndex = 1; iIndex < argc; iIndex++ )
+        for (INT32 iIndex = 1; iIndex < argc; iIndex++ )
         {
             strTemp = argv[iIndex];
             if ( "-d" == strTemp )

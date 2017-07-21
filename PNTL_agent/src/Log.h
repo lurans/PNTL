@@ -31,14 +31,14 @@ typedef enum tagAgentLogType
     AGENT_LOG_TYPE_LOSS_PACKET,       // 丢包
     AGENT_LOG_TYPE_LATENCY,       // 延时
     AGENT_LOG_TYPE_MAX
-}AgentLogType_E;
+} AgentLogType_E;
 
 typedef enum  tagAgentLogMode
 {
     AGENT_LOG_MODE_NORMAL = 0,   // 日志直接打印到终端,且在调用程序的当前目录创建日志文件.
     AGENT_LOG_MODE_DAEMON,       // 日志不打印到终端,直接记录到syslog.
     AGENT_LOG_MODE_MAX
-}AgentLogMode_E;
+} AgentLogMode_E;
 
 extern INT32 SetNewLogMode(AgentLogMode_E eNewLogMode);
 extern INT32 SetNewLogDir(string strNewDirPath);

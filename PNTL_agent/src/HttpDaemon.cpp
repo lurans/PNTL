@@ -246,9 +246,7 @@ INT32 HttpDaemonHandlerCallback (void *cls,
             {
                 HTTP_DAEMON_ERROR("MHD post process failed. Post Buffer Size[%u], Get data size[%u]", POSTBUFFERSIZE, *upload_data_size);
             }
-
             *upload_data_size = 0;
-
             return MHD_YES;
         }
         // connection->state 为 MHD_CONNECTION_FOOTERS_RECEIVED 时调用, upload_data中无数据, 通知handler发送响应数据.
@@ -316,7 +314,6 @@ HttpDaemon_C::~HttpDaemon_C()
 {
     HTTP_DAEMON_INFO("Destroy an old Http Daemon.");
 
-
     if (pstDaemon) // 停止http daemon
         MHD_stop_daemon (pstDaemon);
     pstDaemon = NULL;
@@ -373,14 +370,12 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
      * @ingroup event
      */
     pstDaemon = MHD_start_daemon (
-                    MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_POLL | MHD_USE_SSL,
+                    MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG | MHD_USE_POLL,
                     uiNewPort,
                     0, 0,
                     &HttpDaemonHandlerCallback, this,
                     MHD_OPTION_NOTIFY_COMPLETED, request_completed, NULL,
                     MHD_OPTION_EXTERNAL_LOGGER, HttpDaemonLogCallback, this,
-                    MHD_OPTION_HTTPS_MEM_KEY, keyPem.c_str(),
-                    MHD_OPTION_HTTPS_MEM_CERT, certPem.c_str(),
                     MHD_OPTION_END
                 );
     if (NULL == pstDaemon)
@@ -455,7 +450,7 @@ string HttpDaemon_C::loadFile(string path)
     in.open(path.c_str(), ios::in);
     if(in.fail())
     {
-        return NULL;
+        return content;
     }
     string line = "";
     while (getline(in, line))

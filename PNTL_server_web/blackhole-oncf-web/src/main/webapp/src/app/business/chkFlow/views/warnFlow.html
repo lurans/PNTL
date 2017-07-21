@@ -1,0 +1,95 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-control" content="no-cache">
+<meta http-equiv="Cache" content="no-cache">
+<!--<tiny-button text="btnCtrl.text" tooltip="btnCtrl.desc" click="btnCtrl.doSth(event)"></tiny-button>-->
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div style="float:left; margin-right:50px;">
+            <div class="span1 input_label1" style="width: 60px;">
+                {{i18n.chkFlow_term_az_id}}
+            </div>
+            <tiny-textbox id="azTextBox.id"
+                          value="azTextBox.value"
+                          width="azTextBox.width"
+                          tooltip = "azTextBox.tooltip"></tiny-textbox>
+        </div>
+        <div style="float:left; margin-right:50px;">
+            <div class="span1 input_label1" style="width: 60px;">
+                {{i18n.chkFlow_term_start_time}}
+            </div>
+            <tiny-datetime id= "start_time.id"
+                           type="start_time.type"
+                           date-format = "start_time.dateFormat"
+                           time-format="start_time.timeFormat">
+            </tiny-datetime>
+        </div>
+        <div style="float:left;margin-right:70px;">
+            <div class="span1 input_label1" style="width: 60px;">
+                {{i18n.chkFlow_term_src_ip}}
+            </div>
+            <tiny-ip id="src_ip.id"
+                     type="src_ip.type"
+                     value="src_ip.value"
+                     tooltip = "src_ip.tooltip"
+            > </tiny-ip>
+        </div>
+        <div style="float:left;">
+            <div class="span1 input_label1" style="width: 40px;">
+                {{i18n.chkFlow_term_Type}}
+            </div>
+            <tiny-select id="type.id"
+                         values="type.values"
+                         width="135"
+                         ></tiny-select>
+        </div>
+</div><br>
+    <div class="row-fluid">
+        <div style="float:left; margin-right:50px;">
+            <div class="span1 input_label1" style="width: 60px;">
+                {{i18n.chkFlow_term_pod_id}}
+            </div>
+            <tiny-textbox id="podTextBox.id"
+                          value="podTextBox.value"
+                          width="podTextBox.width"
+                          tooltip = "podTextBox.tooltip"></tiny-textbox>
+        </div>
+        <div style="float:left; margin-right:50px;">
+            <div class="span1 input_label1" style="width: 60px;">
+                {{i18n.chkFlow_term_end_time}}
+            </div>
+            <tiny-datetime id= "end_time.id"
+                           type="end_time.type"
+                           date-format = "end_time.dateFormat"
+                           time-format="end_time.timeFormat">
+            </tiny-datetime>
+        </div>
+        <div style="float:left;margin-right:120px;">
+            <div class="span1 input_label1" style="width: 60px;">
+                {{i18n.chkFlow_term_dst_ip}}
+            </div>
+            <tiny-ip id="dst_ip.id"
+                     value="dst_ip.value"
+                     tooltip = "dst_ip.tooltip"
+            > </tiny-ip>
+        </div>
+        <div style="float:left;">
+            <tiny-button id="search.id" text="search.text"
+                         icons-class="search.iconsClass"
+                         width="search.width"
+                         disable="search.disable"
+                         click="search.searchBtn()"></tiny-button>
+        </div>
+    </div>
+</div>
+<div class="dashboard_title"></div>
+<div style="width:1000px;margin-top: 20px">
+    <tiny-table id="table.id"
+                data='table.data'
+                columns='table.columns'
+                total-records="table.totalRecords"
+                columns-draggable="true"
+                tips="true" ></tiny-table>
+</div>

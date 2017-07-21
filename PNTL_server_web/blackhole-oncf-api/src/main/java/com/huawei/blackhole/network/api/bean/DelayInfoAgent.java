@@ -44,20 +44,14 @@ public class DelayInfoAgent implements Serializable{
         private String dip;
         @JsonProperty("sport")
         private String sport;
-        @JsonProperty("dport")
-        private String dport;
-        @JsonProperty("ip-protocol")
-        private String ipProtocol;
-        @JsonProperty("dscp")
-        private String dscp;
-        @JsonProperty("urgent-flag")
-        private String urgentFlag;
-        @JsonProperty("topology-tag")
-        private TopologyTag topologyTag;
         @JsonProperty("time")
-        private Time time;
+        private String time;
+        @JsonProperty("times")
+        private Time times;
         @JsonProperty("statistics")
         private Statistics st;
+        @JsonProperty("package-size")
+        private String packageSize;
 
         public String getSip() {
             return sip;
@@ -83,54 +77,6 @@ public class DelayInfoAgent implements Serializable{
             this.sport = sport;
         }
 
-        public String getDport() {
-            return dport;
-        }
-
-        public void setDport(String dport) {
-            this.dport = dport;
-        }
-
-        public String getIpProtocol() {
-            return ipProtocol;
-        }
-
-        public void setIpProtocol(String ipProtocol) {
-            this.ipProtocol = ipProtocol;
-        }
-
-        public String getDscp() {
-            return dscp;
-        }
-
-        public void setDscp(String dscp) {
-            this.dscp = dscp;
-        }
-
-        public String getUrgentFlag() {
-            return urgentFlag;
-        }
-
-        public void setUrgentFlag(String urgentFlag) {
-            this.urgentFlag = urgentFlag;
-        }
-
-        public TopologyTag getTopologyTag() {
-            return topologyTag;
-        }
-
-        public void setTopologyTag(TopologyTag topologyTag) {
-            this.topologyTag = topologyTag;
-        }
-
-        public Time getTime() {
-            return time;
-        }
-
-        public void setTime(Time time) {
-            this.time = time;
-        }
-
         public Statistics getSt() {
             return st;
         }
@@ -139,41 +85,28 @@ public class DelayInfoAgent implements Serializable{
             this.st = st;
         }
 
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        public static final class TopologyTag implements Serializable{
-            private static final long serialVersionUID = 5511486132484831330L;
+        public String getTime() {
+            return time;
+        }
 
-            @JsonProperty("level")
-            private String level;
-            @JsonProperty("svid")
-            private String svid;
-            @JsonProperty("dvid")
-            private String dvid;
+        public void setTime(String time) {
+            this.time = time;
+        }
 
-            public String getLevel() {
-                return level;
-            }
+        public Time getTimes() {
+            return times;
+        }
 
-            public void setLevel(String level) {
-                this.level = level;
-            }
+        public void setTimes(Time times) {
+            this.times = times;
+        }
 
-            public String getSvid() {
-                return svid;
-            }
+        public String getPackageSize() {
+            return packageSize;
+        }
 
-            public void setSvid(String svid) {
-                this.svid = svid;
-            }
-
-            public String getDvid() {
-                return dvid;
-            }
-
-            public void setDvid(String dvid) {
-                this.dvid = dvid;
-            }
+        public void setPackageSize(String packageSize) {
+            this.packageSize = packageSize;
         }
 
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -236,6 +169,10 @@ public class DelayInfoAgent implements Serializable{
             private String percentile99;
             @JsonProperty("standard-deviation")
             private String standardDeviation;
+            @JsonProperty("min")
+            private String min;
+            @JsonProperty("max")
+            private String max;
             @JsonProperty("drop-notices")
             private String dropNotices;
 
@@ -285,6 +222,22 @@ public class DelayInfoAgent implements Serializable{
 
             public void setDropNotices(String dropNotices) {
                 this.dropNotices = dropNotices;
+            }
+
+            public String getMin() {
+                return min;
+            }
+
+            public void setMin(String min) {
+                this.min = min;
+            }
+
+            public String getMax() {
+                return max;
+            }
+
+            public void setMax(String max) {
+                this.max = max;
             }
         }
     }

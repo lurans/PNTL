@@ -79,6 +79,7 @@ DetectWorker_C::DetectWorker_C()
     stCfg.uiRole = WORKER_ROLE_CLIENT; // 默认为sender
 
     WorkerSocket = 0;
+    iManageSocket = -1;
     pcAgentCfg = NULL;
 
     clock_gettime(CLOCK_REALTIME, &ts);
@@ -115,6 +116,55 @@ DetectWorker_C::~DetectWorker_C()
         sal_mutex_destroy(WorkerSessionLock);
     WorkerSessionLock = NULL;
 
+}
+
+INT32 DetectWorker_C::RecvServerMsg()
+{
+    INT32 iRet = 0;
+    struct timeval tm;      // 缓存当前时间.
+    char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// 保存报文所有附加信息的buffer, 当前只预留了tos值空间.
+    struct msghdr msg;      // 描述报文信息, socket收发包使用.
+    struct cmsghdr *cmsg;   // 用于遍历 msg.msg_control中所有报文附加信息, 目前是tos值.
+    struct iovec iov[1];    // 用于保存报文payload buffer的结构体.参见msg.msg_iov. 当前只使用一个缓冲区.
+    UINT32 uiMsgType = 0;;
+
+   /*  socket已经ready, 此时socket和Protocol等成员应该已经完成初始化. */
+
+    sal_memset(&tm, 0, sizeof(tm));
+    tm.tv_sec  = GetCurrentInterval() / SECOND_USEC;  //us -> s
+    tm.tv_usec = GetCurrentInterval() % SECOND_USEC; // us -> us
+    iRet = setsockopt(iManageSocket, SOL_SOCKET, SO_RCVTIMEO, &tm, sizeof(tm)); //设置socket 读取超时时间
+    if( 0 > iRet )
+    {
+        DETECT_WORKER_ERROR("RX: Setsockopt SO_RCVTIMEO failed[%d]: %s [%d]", iRet, strerror(errno), errno);
+        return AGENT_E_HANDLER;
+    }
+
+    // 报文payload接收buffer
+    iov[0].iov_base =  &uiMsgType;
+    iov[0].iov_len  = sizeof(UINT32);
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 1;
+    msg.msg_flags = 0;
+    msg.msg_control = acCmsgBuf;
+    msg.msg_controllen = sizeof(acCmsgBuf);
+
+        DETECT_WORKER_INFO("begin: RecvServerMsg----------------- ");
+
+    // 接收报文
+    iRet = recvmsg(iManageSocket, &msg, 0);
+        DETECT_WORKER_INFO("end: RecvServerMsg----------------- ");
+
+    if (iRet == sizeof(UINT32))
+    {
+        DETECT_WORKER_INFO("RX: RecvServerMsg-----------------  type is:[%d]", uiMsgType);
+
+       /* switch(uiMsgType)
+        {
+        }*/
+    }
+
+    return AGENT_OK;
 }
 
 // Thread回调函数.
@@ -241,11 +291,11 @@ INT32 DetectWorker_C::ThreadHandler()
                                                iSockFd, iRet, iTos);
 
 
-	                        pstSendMsg->stT4.uiSec = tm.tv_sec;
-	                        pstSendMsg->stT4.uiUsec = tm.tv_usec;
-	                        iRet = RxUpdateSession(pstSendMsg); //刷新sender的会话列表
+                            pstSendMsg->stT4.uiSec = tm.tv_sec;
+                            pstSendMsg->stT4.uiUsec = tm.tv_usec;
+                            iRet = RxUpdateSession(pstSendMsg); //刷新sender的会话列表
 
-                           // 若应答报文返回的太晚(Timeout), Sender会话列表已经删除会话, 会返回找不到.
+                            // 若应答报文返回的太晚(Timeout), Sender会话列表已经删除会话, 会返回找不到.
                             if ((AGENT_OK!= iRet) && (AGENT_E_NOT_FOUND != iRet))
                                 DETECT_WORKER_WARNING("RX: Update Session failed. iRet:[%d]", iRet);
                         }
@@ -302,6 +352,8 @@ INT32 DetectWorker_C::ThreadHandler()
                     return AGENT_E_HANDLER;
                     break;
             }
+            RecvServerMsg();
+
         }
     }
 
@@ -409,6 +461,13 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAg
         return iRet;
     }
 
+    iRet = InitManageSocket();
+    if (iRet && (AGENT_E_SOCKET != iRet)) // 绑定socket出错时不退出.
+    {
+        DETECT_WORKER_ERROR("InitSocket failed[%d]", iRet);
+        return iRet;
+    }
+
     iRet = StartThread(); // 启动rx任务
     if(iRet)
     {
@@ -421,12 +480,24 @@ INT32 DetectWorker_C::Init(WorkerCfg_S stNewWorker, ServerAntAgentCfg_C *pcNewAg
 // 释放socket资源
 INT32 DetectWorker_C::ReleaseSocket()
 {
-    if(WorkerSocket)
-        DETECT_WORKER_INFO("Release a socket [%d]", WorkerSocket);
 
     if(WorkerSocket)
+    {
         close(WorkerSocket);
-    WorkerSocket = 0;
+        WorkerSocket = 0;
+    }
+
+    return AGENT_OK;
+}
+
+INT32 DetectWorker_C::ReleaseManageSocket()
+{
+
+    if(-1 != iManageSocket)
+    {
+        close(iManageSocket);
+        iManageSocket = 0;
+    }
 
     return AGENT_OK;
 }
@@ -484,6 +555,52 @@ INT32 DetectWorker_C::InitSocket()
     WorkerSocket = SocketTmp;
 
     DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", WorkerSocket,uiDestPort,servaddr.sin_addr.s_addr);
+
+    return AGENT_OK;
+}
+
+
+// 根据stCfg信息申请socket资源.
+INT32 DetectWorker_C::InitManageSocket()
+{
+    INT32 SocketTmp = 0;
+    struct sockaddr_in servaddr;
+    INT32 iRet;
+    UINT32 uiMgntIp = 0;
+    UINT32 uiSrcPortMin = 0;
+
+    pcAgentCfg ->GetMgntIP(&uiMgntIp);
+    if (0 == uiMgntIp)
+    {
+        DETECT_WORKER_ERROR("GetMgntIP failed ");
+
+        return AGENT_E_SOCKET;
+    }
+
+    ReleaseManageSocket();
+
+    SocketTmp = socket(AF_INET, SOCK_DGRAM, 0);
+    if( SocketTmp == -1 )
+    {
+        DETECT_WORKER_ERROR("Create socket failed[%d]: %s [%d]", SocketTmp, strerror(errno), errno);
+        return AGENT_E_MEMORY;
+    }
+    sal_memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(uiMgntIp);
+    servaddr.sin_port = htons(33001);
+
+    if( bind(SocketTmp, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
+    {
+        DETECT_WORKER_WARNING("Bind socket failed, SrcIP[%s],SrcPort[%d]: %s [%d]",
+                              sal_inet_ntoa(stCfg.uiSrcIP), stCfg.uiSrcPort, strerror(errno), errno);
+        close(SocketTmp);
+        return AGENT_E_SOCKET;
+    }
+
+    iManageSocket = SocketTmp;
+
+    DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", iManageSocket,33001,servaddr.sin_addr.s_addr);
 
     return AGENT_OK;
 }
@@ -563,7 +680,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
     sal_memset(&servaddr, 0, sizeof(servaddr));
     sal_memset(&tm, 0, sizeof(tm));
 
-	pstSendMsg = (PacketInfo_S *)aucBuff;
+    pstSendMsg = (PacketInfo_S *)aucBuff;
     gettimeofday(&tm,NULL); //获取当前时间
     DETECT_WORKER_WARNING("is big pkg [%u]", pNewSession->stFlowKey.uiIsBigPkg);
     if (pNewSession->stFlowKey.uiIsBigPkg)

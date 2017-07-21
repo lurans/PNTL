@@ -6,9 +6,10 @@
 // 向ServerAnrServer请求新的probe列表
 extern INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager);
 
-extern INT32 ReportDataToServer(stringstream * pstrReportData,  string strUrl);
+extern INT32 ReportDataToServer(ServerAntAgentCfg_C *pcAgentCfg, stringstream * pstrReportData,  string strUrl);
 
 // 上报AgentIP至Server
 extern INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg);
 
+extern INT32 RequestConfigFromServer(FlowManager_C* pcFlowManager);
 #endif

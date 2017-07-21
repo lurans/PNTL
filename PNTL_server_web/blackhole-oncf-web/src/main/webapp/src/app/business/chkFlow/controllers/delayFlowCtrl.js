@@ -4,13 +4,13 @@ define(["language/chkFlow",
     function (i18n,commonException,Step, _StepDirective, ViewMode) {
         "use strict";
 
-        var delayFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "delayFlowServ",
-            function ($scope, $rootScope, $state, $sce, $compile, $timeout, delayFlowServ) {
+        var delayFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "delayFlowServ","$interval",
+            function ($scope, $rootScope, $state, $sce, $compile, $timeout, delayFlowServ,$interval) {
                 $scope.i18n = i18n;
 
                 $scope.button = {
                     "id":"resetBtn_id",
-                    "text" : i18n.chkFlow_term_reset_btn,
+                    "text" : i18n.chkFlow_term_reset_btn
                 };
 
                 $scope.ipList=[];
@@ -25,7 +25,7 @@ define(["language/chkFlow",
                 var width = 640,
                     height = 640;
                 var colors = ['#750000','#92DD92', '#60EE97', '#FFBB77','#FF8000', '#FF2D2D'];
-                var delayTimeLevel = [-1, 0, 100, 200, 500, 1000];
+                var delayTimeLevel = [-1, 0, 10, 20, 50, 100];
                 var legendElementWidth = width/delayTimeLevel.length;
                 function statusColor(delayTime)
                 {
@@ -198,6 +198,7 @@ define(["language/chkFlow",
                             //var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
                             //var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['recv_delay']);
                             var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_round_delay']);
+                            sendRoundDelay=sendRoundDelay/1000;
                             //var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['recv_round_delay']);
                             //var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
                             //var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
@@ -231,6 +232,16 @@ define(["language/chkFlow",
                     getIpList(para);
                 };
                 init();
+                var autoRefresh = $interval(getIpList, 60000);
+                $scope.stopAutoRefresh = function () {
+                    if (autoRefresh) {
+                        $interval.cancel(autoRefresh);
+                        autoRefresh = null;
+                    }
+                }
+                $scope.$on('$destroy', function (angularEvent, current, previous) {
+                    $scope.stopAutoRefresh();
+                });
             }];
 
 

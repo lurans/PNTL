@@ -19,6 +19,7 @@ public class Constants {
 
     public static final long PNTL_WAIT_NUM = 10;
     public static final long PNTL_WATI_TIME = 3 * 1000;
+    public static final long PNTL_WAIT_TIME_PINGMESH = 100;
 
     public static final String WEBAPP = "webapp";
 
@@ -62,6 +63,8 @@ public class Constants {
 
     public static final String HTTP_PREFIX = "http://";
 
+    public static final String HTTPS_PREFIX = "https://";
+
     public static final String VRM_PORT = "7070";
 
     public static final String SSO_SSO_TAG = "sso_sso_url_tag";
@@ -93,6 +96,6 @@ public class Constants {
     public static final String FALSE = "false";
 
     public static final long IPLIST_FILE_MAX_SIZE = 1000 * 1000; // 1Mb
-    public static final long AGENT_FILE_MAX_SIZE = 2000 * 1000; //2Mb
+    public static final long AGENT_FILE_MAX_SIZE = 8 * 1000 * 1000; //8Mb
 
 }

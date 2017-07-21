@@ -1,8 +1,5 @@
-
 #include <sstream>
 #include <stdlib.h>
-//#include <boost/property_tree/json_parser.hpp>
-
 using namespace std;
 
 #include "Log.h"
@@ -159,7 +156,7 @@ INT32 MessagePlatformServer_C::ProcessPostIterate(const char * pcKey, const char
         SHOULD_PROBE = 1;
         (* pstrResponce) = ResponcePageOK;
         MSG_SERVER_INFO("PingList Has changed, request new pingList in next interval.");
-		return AGENT_OK;
+        return AGENT_OK;
     }
     else if (0 == sal_strcmp(pcKey, ServerAntsAgentConf))
     {

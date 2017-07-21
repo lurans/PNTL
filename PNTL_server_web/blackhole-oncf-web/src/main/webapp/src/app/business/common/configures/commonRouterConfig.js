@@ -95,14 +95,47 @@ define([
                 }
             },
             {//编辑参数
-                name:"blackhole.config.editVariable",
-                url:"/editVariable",
-                templateUrl:"src/app/business/chkFlow/views/editVariable.html",
-                controller:"editVariable.ctrl",
+                name:"blackhole.manager.configFlow.deployConfig",
+                url:"/deployConfig",
+                templateUrl:"src/app/business/chkFlow/views/deployConfig.html",
+                controller:"deployConfig.ctrl",
                 scripts: {
-                    'controllers': ['app/business/chkFlow/controllers/editVariableCtrl'],
+                    'controllers': ['app/business/chkFlow/controllers/deployConfigCtrl'],
                     'services': [
                         'app/business/chkFlow/services/configFlowService']
+                }
+            },
+            {
+                name:"blackhole.manager.configFlow.variableConfig",
+                url:"/variableConfig",
+                templateUrl:"src/app/business/chkFlow/views/variableConfig.html",
+                controller:"variableConfig.ctrl",
+                scripts: {
+                    'controllers': ['app/business/chkFlow/controllers/variableConfigCtrl'],
+                    'services': [
+                        'app/business/chkFlow/services/configFlowService']
+                }
+            },
+            {
+                name:"blackhole.manager.configFlow.upgradeConfig",
+                url:"/upgradeConfig",
+                templateUrl:"src/app/business/chkFlow/views/upgradeConfig.html",
+                controller:"upgradeConfig.ctrl",
+                scripts: {
+                    'controllers': ['app/business/chkFlow/controllers/upgradeConfigCtrl'],
+                    'services': [
+                        'app/business/chkFlow/services/configFlowService']
+                }
+            },
+            {
+                name:"blackhole.manager.warnFlow",
+                url:"/warnFlow",
+                templateUrl:"src/app/business/chkFlow/views/warnFlow.html",
+                controller:"warnFlow.ctrl",
+                scripts: {
+                    'controllers': ['app/business/chkFlow/controllers/warnFlowCtrl'],
+                    'services' :[
+                        'app/business/chkFlow/services/warnFlowService']
                 }
             }
         ];

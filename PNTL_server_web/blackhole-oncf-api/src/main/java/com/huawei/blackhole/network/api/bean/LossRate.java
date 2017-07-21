@@ -5,14 +5,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.extention.service.pntl.Pntl;
+import org.apache.commons.lang3.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -63,7 +67,7 @@ public class LossRate implements Serializable{
         @JsonProperty("recv_pkgs")
         private String recvPkgs;
 
-        private Long timestamp;
+        private String timestamp;
 
         public String getSrcIp() {
             return srcIp;
@@ -113,11 +117,11 @@ public class LossRate implements Serializable{
             this.recvPkgs = recvPkgs;
         }
 
-        public Long getTimestamp() {
+        public String getTimestamp() {
             return timestamp;
         }
 
-        public void setTimestamp(Long timestamp) {
+        public void setTimestamp(String timestamp) {
             this.timestamp = timestamp;
         }
     }
@@ -131,10 +135,14 @@ public class LossRate implements Serializable{
         String dstIp = flow.getDip();
         boolean hasData = false;
 
+        if (StringUtils.isEmpty(srcIp) || StringUtils.isEmpty(dstIp)){
+            return;
+        }
+
         LossRateResult newData = new LossRateResult();
-        float rate = Float.parseFloat(flow.getSt().getPacketDrops()) / Float.parseFloat(flow.getSt().getPacketSent());
+        float rate = Float.parseFloat(flow.getPacketDrops()) / Float.parseFloat(flow.getPacketSent());
         DecimalFormat df2 = new DecimalFormat("###.00");
-        String recvPkgs = String.valueOf(Integer.valueOf(flow.getSt().getPacketSent()) - Integer.valueOf(flow.getSt().getPacketDrops()));
+        String recvPkgs = String.valueOf(Integer.valueOf(flow.getPacketSent()) - Integer.valueOf(flow.getPacketDrops()));
 
         if (Float.valueOf(rate*100).intValue() < LossRate.getLossRateThreshold()){
             return;
@@ -142,16 +150,16 @@ public class LossRate implements Serializable{
         newData.setSrcIp(srcIp);
         newData.setDstIp(dstIp);
         newData.setSendLossRate(df2.format(rate*100)+"%");
-        newData.setSendPkgs(flow.getSt().getPacketSent());
+        newData.setSendPkgs(flow.getPacketSent());
         newData.setRecvLossRate("0");///TODO:暂时设为0
         newData.setRecvPkgs(recvPkgs);
-        newData.setTimestamp(System.currentTimeMillis()/1000);
+        newData.setTimestamp(flow.getTime());
 
         PntlWarning.saveWarnToWarningList(newData);
 
         List<LossRateResult> resultList = LossRate.result;
         for (LossRateResult result : resultList){
-            if (result.getSrcIp().equals(srcIp) && result.getDstIp().equals(dstIp)){
+            if (srcIp.equals(result.getSrcIp()) && dstIp.equals(result.getDstIp())){
                 resultList.set(resultList.indexOf(result), newData);//replace old data
                 hasData = true;
                 break;
@@ -180,12 +188,19 @@ public class LossRate implements Serializable{
         }
 
         Iterator<LossRateResult> it = resultList.iterator();
+        LossRateResult lossRate = null;
         while (it.hasNext()){
-            LossRateResult lossRate = it.next();
-            Long intervalTime = System.currentTimeMillis()/1000 - lossRate.getTimestamp();
-            if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME_NEWEST){
-                LOG.info("Remove warning:" + lossRate.getSrcIp() +" -> " + lossRate.getDstIp());
-                it.remove();
+            lossRate = it.next();
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try{
+                Date dt = df.parse(lossRate.getTimestamp());
+                Long intervalTime = System.currentTimeMillis()/1000 - dt.getTime()/1000;
+                if (intervalTime >= PntlInfo.MONITOR_INTERVAL_TIME_NEWEST){
+                    LOG.info("Remove warning:" + lossRate.getSrcIp() +" -> " + lossRate.getDstIp());
+                    it.remove();
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
         }
     }
