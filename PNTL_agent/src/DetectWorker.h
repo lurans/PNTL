@@ -185,10 +185,12 @@ private:
 
 
     INT32 WorkerSocket;                               // 当前Worker使用的Socket.
+    INT32 iManageSocket;                               // 当前manage使用的Socket.
     INT32 ReleaseSocket();                            // 释放socket资源
     INT32 InitSocket();                               // 根据stProtocol信息申请socket资源.
     INT32 GetSocket();                                // 获取当前socket
-    int test();
+    INT32 ReleaseManageSocket();
+    INT32 InitManageSocket();
     INT32 TxPacket(DetectWorkerSession_S*
                    pNewSession);               // 启动报文发送.PushSession()时触发.
     INT32 TxUpdateSession(DetectWorkerSession_S*
@@ -198,6 +200,7 @@ private:
     INT32 ThreadHandler();                            // 任务主处理函数
     INT32 PreStopHandler();                           // StopThread触发, 通知ThreadHandler主动退出.
     INT32 PreStartHandler();                          // StartThread触发, 通知ThreadHandler即将被调用.
+    INT32 RecvServerMsg();
 
     UINT32 uiHandlerDefaultInterval;          // Handler状态刷新默认周期, 单位为us
     INT32 RxUpdateSession
