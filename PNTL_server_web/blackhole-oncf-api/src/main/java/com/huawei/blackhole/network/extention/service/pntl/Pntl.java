@@ -1,13 +1,6 @@
 package com.huawei.blackhole.network.extention.service.pntl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.huawei.blackhole.network.api.bean.DelayInfoAgent;
-import com.huawei.blackhole.network.api.bean.LossRateAgent;
-import com.huawei.blackhole.network.api.bean.PntlConfig;
-import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
-import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.exception.ConfigLostException;
 import com.huawei.blackhole.network.common.utils.http.Parameter;
@@ -18,18 +11,11 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
-import com.sun.org.apache.regexp.internal.RE;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.security.Key;
 import java.util.*;
 
 @Service("pntlRequestService")
@@ -122,74 +108,6 @@ public class Pntl {
         }
 
         return hostInfo;
-    }
-
-    public RestResp sendServerConf(String agentIp, PntlConfig config)
-            throws ClientException, JsonProcessingException {
-        LOG.info("start to send server config");
-
-        Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
-
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
-        ObjectMapper mapper = new ObjectMapper();
-        ServerConf json = new ServerConf();
-        json.setProbePeriod(config.getProbePeriod());
-        json.setPortCount(config.getPortCount());
-        json.setReportPeriod(config.getReportPeriod());
-        json.setDelayThreshold(config.getDelayThreshold());
-        json.setDscp(config.getDscp());
-        json.setLossPkgTimeout(config.getLossPkgTimeout());
-        json.setBigPkgRate(config.getPkgCount());
-        String jsonInString = mapper.writeValueAsString(json);
-
-        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_CONF, jsonInString));
-
-        return RestClientExt.post(url, null, formBody,  header);
-    }
-
-    /**
-     * 发送探测时间间隔到agent
-     * @param agentIp
-     * @param json
-     * @return
-     * @throws ClientException
-     */
-    public RestResp sendProbeInterval(String agentIp, ProbeInterval json)
-            throws ClientException, JsonProcessingException {
-        LOG.info("start to send Probe time interval");
-
-        Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
-
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonInString = mapper.writeValueAsString(json);
-
-        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_ACTION, jsonInString));
-
-        return RestClientExt.post(url, null, formBody,  header);
-    }
-
-
-    /**
-     * 通知agent查询pingList
-     * @param agentIp
-     * @return
-     * @throws ClientException
-     */
-    public RestResp notifyAgentToGetPingList(String agentIp) throws ClientException{
-        LOG.info("Notify agent[" + agentIp + "] to get pingList");
-        Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
-
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
-        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_IP, ""));
-
-        return RestClientExt.post(url, null, formBody,  header);
     }
 
     private void setHostErrorMsg(List<PntlHostContext> hostList, List<String> snList, String agentStatus,
@@ -290,33 +208,6 @@ public class Pntl {
     }
 
     /**
-     *
-     * 启动traceroute任务，将Dst ip列表发送给traceroute，并启动traceroute网络拓扑学习
-     * @param pntlHostList
-     * @return
-     * @throws ClientException
-     */
-    public RestResp tracerouteTask(List<PntlHostContext> pntlHostList)
-        throws ClientException{
-        LOG.info("start traceroute task");
-
-        RestResp resp = null;
-        StringBuffer ipList = new StringBuffer();
-        for (PntlHostContext host : pntlHostList){
-            ipList.append(host.getVbondIp());
-            if (pntlHostList.indexOf(host) != pntlHostList.size()-1){
-                ipList.append(" ");
-            }
-        }
-
-        for (PntlHostContext host : pntlHostList){
-            String agentSn = host.getAgentSN();
-            ///TODO 向每个agentSn发送ipList
-        }
-
-        return resp;
-    }
-    /**
      * 从server获取学习完成的traceroue结果
      * @param host
      * @return
@@ -399,22 +290,6 @@ public class Pntl {
         }
         final String command = "service ServerAntAgentService start";
         return sendCommandToAgents(snList, token, command, "sync");
-    }
-
-    public static final class ProbeFlows{
-        private String ServerAntsAgent;
-
-        public String getServerAntsAgent() {
-            return ServerAntsAgent;
-        }
-
-        public void setServerAntsAgent(String serverAntsAgent) {
-            ServerAntsAgent = serverAntsAgent;
-        }
-
-        public ProbeFlows(String str){
-            this.ServerAntsAgent = str;
-        }
     }
 
     public static String getAgentSnByIp(String ip) throws ClientException{

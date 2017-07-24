@@ -80,25 +80,10 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             return result;
         }
 
-        //由于agent无法主动接收server信息，这里设置标记，用于返回给agent响应，通知agent来取pingList
-        CommonInfo.setGetPingList("1");
         for (PntlHostContext host : hostList){
-            try {
-                RestResp resp = pntlRequest.notifyAgentToGetPingList(host.getAgentIp());
-                if (resp.getStatusCode().isError()){
-                    result.addError("", "Notify agent to get pingList failed");
-                }
-            } catch (ClientException e){
-                String errMsg = "Notify agent to get pingList failed:" + e.getMessage();
-                LOG.error(errMsg);
-                result.addError("", errMsg);
-            }
-            try {
-                Thread.sleep(Constants.PNTL_WAIT_TIME_PINGMESH);
-            } catch (InterruptedException e) {
-                LOG.warn("ignore : interrupted sleep");
-                result.addError("", "ignore : interrupted sleep");
-            }
+            SocketClientService socketClient = new SocketClientService(host.getAgentIp(),
+                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_PINGLIST);
+            socketClient.start();
         }
         return result;
     }
@@ -189,19 +174,12 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "host is null");
             return result;
         }
+
         for (int i = 0; i < hostList.size(); i++){
             String agentIp = hostList.get(i).getAgentIp();
-            try {
-                RestResp resp = pntlRequest.sendServerConf(agentIp, config);
-                if (resp.getStatusCode().isError()){
-                    LOG.error("stop probe failed[" + agentIp + "]");
-                    result.addError("", "stop probe failed[" + agentIp + "]");
-                }
-            } catch (ClientException | JsonProcessingException e){
-                //异常不退出，继续发送其他agent
-                LOG.error("stop probe failed[" + agentIp + "] " + e.getMessage());
-                result.addError("", "stop probe failed[" + agentIp + "] "+ e.getMessage());
-            }
+            SocketClientService socketClient = new SocketClientService(agentIp,
+                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_CONF);
+            socketClient.start();
         }
         return result;
     }
@@ -235,17 +213,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         for (int i = 0; i < hostList.size(); i++){
             String agentIp = hostList.get(i).getAgentIp();
-            try {
-                RestResp resp = pntlRequest.sendProbeInterval(agentIp, interval);
-                if (resp.getStatusCode().isError()){
-                    LOG.error("set probe interval failed, agent:[" + agentIp + "] interval:[" + interval +"]");
-                    result.addError("", "stop probe failed[" + agentIp + "]");
-                }
-            } catch (ClientException | JsonProcessingException e){
-                //异常不退出，继续发送其他agent
-                LOG.error("stop probe failed[" + agentIp + "] " + e.getMessage());
-                result.addError("", "stop probe failed[" + agentIp + "] "+ e.getMessage());
-            }
+            SocketClientService socketClient = new SocketClientService(agentIp,
+                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_TIME_INTERVAL);
+            socketClient.start();
         }
         return result;
     }
@@ -411,6 +381,20 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         resultService.execute(monitorPntlWarnTask);
     }
 
+    /**
+     * 通知agent，表示server已启动
+     */
+    private void notifyAgent(){
+        if (hostList == null || hostList.isEmpty()){
+            return;
+        }
+        for (PntlHostContext host : hostList){
+            SocketClientService socketClient = new SocketClientService(host.getAgentIp(),
+                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_VBONDIP);
+            socketClient.start();
+        }
+    }
+
     private Result<String> initPntlConfig(){
         Result<String> result = new Result<String>();
         //read config.yml
@@ -455,6 +439,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
 
         startMonitor();
+
+        notifyAgent();
         LOG.info("Init host list and pntlConfig success");
 
         return  result;
