@@ -1320,15 +1320,38 @@ INT32 FlowManager_C::ThreadHandler()
             }
         }
 
-        // 每 60s 查询一次配置
-        if (0 != counter && 0 == counter % 60)
+        if (SHOULD_QUERY_CONF && 0 == counter % randDelay)
         {
             iRet = DoQueryConfig();
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query Config failed[%d]", iRet);
             }
+            else
+            {
+                SHOULD_QUERY_CONF = 0;
+            }
         }
+
+        if (SHOULD_REPORT_IP && 0 == counter % randDelay)
+        {
+            iRet = ReportAgentIPToServer(this->pcAgentCfg);
+            if (iRet)
+            {
+                FLOW_MANAGER_WARNING("ReportAgentIPToServer failed[%d]", iRet);
+            }
+            else
+            {
+                SHOULD_REPORT_IP = 0;
+            }
+        }
+
+        if (PROBE_INTERVAL != 9999)
+        {
+            this->pcAgentCfg->SetDetectPeriod(PROBE_INTERVAL);
+            PROBE_INTERVAL = 9999;
+        }
+
         sleep(1);
         counter ++;
     }

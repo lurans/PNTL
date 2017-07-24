@@ -189,6 +189,7 @@ private:
     INT32 ReleaseSocket();                            // 释放socket资源
     INT32 InitSocket();                               // 根据stProtocol信息申请socket资源.
     INT32 GetSocket();                                // 获取当前socket
+    INT32 GetManageSocket();
     INT32 ReleaseManageSocket();
     INT32 InitManageSocket();
     INT32 TxPacket(DetectWorkerSession_S*
