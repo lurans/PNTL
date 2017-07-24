@@ -164,7 +164,7 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
         FLOW_MANAGER_ERROR("StartThread failed[%d]", iRet);
         return AGENT_E_PARA;
     }
-
+    FLOW_MANAGER_INFO("init flow manager success");
     return iRet;
 }
 

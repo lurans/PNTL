@@ -84,7 +84,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
         // 设置服务端证书，用户认证服务端
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH);
 
