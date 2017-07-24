@@ -160,9 +160,9 @@ INT32 DetectWorker_C::RecvServerMsg()
 
         switch(uiMsgType)
         {
-            case ServerAntsAgentActionStart:
-                PROBE_INTERVAL = 60;
-                DETECT_WORKER_INFO("Set probe_interval to [%u]. ", PROBE_INTERVAL);
+            case ServerAntsAgentAction:
+                PROBE_INTERVAL = 0;
+                DETECT_WORKER_INFO("Set probe_interval to [%u], will stop detect. ", PROBE_INTERVAL);
                 break;
             case ServerAntsAgentIp:
                 SHOULD_REPORT_IP = 1;
@@ -176,9 +176,6 @@ INT32 DetectWorker_C::RecvServerMsg()
                 SHOULD_PROBE = 1;
                 DETECT_WORKER_INFO("Set SHOULD_PROBE to [%u], will query pinglist in next interval. ", SHOULD_PROBE);
                 break;
-            case ServerAntsAgentActionStop:
-                PROBE_INTERVAL = 0;
-                DETECT_WORKER_INFO("Set probe_interval to [%u], will stop detect. ", PROBE_INTERVAL);
             default:
                 DETECT_WORKER_ERROR("Wrong type [%u] ", uiMsgType);
                 break;
