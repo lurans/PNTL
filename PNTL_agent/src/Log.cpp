@@ -260,23 +260,23 @@ INT32 AgentLogSaveToFile(UINT32 ulLogType, const char *pcMsg )
         INT32 iPriority = LOG_INFO;
         switch (ulLogType)
         {
-        case AGENT_LOG_TYPE_INFO:
-        case AGENT_LOG_TYPE_LOSS_PACKET:
-        case AGENT_LOG_TYPE_LATENCY:
-            iPriority = LOG_INFO;
-            break;
+            case AGENT_LOG_TYPE_INFO:
+            case AGENT_LOG_TYPE_LOSS_PACKET:
+            case AGENT_LOG_TYPE_LATENCY:
+                iPriority = LOG_INFO;
+                break;
 
-        case AGENT_LOG_TYPE_WARNING:
-            iPriority = LOG_WARNING;
-            break;
+            case AGENT_LOG_TYPE_WARNING:
+                iPriority = LOG_WARNING;
+                break;
 
-        case AGENT_LOG_TYPE_ERROR:
-            iPriority = LOG_ERR;
-            break;
+            case AGENT_LOG_TYPE_ERROR:
+                iPriority = LOG_ERR;
+                break;
 
-        default :
-            AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
-            return AGENT_E_PARA;
+            default :
+                AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
+                return AGENT_E_PARA;
         }
 
         openlog("ServerAntAgent", LOG_CONS|LOG_PID, LOG_DAEMON);
@@ -290,29 +290,29 @@ INT32 AgentLogSaveToFile(UINT32 ulLogType, const char *pcMsg )
 
         switch (ulLogType)
         {
-        case AGENT_LOG_TYPE_INFO:
-            pcFileName = g_stLogConfig.strLogFileNameNormal.c_str();
-            break;
+            case AGENT_LOG_TYPE_INFO:
+                pcFileName = g_stLogConfig.strLogFileNameNormal.c_str();
+                break;
 
-        case AGENT_LOG_TYPE_WARNING:
-            pcFileName = g_stLogConfig.strLogFileNameWarning.c_str();
-            break;
+            case AGENT_LOG_TYPE_WARNING:
+                pcFileName = g_stLogConfig.strLogFileNameWarning.c_str();
+                break;
 
-        case AGENT_LOG_TYPE_ERROR:
-            pcFileName = g_stLogConfig.strLogFileNameError.c_str();
-            break;
+            case AGENT_LOG_TYPE_ERROR:
+                pcFileName = g_stLogConfig.strLogFileNameError.c_str();
+                break;
 
-        case AGENT_LOG_TYPE_LOSS_PACKET:
-            pcFileName = g_stLogConfig.strLogFileNameLossPacket.c_str();
-            break;
+            case AGENT_LOG_TYPE_LOSS_PACKET:
+                pcFileName = g_stLogConfig.strLogFileNameLossPacket.c_str();
+                break;
 
-        case AGENT_LOG_TYPE_LATENCY:
-            pcFileName = g_stLogConfig.strLogFileNameLatency.c_str();
-            break;
+            case AGENT_LOG_TYPE_LATENCY:
+                pcFileName = g_stLogConfig.strLogFileNameLatency.c_str();
+                break;
 
-        default :
-            AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
-            return AGENT_E_PARA;
+            default :
+                AGENT_LOG_ERROR_PRINT("[%s][%u]: Log can't support this logtype[%u] \n", __FUNCTION__,  __LINE__, ulLogType);
+                return AGENT_E_PARA;
         }
 
         WriteToLogFile(pcFileName, pcMsg);
@@ -342,26 +342,26 @@ INT32 AgentLogPrintf(AgentModule_E eModule, AgentLogType_E eLogType, const char 
 
     switch (g_stLogConfig.uiDebug)
     {
-    case 0:
-        break;
+        case 0:
+            break;
 
-    case 1:
-        if (AGENT_LOG_TYPE_ERROR == eLogType)
-        {
-            iRet  = AGENT_OK;
-        }
-        break;
+        case 1:
+            if (AGENT_LOG_TYPE_ERROR == eLogType)
+            {
+                iRet  = AGENT_OK;
+            }
+            break;
 
-    case 2:
-        if (AGENT_LOG_TYPE_WARNING == eLogType || AGENT_LOG_TYPE_ERROR == eLogType)
-        {
-            iRet  = AGENT_OK;
-        }
-        break;
+        case 2:
+            if (AGENT_LOG_TYPE_WARNING == eLogType || AGENT_LOG_TYPE_ERROR == eLogType)
+            {
+                iRet  = AGENT_OK;
+            }
+            break;
 
-    default :
-        iRet =  AGENT_OK;
-        break;
+        default :
+            iRet =  AGENT_OK;
+            break;
     }
 
     if (iRet !=  AGENT_OK)
