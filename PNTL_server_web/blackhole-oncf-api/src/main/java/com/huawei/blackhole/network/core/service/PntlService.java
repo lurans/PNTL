@@ -18,7 +18,7 @@ public interface PntlService {
 
     Result<String> setProbeInterval(String timeInterval);
 
-    Result<String> startAgent();
+    Result<String> startAgents();
 
     Result<String> initPntl() throws ClientException;
 

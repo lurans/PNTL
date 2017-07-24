@@ -12,12 +12,12 @@ define(["language/chkFlow",
                     "id":"installFileUpload_id",
                     "inputValue":"",
                     "fileObjName":"X-File",
-                    "maxSize":8*1024*1024,//单文件大小不超过 8M
-                    "maxTotalSize":20*1024*1024,//总文件大小不小于 20M
+                    "maxSize":8*1024*1024,//单个文件大小不超过 8M
+                    "maxTotalSize":20*1024*1024,
                     "disable":false,
                     "multi" : "true",
                     "method": "post",
-                    "fileType":".tar.gz;.sh;.yml;",
+                    "fileType":".tar.gz;.sh;.yml",
                     "action" : "/rest/chkflow/uploadFiles", //文件上传地址路径
                     "selectError" : function(event,file,errorMsg,selectFileQueue) {
                         if("INVALID_FILE_TYPE" === errorMsg) {

@@ -167,7 +167,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
     }
 
-    public Result<String> startAgent(){
+    public Result<String> startAgents(){
         Result<String> result = new Result<>();
         try{
             String token = identityWrapperService.getPntlAccessToken();

@@ -483,7 +483,7 @@ public class RouterApi {
     @Path("/startAgents")
     @POST
     public Response startAgent(){
-        Result<String> result = pntlService.startAgent();
+        Result<String> result = pntlService.startAgents();
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
