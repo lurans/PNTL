@@ -43,6 +43,7 @@ public class Pntl {
     private static final String FILETYPE_SCRIPT = "SCRIPT";
     private static final String FILETYPE_AGENT = "AGENT";
     private static final String PNTL_PATH = "/root";
+    private static final String PNTL_UNINSTALL_PATH = "/opt/huawei/ServerAntAgent";
 
     private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_SUSE);
@@ -380,7 +381,7 @@ public class Pntl {
                 snList.add(host.getAgentSN());
             }
         }
-        final String command = "service ServerAntAgentService stop";
+        final String command = "cd" + " " + PNTL_UNINSTALL_PATH + ";sh -x UninstallService.sh";
         return sendCommandToAgents(snList, token, command, "sync");
     }
 
