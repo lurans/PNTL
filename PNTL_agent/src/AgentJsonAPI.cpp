@@ -15,7 +15,7 @@ using namespace boost::property_tree;
                 "LOG_DIR"       : "/opt/huawei/logs/ServerAntAgent"
     },
 "ServerAntServer" :
-    {^M
+    {
         "IP"    : "8.15.4.11",
         "Port"  : 8888
     },
@@ -33,7 +33,7 @@ using namespace boost::property_tree;
         "DetectTimeoutPeriod"   : 1,
         "DetectDropThresh"      : 2,
 
-        "ProtocolUDP" :^M
+        "ProtocolUDP" :
             {
                 "DestPort"  : 6000,
                 "SrcPortMin": 32769,
@@ -41,7 +41,6 @@ using namespace boost::property_tree;
             }
     }
 }
-
 */
 // 解析Agent本地配置文件, 完成初始化配置.
 INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
@@ -91,7 +90,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         iRet = pcCfg->SetMgntIP(uiIp);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetMnMgntIPgtIP failed[%d]", iRet);
+            JSON_PARSER_ERROR("SetMgntIPgtIP failed[%d]", iRet);
             return iRet;
         }
 
@@ -175,7 +174,6 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 }
 
 
-
 #define NormalFlowRequestSignature    "HuaweiDCAnts"
 #define NormalFlowRequestAction       "RequestServerProbeList"
 
@@ -200,6 +198,7 @@ INT32 CreateProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream *
             JSON_PARSER_ERROR("GetAgentAddress failed[%d]", iRet);
             return iRet;
         }
+
         ptDataTemp.put("agent-ip", sal_inet_ntoa(uiIp));
         ptDataRoot.put_child("content", ptDataTemp);
 
@@ -517,26 +516,34 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
         sal_memset(pstNewServerFlowKey, 0, sizeof(ServerFlowKey_S));
 
         // 解析Urgent
-#if 0
-        pstNewServerFlowKey->uiUrgentFlow   = ptFlowEntry.get<UINT32>("urgent-flag");
-#else
         strTemp = ptFlowEntry.get<string>("urgent");
         if (0 == strTemp.compare("true"))
+        {
             pstNewServerFlowKey->uiUrgentFlow = 1;
+        }
         else
+        {
             pstNewServerFlowKey->uiUrgentFlow = 0;
-#endif
+        }
 
         // 解析Protocol
         strTemp = ptFlowEntry.get<string>("ip-protocol");
         if (0 == strTemp.compare("udp"))
+        {
             pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_UDP;
+        }
         else if (0 == strTemp.compare("tcp"))
+        {
             pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_TCP;
+        }
         else if (0 == strTemp.compare("icmp"))
+        {
             pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_ICMP;
+        }
         else
+        {
             pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_NULL;
+        }
 
         strTemp = ptFlowEntry.get<string>("sip");
         pstNewServerFlowKey->uiSrcIP = sal_inet_aton(strTemp.c_str());
@@ -550,22 +557,8 @@ INT32 GetFlowInfoFromJsonFlowEntry(ptree ptFlowEntry, ServerFlowKey_S * pstNewSe
         pstNewServerFlowKey->uiSrcPortRange  = ptFlowEntry.get<UINT32>("sport-range");
 
         ptFlowEntryTopo = ptFlowEntry.get_child("topology-tag");
-#if 0
-        //pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("svid");
-        uiDataTemp = 0;
-        strTemp = ptFlowEntryTopo.get<string>("svid");
-        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
-        pstNewServerFlowKey->stServerTopo.uiSvid   = uiDataTemp;
-        //pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dvid");
-        uiDataTemp = 0;
-        strTemp = ptFlowEntryTopo.get<string>("dvid");
-        sscanf(strTemp.c_str(), "0x%x", &uiDataTemp);
-        pstNewServerFlowKey->stServerTopo.uiDvid   = uiDataTemp;
-#else
         pstNewServerFlowKey->stServerTopo.uiSvid   = ptFlowEntryTopo.get<UINT32>("src-id");
         pstNewServerFlowKey->stServerTopo.uiDvid   = ptFlowEntryTopo.get<UINT32>("dst-id");
-#endif
-
         pstNewServerFlowKey->stServerTopo.uiLevel  = ptFlowEntryTopo.get<UINT32>("level");
     }
     catch (exception const & e)
@@ -730,42 +723,7 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
         ptree ptDataRoot, ptFlowArray;
         read_json(ssStringData, ptDataRoot);
 
-        // 检查pt中的解析结果
-#if 0
-        // 检查Signature
-        string strSignature =   ptDataRoot.get<string>("MessageSignature");
 
-        // 校验签名
-        if (0 == strSignature.compare(NormalFlowReplaySignature))
-        {
-            string strAction    =   ptDataRoot.get<string>("Action");
-
-            // 校验action和content
-            if( (0 != strAction.compare(NormalFlowReplayAction)) )
-            {
-                JSON_PARSER_WARNING("Unsupported Action[%s].", strAction.c_str());
-                // 校验失败
-                return AGENT_E_ERROR;
-            }
-
-            // 从data中解析数据,填充stServerFlowKey, 然后调用FlowManager接口添加探测流.
-            ptFlowArray.clear();
-            ptFlowArray = ptDataRoot.get_child("flow");
-            iRet = IssueFlowFromJsonFlowArray(ptFlowArray, pcFlowManager, AGENT_FALSE);
-            if (iRet)
-            {
-                JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]", iRet);
-                return iRet;
-            }
-
-            return iRet;
-        }
-        else
-        {
-            JSON_PARSER_WARNING("Unsupported Signature:[%s]", strSignature.c_str());
-            return AGENT_E_PARA;
-        }
-#else
         // 从data中解析数据,填充stServerFlowKey, 然后调用FlowManager接口添加探测流.
         ptFlowArray.clear();
         ptFlowArray = ptDataRoot.get_child("flow");
@@ -775,7 +733,6 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
             JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]. Flow info[%s]", iRet, pcJsonData);
             return iRet;
         }
-#endif
     }
 
     catch (exception const & e)
@@ -846,13 +803,6 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
 
-        interval = ptDataRoot.get<UINT32>("pingListFlag");
-        SHOULD_PROBE = interval;
-        JSON_PARSER_INFO("SHOULD_PROBE %d", SHOULD_PROBE);
-        if (SHOULD_PROBE)
-        {
-            JSON_PARSER_INFO("will soon begin to get pingList");
-        }
         interval = ptDataRoot.get<UINT32>("probe_period");
         iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
         if (iRet)
@@ -908,7 +858,7 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
         }
         JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 
-        interval = ptDataRoot.get<UINT32>("pkg_count");
+        interval = ptDataRoot.get<UINT32>("bigPkg_rate");
         iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
         if (iRet)
         {

@@ -120,6 +120,8 @@ INT32 DetectWorker_C::RecvServerMsg()
 {
     INT32             iSockFd = 0;    // 本任务使用的socket描述符
     iSockFd = GetManageSocket();
+    struct sockaddr_in stPrtnerAddr;    // 对端socket地址信息
+
     INT32 iTos = 1;
     INT32 iRet = 0;
     struct timeval tm;      // 缓存当前时间.
@@ -127,7 +129,7 @@ INT32 DetectWorker_C::RecvServerMsg()
     struct msghdr msg;      // 描述报文信息, socket收发包使用.
     struct cmsghdr *cmsg;   // 用于遍历 msg.msg_control中所有报文附加信息, 目前是tos值.
     struct iovec iov[1];    // 用于保存报文payload buffer的结构体.参见msg.msg_iov. 当前只使用一个缓冲区.
-    UINT32 uiMsgType = 0;;
+    CHAR cMsgType = 0;
 
     sal_memset(&tm, 0, sizeof(tm));
     tm.tv_sec  = GetCurrentInterval() / SECOND_USEC;  //us -> s
@@ -140,25 +142,31 @@ INT32 DetectWorker_C::RecvServerMsg()
     }
 
     // 报文payload接收buffer
-    iov[0].iov_base =  &uiMsgType;
+    iov[0].iov_base =  &cMsgType;
     iov[0].iov_len  = sizeof(UINT32);
     msg.msg_iov = iov;
     msg.msg_iovlen = 1;
     msg.msg_flags = 0;
     msg.msg_control = acCmsgBuf;
     msg.msg_controllen = sizeof(acCmsgBuf);
-
-    DETECT_WORKER_INFO("begin: RecvServerMsg----------------- ");
+    // 对端socket地址
+    msg.msg_name = &stPrtnerAddr;
+    msg.msg_namelen = sizeof(stPrtnerAddr);
+    sal_memset(&stPrtnerAddr, 0, sizeof(stPrtnerAddr));
 
     // 接收报文
     iRet = recvmsg(iManageSocket, &msg, 0);
-    DETECT_WORKER_INFO("end: RecvServerMsg----------------- ");
-
-    if (iRet == sizeof(UINT32))
+    DETECT_WORKER_INFO("end: RecvServerMsg, iRet is %d----------------- ", iRet);
+    if (-1 == iRet)
     {
-        DETECT_WORKER_INFO("RX: RecvServerMsg-----------------  type is:[%d]", uiMsgType);
+        DETECT_WORKER_ERROR("Receive failed, iRet is [%d]", iRet);
+        return iRet;
+    }
+    //if (iRet == sizeof(UINT32))
+    {
+        DETECT_WORKER_INFO("RX: RecvServerMsg-----------------  type is:[%c]", cMsgType);
 
-        switch(uiMsgType)
+        switch(cMsgType)
         {
             case ServerAntsAgentAction:
                 PROBE_INTERVAL = 0;
@@ -177,7 +185,7 @@ INT32 DetectWorker_C::RecvServerMsg()
                 DETECT_WORKER_INFO("Set SHOULD_PROBE to [%u], will query pinglist in next interval. ", SHOULD_PROBE);
                 break;
             default:
-                DETECT_WORKER_ERROR("Wrong type [%u] ", uiMsgType);
+                DETECT_WORKER_ERROR("Wrong type [%c] ", cMsgType);
                 break;
         }
     }
@@ -634,7 +642,7 @@ INT32 DetectWorker_C::InitManageSocket()
 
     iManageSocket = SocketTmp;
 
-    DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", iManageSocket,33001,servaddr.sin_addr.s_addr);
+    DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP, %s", iManageSocket,33001, sal_inet_ntoa(servaddr.sin_addr.s_addr));
 
     return AGENT_OK;
 }

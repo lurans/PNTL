@@ -44,16 +44,16 @@ extern UINT32 SHOULD_QUERY_CONF;
 
 /* Consts for server action */
 // Stop probe(0) or change probe interval (non-0)
-const UINT32 ServerAntsAgentAction = 0;
+const CHAR ServerAntsAgentAction = '0';
 
 // Report Agent Ip
-const UINT32 ServerAntsAgentIp  = 1;
+const CHAR ServerAntsAgentIp  = '1';
 
 // Query Agent Config
-const UINT32 ServerAntsAgentConf = 2;
+const CHAR ServerAntsAgentConf = '2';
 
 // Query PingList
-const UINT32 ServerAntsAgentPingList = 3;
+const CHAR ServerAntsAgentPingList = '3';
 
 const UINT32 BIG_PACKAGE_SIZE = 1000;
 const UINT32 NORMAL_PACKAGE_SIZE = 40;
