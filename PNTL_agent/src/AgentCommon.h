@@ -33,7 +33,7 @@ extern UINT32 SHOULD_PROBE;
 // true, agent should send big package size 1000
 extern UINT32 SEND_BIG_PKG;
 
-// true, agent should send small package size 40 
+// true, agent should send small package size 40
 extern UINT32 CLEAR_BIG_PKG;
 
 extern UINT32 PROBE_INTERVAL;
@@ -43,7 +43,7 @@ extern UINT32 SHOULD_REPORT_IP;
 extern UINT32 SHOULD_QUERY_CONF;
 
 /* Consts for server action */
-// Stop probe(0) or change probe interval (non-0) 
+// Stop probe(0) or change probe interval (non-0)
 const UINT32 ServerAntsAgentActionStart = 0;
 
 // Report Agent Ip
