@@ -71,16 +71,6 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-    iRet = ReportAgentIPToServer(pcCfg);
-    int reportCount = 1;
-    while (iRet)
-    {
-        INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
-        sleep(5);
-        INIT_ERROR("Retry to report Agent ip to Server, time [%d]", ++reportCount);
-        iRet = ReportAgentIPToServer(pcCfg);
-    }
-
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
 
@@ -100,9 +90,15 @@ INT32 ServerAntAgent()
     return AGENT_OK;
 }
 
-INT32 SHOULD_PROBE = 0;
-INT32 SEND_BIG_PKG = 0;
-INT32 CLEAR_BIG_PKG = 0;
+UINT32 SHOULD_PROBE = 0;
+UINT32 SEND_BIG_PKG = 0;
+UINT32 CLEAR_BIG_PKG = 0;
+
+UINT32 SHOULD_QUERY_CONF = 0;
+
+UINT32 SHOULD_REPORT_IP = 0;
+
+UINT32 PROBE_INTERVAL = 9999;
 
 // 程序入口, 默认直接启动.
 // 不带参数时直接启动
