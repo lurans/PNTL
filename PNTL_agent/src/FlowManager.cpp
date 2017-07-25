@@ -741,6 +741,7 @@ INT32 FlowManager_C::FlowPrepareReport(UINT32 uiFlowTableIndex)
     else
     {
         lDataTemp = 0;
+    }
     AgentFlowTable[uiFlowTableIndex].stFlowDetectResult.lLatency50Percentile = plT4Temp[lDataTemp];
 
     // 获取plT4Temp(rtt)99%位数
