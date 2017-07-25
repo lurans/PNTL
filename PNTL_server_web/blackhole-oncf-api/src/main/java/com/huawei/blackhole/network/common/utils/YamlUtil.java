@@ -55,7 +55,7 @@ public class YamlUtil {
     }
 
     public static void appendConf(Object data, String confFile) throws ApplicationException {
-        if(null==data || 0==((ArrayList) data).size()){
+        if(null == data || 0 == ((ArrayList) data).size()){
             return;
         }
         Writer output = null;

@@ -890,7 +890,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             if (PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type)) {
                 result = installStartAgent(updateHostsList);
                 if (!result.isSuccess()){
-                    LOG.error("install and start agent failed:"+result.getErrorMessage());
+                    LOG.error("install and start agent failed:" + result.getErrorMessage());
                     return result;
                 }
                 appendIpListConfig(updateHostsList);
