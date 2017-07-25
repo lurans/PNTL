@@ -1,9 +1,4 @@
 host:
-- ip: 8.10.53.36
-  pod: pod103
-  az: az103
-  os: Euler
-
 - ip: 8.13.3.39
   pod: pod105
   az: az105
@@ -13,11 +8,6 @@ host:
   pod: pod105
   az: az105
   os: SUSE
-
-- ip: 8.13.3.38
-  pod: pod105
-  az: az105
-  os: Euler
 
 - ip: 8.10.53.93
   pod: pod105
