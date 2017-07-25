@@ -375,7 +375,7 @@ public class PntlConfigService {
             result.addError("", errMsg);
             return result;
         }
-        String url = CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
+        String url = Constants.HTTPS_PREFIX + CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
         Map<String, String> header = new HashMap<>();
 
         Pntl.setCommonHeaderForAgent(header, token);
