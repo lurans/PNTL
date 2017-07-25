@@ -2,12 +2,8 @@
 #define __SRC_ServerAntAgentCfg_H__
 
 #include <string>
-
-#include "Sal.h"
 #include "AgentCommon.h"
-#include <vector>
 
-const INT32 EXIT_PROBE_PERIOD = -1;
 const UINT32 STOP_PROBE_PERIOD = 0;
 const UINT32 MIN_PROBE_PERIOD = 60;
 const UINT32 MAX_PROBE_PERIOD = 60 * 30;
@@ -109,9 +105,6 @@ public:
     INT32 SetProtocolUDP(UINT32 uiSrcPortMin,
                          UINT32 uiSrcPortMax,
                          UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
-
-    INT32 SetHostname(string newHostname);
-    string GetHostname();
 
     UINT32 GetPortCount();
     INT32 SetPortCount(UINT32 newPortCount);

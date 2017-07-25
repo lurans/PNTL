@@ -1,8 +1,5 @@
-
 #ifndef __SRC_FlowManager_H__
 #define __SRC_FlowManager_H__
-
-//#include <string>
 
 #include "ThreadClass.h"
 #include "DetectWorker.h"
@@ -203,8 +200,6 @@ private:
     UINT32 uiLastQuerytTimeCounter;           // 最近一次启动查询Server的时间点
     INT32 QueryCheck(UINT32 counter);           // 检测此时是否该启动查询Server配置流程.
     INT32 DoQuery();                                  // 启动从Server刷新配置流程.
-    INT32 GetFlowFromServer
-    (ServerFlowKey_S * pstNewFlow);         // 从Server获取一条新的Flow.
 
     /* Thread 实现代码 */
     INT32 ThreadHandler();                        // 任务主处理函数
@@ -225,7 +220,7 @@ public:
     (ServerFlowKey_S stServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
 
     INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
-    INT32 SetPkgFlag(ServerAntAgentCfg_C* config, UINT32 flag);
+    INT32 SetPkgFlag();
 };
 
 #endif

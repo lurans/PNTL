@@ -30,11 +30,8 @@ enum
 // Whether agent begin to query pingList
 extern UINT32 SHOULD_PROBE;
 
-// true, agent should send big package size 1000
-extern UINT32 SEND_BIG_PKG;
-
-// true, agent should send small package size 40
-extern UINT32 CLEAR_BIG_PKG;
+// 100, all big pkgs, 0, all small pkgs
+extern UINT32 BIG_PKG_RATE;
 
 extern UINT32 PROBE_INTERVAL;
 
