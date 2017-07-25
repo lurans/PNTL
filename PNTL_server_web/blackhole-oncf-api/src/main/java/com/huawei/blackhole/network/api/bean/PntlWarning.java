@@ -203,7 +203,7 @@ public class PntlWarning implements Serializable{
                 || (StringUtils.isEmpty(param.getStarTime()) && !StringUtils.isEmpty(param.getEndTime()))){
             return false;
         }else if(!StringUtils.isEmpty(param.getStarTime())&&!StringUtils.isEmpty(param.getStarTime())){
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             try {
                 Long d1 = df.parse(param.getStarTime()).getTime();
                 Long d2 = df.parse(param.getEndTime()).getTime();
