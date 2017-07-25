@@ -94,14 +94,6 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             return iRet;
         }
 
-        strTemp = ptDataTmp.get<string>("Hostname");
-        iRet = pcCfg->SetHostname(strTemp);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetHostname failed[%d]", iRet);
-            return iRet;
-        }
-
         strTemp = ptDataTmp.get<string>("AgentIP");
         uiIp = sal_inet_aton(strTemp.c_str());
         uiPort = ptDataTmp.get<UINT32>("Port");
