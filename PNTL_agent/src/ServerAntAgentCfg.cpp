@@ -2,7 +2,6 @@ using namespace std;
 
 #include "Log.h"
 #include "ServerAntAgentCfg.h"
-#include "AgentCommon.h"
 
 #define LOCK() \
         if (AgentCfgLock) \
@@ -173,7 +172,7 @@ UINT32 ServerAntAgentCfg_C::GetPollingTimerPeriod()
 
 INT32 ServerAntAgentCfg_C::SetDetectPeriod(UINT32 uiNewPeriod)
 {
-    if (STOP_PROBE_PERIOD != uiNewPeriod && EXIT_PROBE_PERIOD != (INT32)uiNewPeriod )
+    if (STOP_PROBE_PERIOD != uiNewPeriod)
     {
         if (MIN_PROBE_PERIOD > uiNewPeriod || MAX_PROBE_PERIOD < uiNewPeriod)
         {
@@ -252,17 +251,6 @@ INT32 ServerAntAgentCfg_C::SetDetectDropThresh(UINT32 uiNewThresh)
     return AGENT_OK;
 }
 
-INT32 ServerAntAgentCfg_C::SetHostname(string newHostname)
-{
-    hostname = newHostname;
-    return AGENT_OK;
-}
-
-string ServerAntAgentCfg_C::GetHostname()
-{
-    return hostname;
-}
-
 UINT32 ServerAntAgentCfg_C::GetPortCount()
 {
     return uiPortCount;
@@ -300,19 +288,13 @@ UINT32 ServerAntAgentCfg_C::GetBigPkgRate()
 
 INT32 ServerAntAgentCfg_C::SetBigPkgRate(UINT32 newRate)
 {
-    if (MIN_BIG_PACKAGE_RATE == newRate)
-    {
-        SEND_BIG_PKG = 0;
-        CLEAR_BIG_PKG = 1;
-    }
-    else if (MAX_BIG_PACKAGE_RATE == newRate)
-    {
-        SEND_BIG_PKG = 1;
-        CLEAR_BIG_PKG = 0;
-    }
-    else
+    if (MIN_BIG_PACKAGE_RATE > newRate || MAX_BIG_PACKAGE_RATE < newRate)
     {
         return AGENT_E_PARA;
+    }
+	if (GetBigPkgRate() != newRate)
+    {
+        BIG_PKG_RATE = 1;
     }
     uiBigPkgRate = newRate;
     return AGENT_OK;

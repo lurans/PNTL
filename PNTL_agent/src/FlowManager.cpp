@@ -91,12 +91,16 @@ FlowManager_C::~FlowManager_C()
 
     // 释放互斥锁
     if ( stAgentFlowTableLock )
+    {
         sal_mutex_destroy(stAgentFlowTableLock);
+    }
     stAgentFlowTableLock = NULL;
 
 
     if (WorkerList_UDP)
+    {
         delete WorkerList_UDP;
+    }
     WorkerList_UDP = NULL;
 
 }
@@ -105,8 +109,6 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
 {
     INT32 iRet = AGENT_OK;
 
-    UINT32 uiCollectorIP = 0;
-    UINT32 uiCollectorPort = 0;
     // UDP 协议初始化
     UINT32 uiSrcPortMin;
     UINT32 uiSrcPortMax;
@@ -148,7 +150,6 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
     stNewWorker.uiSrcIP     = SAL_INADDR_ANY;
 
     WorkerList_UDP = new DetectWorker_C;
-
     iRet = WorkerList_UDP->Init(stNewWorker, pcNewAgentCfg);
     if (iRet)
     {
@@ -185,7 +186,6 @@ INT32 FlowManager_C::AgentClearFlowTable(UINT32 uiAgentFlowTableNumber)
     // 清空整个流表.
     AgentFlowTable[uiAgentFlowTableNumber].clear();
 
-
     return AGENT_OK;
 }
 
@@ -217,7 +217,6 @@ INT32 FlowManager_C::AgentFlowTableAdd(UINT32 uiAgentFlowTableNumber, ServerFlow
     stNewAgentEntry.uiFlowDropCounter = 0;
     stNewAgentEntry.uiFlowTrackingCounter= 0;
     stNewAgentEntry.uiUrgentFlowCounter= 0;
-
 
     // 刷新key信息
     stNewAgentEntry.stFlowKey.uiUrgentFlow = pstServerFlowEntry->stServerFlowKey.uiUrgentFlow;
@@ -313,6 +312,7 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
         {
             uiSrcPortRange = pServerEntry->stServerFlowKey.uiSrcPortRange;
         }
+		
         if ( pServerEntry->uiAgentFlowWorkingIndexMax + uiSrcPortRange <= pServerEntry->uiAgentFlowIndexMax)
         {
             pServerEntry->uiAgentFlowWorkingIndexMin = pServerEntry->uiAgentFlowWorkingIndexMax + 1;
@@ -367,7 +367,6 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
             }
         }
     }
-
     return AGENT_OK;
 }
 
@@ -375,11 +374,8 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
 // 清空特定流表
 INT32 FlowManager_C::ServerClearFlowTable(UINT32 uiTableNumber)
 {
-
     // 清空整个流表.
     ServerFlowTable[uiTableNumber].clear();
-
-
     return AGENT_OK;
 }
 
@@ -449,6 +445,7 @@ INT32 FlowManager_C::ServerFlowTablePreAdd(ServerFlowKey_S * pstNewServerFlowKey
                                pstNewServerFlowKey->uiSrcPortMin, pstNewServerFlowKey->uiSrcPortMax, uiSrcPortMin, uiSrcPortMax);
             return AGENT_E_PARA;
         }
+		
         // 检查Range范围
         if ( uiAgentSrcPortRange < pstNewServerFlowKey->uiSrcPortRange )
         {
@@ -480,10 +477,8 @@ INT32 FlowManager_C::ServerFlowTablePreAdd(ServerFlowKey_S * pstNewServerFlowKey
 INT32 FlowManager_C::ServerWorkingFlowTableAdd(ServerFlowKey_S stNewServerFlowKey)
 {
     INT32 iRet = AGENT_OK;
-
+	
     ServerFlowTableEntry_S stNewServerFlowEntry;
-
-
     iRet = ServerFlowTablePreAdd(&stNewServerFlowKey, &stNewServerFlowEntry);
     if (iRet)
     {
@@ -508,9 +503,10 @@ INT32 FlowManager_C::ServerWorkingFlowTableAdd(ServerFlowKey_S stNewServerFlowKe
     ServerFlowTable[SERVER_WORKING_FLOW_TABLE].push_back(stNewServerFlowEntry);
 
     // ServerFlow 不再为空
-    if ( AGENT_TRUE == uiServerFlowTableIsEmpty )
+    if (AGENT_TRUE == uiServerFlowTableIsEmpty)
+    {
         uiServerFlowTableIsEmpty = AGENT_FALSE;
-
+    }
     return iRet;
 }
 
@@ -531,7 +527,9 @@ INT32 FlowManager_C::DetectCheck(UINT32 uiCounter)
         return AGENT_ENABLE;
     }
     else
+    {
         return AGENT_DISABLE;
+    }
 }
 
 // 启动流探测.
@@ -589,9 +587,9 @@ INT32 FlowManager_C::DoDetect()
     }
 
     if (AGENT_E_SOCKET == iRet)
+    {
         iRet = AGENT_OK;
-
-    //FLOW_MANAGER_INFO("UDP Detect Finished");
+    }
     return iRet;
 }
 
@@ -612,7 +610,9 @@ INT32 FlowManager_C::DetectResultCheck(UINT32 uiCounter)
         return AGENT_ENABLE;
     }
     else
+    {
         return AGENT_DISABLE;
+    }
 }
 
 // 计算标准差
@@ -630,7 +630,7 @@ INT32 FlowManager_C::FlowComputeSD(INT64 * plSampleData, UINT32 uiSampleNumber, 
     {
         lVariance += pow((plSampleData[uiSampleIndex] - lSampleMeanValue), 2);
     }
-    lVariance = lVariance/uiSampleNumber; // 方差
+    lVariance = lVariance / uiSampleNumber; // 方差
     *plStandardDeviation = sqrt(lVariance); // 标准差
 
     return AGENT_OK;
@@ -779,16 +779,24 @@ INT32 FlowManager_C::FlowPrepareReport(UINT32 uiFlowTableIndex)
 
     // 获取plT4Temp(rtt)中位数
     if( 2 <= uiSampleNumber)
-        lDataTemp = uiSampleNumber/2 - 1;
+    {
+        lDataTemp = uiSampleNumber / 2 - 1;
+    }
     else
+    {
         lDataTemp = 0;
+    }
     AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowDetectResult.lLatency50Percentile = plT4Temp[lDataTemp];
 
     // 获取plT4Temp(rtt)99%位数
     if( 2 <= uiSampleNumber)
+    {
         lDataTemp = uiSampleNumber*99/100 - 1;
+    }
     else
+    {
         lDataTemp = 0;
+    }
     AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowDetectResult.lLatency99Percentile = plT4Temp[lDataTemp];
 
 
@@ -809,8 +817,6 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
     INT32 iRet = AGENT_OK;
     AgentFlowTableEntry_S * pstAgentFlowEntry = NULL;
     stringstream  ssReportData; // 用于生成json格式上报数据
-
-    FLOW_MANAGER_INFO("FlowDropReport____________[%d]", uiFlowTableIndex);
 
     iRet = FlowPrepareReport(uiFlowTableIndex);
     if (iRet)
@@ -863,7 +869,6 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
     pstAgentFlowEntry = &(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex]);
     iRet = CreateLatencyReportData(pstAgentFlowEntry, &ssReportData, maxDelay);
 
-
     if (AGENT_FILTER_DELAY == iRet)
     {
         FLOW_MANAGER_INFO("Current flow's delay time is less than threshold, return [%d]", iRet);
@@ -875,15 +880,6 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
         return iRet;
     }
     strReportData = ssReportData.str();
-
-// 出现报文丢弃,又没有全部丢弃的场景记录一下, 调试使用.
-#if 0
-    if (pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter
-            && (pstAgentFlowEntry->stFlowDetectResult.lPktDropCounter < pstAgentFlowEntry->stFlowDetectResult.lPktSentCounter))
-    {
-        FLOW_MANAGER_INFO("Flow info:[%s]", strReportData.c_str());
-    }
-#endif
 
     SAVE_LATENCY_INFO("%s", ssReportData.str().c_str());
 
@@ -901,10 +897,6 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
 INT32 FlowManager_C::FlowDropNotice(UINT32 uiFlowTableIndex)
 {
     INT32 iRet = AGENT_OK;
-
-    //FLOW_MANAGER_INFO("Flow Enter Drop State");
-
-    //FLOW_ENTRY_STATE_SET(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_DROPPING);
 
     FLOW_ENTRY_STATE_SET(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_TRACKING);
     AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowTrackingCounter = 0;
@@ -934,9 +926,6 @@ INT32 FlowManager_C::DetectResultProcess(UINT32 uiFlowTableIndex)
     // 若第一个报文发送成功,但是丢包. 则lT1为发送时间, lT2=0.
     if (1 == AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].vFlowDetectResultPkt.size())
     {
-        //AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowDetectResult.lT1 = stDetectResultPkt.stT1.uiSec;
-        //AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowDetectResult.lT2 = stDetectResultPkt.stT2.uiSec;
-
         // 时间戳以ms为单位进行上报.
         AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowDetectResult.lT1 = (INT64)stDetectResultPkt.stT1.uiSec * SECOND_MSEC
                 + (INT64)stDetectResultPkt.stT1.uiUsec / MILLISECOND_USEC;
@@ -956,12 +945,6 @@ INT32 FlowManager_C::DetectResultProcess(UINT32 uiFlowTableIndex)
     {
         AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowDetectResult.lPktDropCounter ++;
         AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowDropCounter ++;
-        /*
-        // 调试使用
-        FLOW_MANAGER_WARNING("Packet Timeout, T1[%u][%u], T4[%u][%u], Latency[%u]us, index[%u]",
-            stDetectResultPkt.stT1.uiSec,stDetectResultPkt.stT1.uiUsec, stDetectResultPkt.stT4.uiSec,stDetectResultPkt.stT4.uiUsec,
-            stDetectResultPkt.stT4 - stDetectResultPkt.stT1, uiFlowTableIndex);
-        */
     }
     else if ( SESSION_STATE_WAITING_CHECK == stDetectResultPkt.uiSessionState ) //未丢包
     {
@@ -994,16 +977,16 @@ INT32 FlowManager_C::GetDetectResult()
     UINT32 uiAgentFlowTableIndex = 0;
     DetectWorkerSession_S stWorkerSession;
     DetectResultPkt_S   stDetectResultPkt;
-    //FLOW_MANAGER_INFO("Start Collect Result Now");
 
     // 当前只处理udp协议, 遍历 udp worker list
 
     // 处理该worker中所有待收集的会话.
     if (NULL  == WorkerList_UDP)
+    {
         return AGENT_E_NOT_FOUND;
+    }
 
     // 探测结果会回写流表.
-
     uiAgentFlowTableSize = AgentFlowTable[AGENT_WORKING_FLOW_TABLE].size();
 
     do
@@ -1040,7 +1023,6 @@ INT32 FlowManager_C::GetDetectResult()
 
             if (0 == FLOW_ENTRY_STATE_CHECK(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiAgentFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_ENABLE))
             {
-                //FLOW_MANAGER_INFO("Index[%u] already disabled, reply too late", uiAgentFlowTableIndex);
                 continue;
             }
 
@@ -1087,7 +1069,9 @@ INT32 FlowManager_C::ReportCheck(UINT32 uiCounter)
         return AGENT_ENABLE;
     }
     else
+    {
         return AGENT_DISABLE;
+    }
 }
 
 // 启动流探测结果上报.
@@ -1099,7 +1083,6 @@ INT32 FlowManager_C::DoReport()
 
     for(uiFlowTableIndex = 0; uiFlowTableIndex < AgentFlowTable[AGENT_WORKING_FLOW_TABLE].size(); uiFlowTableIndex++)
     {
-        // 当前只处理udp协议, 未来可以放开
         if (AGENT_DETECT_PROTOCOL_UDP == AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey.eProtocol)
         {
             // 只处理enable的非Urgent Entry
@@ -1128,38 +1111,6 @@ INT32 FlowManager_C::DoReport()
     return iRet;
 }
 
-// 从Server获取一条新的探测流信息, 只会获取普通流. 待消息中间件完善, 打桩
-INT32 FlowManager_C::GetFlowFromServer(ServerFlowKey_S * pstNewFlow)
-{
-    INT32 iRet = AGENT_E_NOT_FOUND;
-    static INT32 counter = 0;
-    sal_memset(pstNewFlow, 0, sizeof(ServerFlowKey_S));
-
-    //return AGENT_E_NOT_FOUND;
-    if (uiServerFlowTableIsEmpty)
-        counter = 0;
-
-    pstNewFlow->eProtocol = AGENT_DETECT_PROTOCOL_UDP;
-    pstNewFlow->uiSrcIP  = sal_inet_aton("10.10.10.1");
-    pstNewFlow->uiDestIP = sal_inet_aton("10.10.10.2");
-    pstNewFlow->uiSrcPortMin = 0;
-    pstNewFlow->uiSrcPortMax = 0;
-    pstNewFlow->uiSrcPortRange = 3;
-    pstNewFlow->uiDscp = 20;
-    pstNewFlow->uiUrgentFlow = AGENT_FALSE;
-    pstNewFlow->stServerTopo.uiLevel = 1;
-    pstNewFlow->stServerTopo.uiSvid  = 1;
-    pstNewFlow->stServerTopo.uiDvid  = 2;
-    iRet = AGENT_OK;
-
-    if (counter)
-        iRet = AGENT_E_NOT_FOUND;
-
-    counter ++;
-
-    return iRet;
-}
-
 // 检测此时是否该启动查询Server配置流程.
 INT32 FlowManager_C::QueryCheck(UINT32 uiCounter)
 {
@@ -1173,7 +1124,9 @@ INT32 FlowManager_C::QueryCheck(UINT32 uiCounter)
 
     // ServerFlowTable为空时, 加速查询Server速度, 最快可以达到每300polling间隔查询1次.
     if (uiServerFlowTableIsEmpty)
+    {
         uiQueryPeriod = uiQueryPeriod / 1000 + 300;
+    }
 
 
     if ( uiTimeCost >= uiQueryPeriod)
@@ -1184,7 +1137,9 @@ INT32 FlowManager_C::QueryCheck(UINT32 uiCounter)
         return AGENT_ENABLE;
     }
     else
+    {
         return AGENT_DISABLE;
+    }
 }
 
 // 启动从Server刷新配置流程.
@@ -1235,9 +1190,13 @@ INT32 FlowManager_C::DoQuery()
     FLOW_MANAGER_INFO("Query Server Finished");
 
     if ( AGENT_E_NOT_FOUND == iRet )
+    {
         return AGENT_OK;
+    }
     else
+    {
         return iRet;
+    }
 }
 
 
@@ -1257,20 +1216,14 @@ INT32 FlowManager_C::ThreadHandler()
         // 当前周期是否该启动探测流程.
         if (DetectCheck(counter))
         {
-            if (SEND_BIG_PKG)
+            if (BIG_PKG_RATE)
             {
                 // 设置了最大包比例，需要发送最大包
-                iRet = SetPkgFlag(this->pcAgentCfg, 1);
+                iRet = SetPkgFlag();
                 if (!iRet)
                 {
-                    SEND_BIG_PKG = 0;
+                    BIG_PKG_RATE = 0;
                 }
-            }
-
-            if (CLEAR_BIG_PKG)
-            {
-                SetPkgFlag(this->pcAgentCfg, 0);
-                CLEAR_BIG_PKG = 0;
             }
 
             // 启动探测流程.
@@ -1280,8 +1233,6 @@ INT32 FlowManager_C::ThreadHandler()
                 FLOW_MANAGER_WARNING("Do UDP Detect failed[%d]", iRet);
             }
         }
-
-        //  等待一个超时时间 pcAgentCfg->GetDetectTimeout()
 
         // 当前周期是否该收集探测结果
         if (DetectResultCheck(counter))
@@ -1418,21 +1369,19 @@ INT32 FlowManager_C::FlowManagerAction(INT32 interval)
     return iRet;
 }
 
-INT32 FlowManager_C::SetPkgFlag(ServerAntAgentCfg_C* config, UINT32 flag)
+INT32 FlowManager_C::SetPkgFlag()
 {
     vector<AgentFlowTableEntry_S>::iterator pAgentFlowEntry;
     for(pAgentFlowEntry = AgentFlowTable[AGENT_WORKING_FLOW_TABLE].begin(); pAgentFlowEntry != AgentFlowTable[AGENT_WORKING_FLOW_TABLE].end();
             pAgentFlowEntry++)
     {
-        pAgentFlowEntry->stFlowKey.uiIsBigPkg = flag;
+        pAgentFlowEntry->stFlowKey.uiIsBigPkg = !pAgentFlowEntry->stFlowKey.uiIsBigPkg;
     }
     return AGENT_OK;
 }
 
 INT32 FlowManager_C::DoQueryConfig()
 {
-    FLOW_MANAGER_INFO("Start Query Server Config Now");
-
     INT32 iRet = AGENT_OK;
     iRet = RequestConfigFromServer(this);
     if (AGENT_OK != iRet)
@@ -1440,8 +1389,6 @@ INT32 FlowManager_C::DoQueryConfig()
         FLOW_MANAGER_ERROR("RequestConfigFromServer[%d]", iRet);
         return iRet;
     }
-
-    FLOW_MANAGER_INFO("Query Server Config Finished");
     return iRet;
 }
 
