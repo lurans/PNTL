@@ -405,6 +405,16 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
+    @Path("/pntlConf")
+    @GET
+    public Response getPntlConfig(){
+        Result<PntlConfig> result = pntlConfigService.getPntlConfig();
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+        return ResponseUtil.succ(result.getModel());
+    }
+
     @Path("/pntlVariableConf")
     @POST
     public Response setPntlConfig(PntlConfig config){
@@ -420,16 +430,6 @@ public class RouterApi {
         }
 
         return ResponseUtil.succ();
-    }
-
-    @Path("/pntlConf")
-    @GET
-    public Response getPntlConfig(){
-        Result<PntlConfig> result = pntlConfigService.getPntlConfig();
-        if (!result.isSuccess()){
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
-        }
-        return ResponseUtil.succ(result.getModel());
     }
 
     @Path("/pntlAkSkConf")
@@ -482,7 +482,7 @@ public class RouterApi {
     /*重新启动探测，启动agent*/
     @Path("/startAgents")
     @POST
-    public Response startAgent(){
+    public Response startAgents(){
         Result<String> result = pntlService.startAgents();
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
@@ -551,7 +551,10 @@ public class RouterApi {
         LOGGER.info("start to update agents");
         Result<String> result = new Result<>();
 
-        String type = body.getAttachmentObject("operation", String.class);
+        String typeResult = body.getAttachmentObject("operation", String.class);
+        JSONObject jsonResult = new JSONObject(typeResult);
+        String type=(String)jsonResult.get("op");
+
         if (!PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type) && !PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)){
             return ResponseUtil.err(Response.Status.SERVICE_UNAVAILABLE, "operation is error:" + type);
         }

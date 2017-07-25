@@ -682,6 +682,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      */
     private void appendIpListConfig(List<PntlHostContext> updateHostsList) throws ApplicationException {
         try {
+            filterDuplicateHosts(hostList, updateHostsList);
             List<Map<String, String>> data = new PntlHostContext().convertToMap(updateHostsList);
             YamlUtil.appendConf(data, PntlInfo.PNTL_IPLIST_CONF);
             appendToHostListMem(updateHostsList);
@@ -756,6 +757,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 h.setZoneId(host.getZoneId());
                 h.setPodId(host.getPodId());
                 h.setOs(host.getOs());
+                h.setAgentSN(host.getAgentSN());
                 delHostsList.add(h);
             }
         }
@@ -798,7 +800,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     private void updateAgentIpMap(List<PntlHostContext> hosts){
-        if (hosts == null){
+        if (null == hosts || hosts.isEmpty() || null == agentIpMap || agentIpMap.isEmpty()){
             return;
         }
         for (PntlHostContext h : hosts){
@@ -886,9 +888,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
         try {
             if (PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type)) {
-                filterDuplicateHosts(hostList, updateHostsList);
-                appendIpListConfig(updateHostsList);
                 result = installStartAgent(updateHostsList);
+                appendIpListConfig(updateHostsList);
             } else if (PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)) {
                 /*
                 * 1. 更新hostList(pingMesh, pingList),ipList.yml
