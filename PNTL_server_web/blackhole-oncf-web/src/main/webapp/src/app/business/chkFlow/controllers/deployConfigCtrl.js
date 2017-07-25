@@ -8,8 +8,8 @@ define(["language/chkFlow",
             function($scope, $rootScope, $state, $sce, $compile, $timeout, configFlowServ){
                 $scope.i18n = i18n;
                 $scope.isDeployCollapsed = true;
-                $scope.installFileUpload = {
-                    "id":"installFileUpload_id",
+                $scope.deployFileUpload = {
+                    "id":"deployFileUpload_id",
                     "inputValue":"",
                     "fileObjName":"X-File",
                     "maxSize":8*1024*1024,//单个文件大小不超过 8M
@@ -36,9 +36,8 @@ define(["language/chkFlow",
                             && file.name != "ServerAntAgentForSles.tar.gz"
                             && file.name != "install_pntl.sh"
                             && file.name != "ipList.yml"){
-                            //commonException.showMsg(i18n.chkFlow_term_upload_err5, "error");
                             alert(i18n.chkFlow_term_upload_err5);
-                            file.empty()
+                            file.empty();
                         }
                     },
 
@@ -46,9 +45,11 @@ define(["language/chkFlow",
                         var resultJson = JSON.parse(result);
                         selectFileQueue.forEach(function(item,index){
                             if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
-                                $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
-                                $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
+                                $("#deployFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
+                                $("#deployFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
                             }else {
+                                $("#deployFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "error");
+                                $("#deployFileUpload_id").widget().setTotalProgress(0, selectFileQueue.length);
                                 commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
                             }
                         })
