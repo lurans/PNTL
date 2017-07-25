@@ -694,7 +694,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     private void updateIpListConfig() throws ApplicationException{
         Map<String, List<Map<String, String>>> data = new HashMap<>();
         List<Map<String, String>> list = new ArrayList<>();
-        if (hostList == null || hostList.isEmpty() || hostList.size() == 0){
+        if (hostList == null || hostList.isEmpty()){
             return;
         }
         for (PntlHostContext h : hostList){
@@ -889,6 +889,10 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         try {
             if (PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type)) {
                 result = installStartAgent(updateHostsList);
+                if (!result.isSuccess()){
+                    LOG.error("install and start agent failed:"+result.getErrorMessage());
+                    return result;
+                }
                 appendIpListConfig(updateHostsList);
             } else if (PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)) {
                 /*
