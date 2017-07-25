@@ -17,7 +17,7 @@ define(["language/chkFlow",
                     "disable":false,
                     "multi" : "true",
                     "method": "post",
-                    "fileType":".tar.gz;.sh;.yml;.txt",
+                    "fileType":".tar.gz;.sh;.yml",
                     "action" : "/rest/chkflow/uploadFiles", //文件上传地址路径
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
@@ -44,12 +44,14 @@ define(["language/chkFlow",
 
                     "completeDefa" : function(event, result, selectFileQueue) {
                         var resultJson = JSON.parse(result);
-                        if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
-                            $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
-                            $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
-                        }else {
-                            commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
-                        }
+                        selectFileQueue.forEach(function(item,index){
+                            if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
+                                $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
+                                $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
+                            }else {
+                                commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
+                            }
+                        })
                     }
                 };
                 $scope.akTextBox = {

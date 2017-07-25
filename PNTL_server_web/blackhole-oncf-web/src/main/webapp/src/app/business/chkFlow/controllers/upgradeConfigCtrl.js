@@ -47,8 +47,6 @@ define(["language/chkFlow",
                             }else {
                                 commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
                             }
-
-                            //tip
                         })
                     }
                 };
@@ -80,20 +78,17 @@ define(["language/chkFlow",
                             alert(i18n.chkFlow_term_upload_err4);
                         }
                     },
-                    "beforeSubmit" : function(event,file) {
+                    "beforeSubmit" : function() {
                         var checkedkey = $("#radioGroup_id").widget().opChecked("checked");
-                        var checkValue;
+                        var checkValue={"op":""};
                         if(checkedkey === "1"){
-                            checkValue = "add";
+                            checkValue.op = "add";
                         }else if(checkedkey === "2"){
-                            checkValue = "del";
-                        };
-                        var adddition = {
-                            "X-file":file,
-                            "operation":checkValue
-                        };
+                            checkValue.op = "del";
+                        }
                         //增加上传文件附带信息
-                        $("#singleFileUpload_id").widget().addFormData(adddition);
+                        $("#singleFileUpload_id").widget().addFormData(checkValue);
+                        $("input[name='tinyFormDatas']").prop("name","operation");
                     },
                     "layout" : "horizon",
                     "values" : [{
