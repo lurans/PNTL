@@ -553,7 +553,7 @@ public class RouterApi {
 
         String typeResult = body.getAttachmentObject("operation", String.class);
         JSONObject jsonResult = new JSONObject(typeResult);
-        String type=(String)jsonResult.get("op");
+        String type = (String)jsonResult.get("op");
 
         if (!PntlInfo.PNTL_UPDATE_TYPE_ADD.equals(type) && !PntlInfo.PNTL_UPDATE_TYPE_DEL.equals(type)){
             return ResponseUtil.err(Response.Status.SERVICE_UNAVAILABLE, "operation is error:" + type);
