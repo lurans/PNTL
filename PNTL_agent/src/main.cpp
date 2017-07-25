@@ -67,6 +67,16 @@ INT32 ServerAntAgent()
 
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
+    
+	iRet = ReportAgentIPToServer(pcCfg);
+    int reportCount = 1;
+    while (iRet)
+    {
+        INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
+        sleep(5);
+        INIT_ERROR("Retry to report Agent ip to Server, time [%d]", ++reportCount);
+        iRet = ReportAgentIPToServer(pcCfg);
+    }
 
     while(1)
     {
