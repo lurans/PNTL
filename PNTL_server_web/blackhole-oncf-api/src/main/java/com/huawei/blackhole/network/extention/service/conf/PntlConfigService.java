@@ -250,6 +250,7 @@ public class PntlConfigService {
             // 附件是否上传
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "ipList file required");
         }
+
         String name = file.getDataHandler().getName();
         if (!name.endsWith("yml")) {
             throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of ipList file, should be " + filename);
@@ -355,6 +356,26 @@ public class PntlConfigService {
         }
     }
 
+    private void deleteOldAgentFile(String name){
+        new File(FileUtil.getResourcePath() + name).delete();
+    }
+
+    private Result<String> uploadAgentPkgToServer(Attachment file){
+        Result<String> result = new Result<>();
+        String name = file.getDataHandler().getName();
+        File destinationFile = new File(getFileName(name));
+        try {
+            deleteOldAgentFile(name);
+            file.transferTo(destinationFile);
+        } catch (IOException e) {
+            String errMsg = "file to load ipList file to server : " + e.getLocalizedMessage();
+            result.addError("", ExceptionUtil.prefix(ExceptionType.SERVER_ERR) + errMsg);
+            LOGGER.error(errMsg, e);
+            return result;
+        }
+        return result;
+    }
+
     public Result<String> uploadAgentPkgFile(Attachment attachment) {
         Result<String> result = new Result<String>();
         try {
@@ -366,6 +387,13 @@ public class PntlConfigService {
             return result;
         }
 
+        result = uploadAgentPkgToServer(attachment);
+        if (!result.isSuccess()){
+            String errMsg = "upload to server fail";
+            result.addError("", errMsg);
+            LOGGER.error(errMsg);
+            return  result;
+        }
         String token = null;
         try {
             token = identityWrapperService.getPntlAccessToken();
