@@ -131,16 +131,6 @@ INT32 DetectWorker_C::RecvServerMsg()
     struct iovec iov[1];    // 用于保存报文payload buffer的结构体.参见msg.msg_iov. 当前只使用一个缓冲区.
     CHAR cMsgType = 0;
 
-    sal_memset(&tm, 0, sizeof(tm));
-    tm.tv_sec  = GetCurrentInterval() / SECOND_USEC;  //us -> s
-    tm.tv_usec = GetCurrentInterval() % SECOND_USEC; // us -> us
-    iRet = setsockopt(iManageSocket, SOL_SOCKET, SO_RCVTIMEO, &tm, sizeof(tm)); //设置socket 读取超时时间
-    if( 0 > iRet )
-    {
-        DETECT_WORKER_ERROR("RX: Setsockopt SO_RCVTIMEO failed[%d]: %s [%d]", iRet, strerror(errno), errno);
-        return AGENT_E_HANDLER;
-    }
-
     // 报文payload接收buffer
     iov[0].iov_base =  &cMsgType;
     iov[0].iov_len  = sizeof(UINT32);
@@ -155,17 +145,15 @@ INT32 DetectWorker_C::RecvServerMsg()
     sal_memset(&stPrtnerAddr, 0, sizeof(stPrtnerAddr));
 
     // 接收报文
-    iRet = recvmsg(iManageSocket, &msg, 0);
-    DETECT_WORKER_INFO("end: RecvServerMsg, iRet is %d----------------- ", iRet);
+    iRet = recvmsg(iManageSocket, &msg, MSG_DONTWAIT);
     if (-1 == iRet)
     {
-        DETECT_WORKER_ERROR("Receive failed, iRet is [%d]", iRet);
+        // Receive error or no data to receive
         return iRet;
     }
-    //if (iRet == sizeof(UINT32))
+    if (iRet == sizeof(CHAR))
     {
-        DETECT_WORKER_INFO("RX: RecvServerMsg-----------------  type is:[%c]", cMsgType);
-
+        DETECT_WORKER_INFO("RX: RecvServerMsg action type is:[%c]", cMsgType);
         switch(cMsgType)
         {
             case ServerAntsAgentAction:
