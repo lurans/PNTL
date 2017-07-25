@@ -1,6 +1,8 @@
 #ifndef __SRC_AgentCommon_H__
 #define __SRC_AgentCommon_H__
 
+#include "Sal.h"
+
 enum
 {
     AGENT_OK            = 0,
@@ -25,11 +27,30 @@ enum
 #define REPORT_LOSSPKT_URL  "/rest/chkflow/lossRate"
 #define REPORT_LATENCY_URL "/rest/chkflow/delayInfo"
 
-extern INT32 SHOULD_PROBE;
+// Whether agent begin to query pingList
+extern UINT32 SHOULD_PROBE;
 
-extern INT32 SEND_BIG_PKG;
+// 100, all big pkgs, 0, all small pkgs
+extern UINT32 BIG_PKG_RATE;
 
-extern INT32 CLEAR_BIG_PKG;
+extern UINT32 PROBE_INTERVAL;
+
+extern UINT32 SHOULD_REPORT_IP;
+
+extern UINT32 SHOULD_QUERY_CONF;
+
+/* Consts for server action */
+// Stop probe(0) or change probe interval (non-0)
+const CHAR ServerAntsAgentAction = '0';
+
+// Report Agent Ip
+const CHAR ServerAntsAgentIp  = '1';
+
+// Query Agent Config
+const CHAR ServerAntsAgentConf = '2';
+
+// Query PingList
+const CHAR ServerAntsAgentPingList = '3';
 
 const UINT32 BIG_PACKAGE_SIZE = 1000;
 const UINT32 NORMAL_PACKAGE_SIZE = 40;

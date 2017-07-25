@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <string>
+using namespace std;
 
 #define MILLISECOND_USEC        (1000)
 #define SECOND_USEC            (1000000)

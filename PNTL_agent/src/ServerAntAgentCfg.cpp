@@ -52,118 +52,77 @@ ServerAntAgentCfg_C::~ServerAntAgentCfg_C()
     sal_mutex_destroy(AgentCfgLock);
 }
 
-INT32 ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP,  UINT32 * puiServerDestPort)          // 查询ServerAntServer地址信息.
+void ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP,  UINT32 * puiServerDestPort)
 {
-    LOCK();     //互斥锁保持数据一致
-    if (puiServerIP)
-    {
-        * puiServerIP = uiServerIP;
-    }
-    if (puiServerDestPort)
-    {
-        * puiServerDestPort = uiServerDestPort;
-    }
-    UNLOCK();
-    return AGENT_OK;
+
+    *puiServerIP = uiServerIP;
+    *puiServerDestPort = uiServerDestPort;
+
+    return;
 }
 
-INT32 ServerAntAgentCfg_C::SetServerAddress(UINT32 uiNewServerIP,
-        UINT32 uiNewServerDestPort)             // 设置ServerAntServer地址信息, 非0有效.
+void ServerAntAgentCfg_C::SetServerAddress(UINT32 uiNewServerIP, UINT32 uiNewServerDestPort)
 {
-    LOCK();     //互斥锁保证数据一致
-    if (uiNewServerIP)
-    {
-        uiServerIP = uiNewServerIP;
-    }
-    if (uiNewServerDestPort)
-    {
-        uiServerDestPort = uiNewServerDestPort;
-    }
-    UNLOCK();
-    return AGENT_OK;
+
+    uiServerIP = uiNewServerIP;
+    uiServerDestPort = uiNewServerDestPort;
+
+    return;
 }
 
-INT32 ServerAntAgentCfg_C::GetAgentAddress(UINT32 * puiAgentIP,
+void ServerAntAgentCfg_C::GetAgentAddress(UINT32 * puiAgentIP,
         UINT32 * puiAgentDestPort)          // 查询ServerAntAgent地址信息.
 {
-    LOCK();     //互斥锁保持数据一致
-    if (puiAgentIP)
-    {
-        * puiAgentIP = uiAgentIP;
-    }
-    if (puiAgentDestPort)
-    {
-        * puiAgentDestPort = uiAgentDestPort;
-    }
-    UNLOCK();
-    return AGENT_OK;
+    *puiAgentIP = uiAgentIP;
+    *puiAgentDestPort = uiAgentDestPort;
+
+    return;
 }
 
-INT32 ServerAntAgentCfg_C::GetMgntIP(UINT32* puiMgntIP)
+void ServerAntAgentCfg_C::GetMgntIP(UINT32* puiMgntIP)
 {
-    if (puiMgntIP)
-    {
-        *puiMgntIP = uiMgntIP;
-    }
-    return AGENT_OK;
+
+    *puiMgntIP = uiMgntIP;
+
+    return;
 }
 
-INT32 ServerAntAgentCfg_C::SetAgentAddress(UINT32 uiNewAgentIP,
-        UINT32 uiNewAgentDestPort)             // 设置ServerAntAgent地址信息, 非0有效.
+void ServerAntAgentCfg_C::SetAgentAddress(UINT32 uiNewAgentIP,   UINT32 uiNewAgentDestPort)
 {
-    LOCK();     //互斥锁保证数据一致
-    if (uiNewAgentIP)
-    {
-        uiAgentIP = uiNewAgentIP;
-    }
-    if (uiNewAgentDestPort)
-    {
-        uiAgentDestPort = uiNewAgentDestPort;
-    }
-    UNLOCK();
-    return AGENT_OK;
+
+    uiAgentIP = uiNewAgentIP;
+
+    uiAgentDestPort = uiNewAgentDestPort;
+
+    return;
 }
 
-INT32 ServerAntAgentCfg_C::GetProtocolUDP(UINT32 * puiSrcPortMin,
+void ServerAntAgentCfg_C::GetProtocolUDP(UINT32 * puiSrcPortMin,
         UINT32 * puiSrcPortMax,
         UINT32 * puiDestPort)          // 查询UDP探测报文端口范围.
 {
-    LOCK();     //互斥锁保持数据一致
-    if (puiSrcPortMin)
-    {
-        * puiSrcPortMin = stProtocolUDP.uiSrcPortMin;
-    }
-    if (puiSrcPortMax)
-    {
-        * puiSrcPortMax = stProtocolUDP.uiSrcPortMax;
-    }
-    if (puiDestPort)
-    {
-        * puiDestPort    = stProtocolUDP.uiDestPort;
-    }
-    UNLOCK();
-    return AGENT_OK;
+
+    *puiSrcPortMin = stProtocolUDP.uiSrcPortMin;
+
+    *puiSrcPortMax = stProtocolUDP.uiSrcPortMax;
+
+    *puiDestPort    = stProtocolUDP.uiDestPort;
+
+    return;
 }
 
-INT32 ServerAntAgentCfg_C::SetProtocolUDP(UINT32 uiSrcPortMin,
+void ServerAntAgentCfg_C::SetProtocolUDP(UINT32 uiSrcPortMin,
         UINT32 uiSrcPortMax,
         UINT32 uiDestPort)             // 设定UDP探测报文端口范围, 只刷新非0端口
 {
-    LOCK();     //互斥锁保证数据一致
-    if (uiSrcPortMin)
-    {
-        stProtocolUDP.uiSrcPortMin = uiSrcPortMin;
-    }
-    if (uiSrcPortMax)
-    {
-        stProtocolUDP.uiSrcPortMax = uiSrcPortMax;
-    }
-    if (uiDestPort)
-    {
-        stProtocolUDP.uiDestPort   = uiDestPort;
-    }
-    UNLOCK();
-    return AGENT_OK;
+
+    stProtocolUDP.uiSrcPortMin = uiSrcPortMin;
+
+    stProtocolUDP.uiSrcPortMax = uiSrcPortMax;
+
+    stProtocolUDP.uiDestPort   = uiDestPort;
+
+    return;
 }
 
 UINT32 ServerAntAgentCfg_C::GetPollingTimerPeriod()
@@ -173,7 +132,7 @@ UINT32 ServerAntAgentCfg_C::GetPollingTimerPeriod()
 
 INT32 ServerAntAgentCfg_C::SetDetectPeriod(UINT32 uiNewPeriod)
 {
-    if (STOP_PROBE_PERIOD != uiNewPeriod && EXIT_PROBE_PERIOD != (INT32)uiNewPeriod )
+    if (STOP_PROBE_PERIOD != uiNewPeriod)
     {
         if (MIN_PROBE_PERIOD > uiNewPeriod || MAX_PROBE_PERIOD < uiNewPeriod)
         {
@@ -194,10 +153,10 @@ UINT32 ServerAntAgentCfg_C::GetAgentIP()
     return uiAgentIP;
 }
 
-INT32 ServerAntAgentCfg_C::SetMgntIP(UINT32 uiNewMgntIP)
+void ServerAntAgentCfg_C::SetMgntIP(UINT32 uiNewMgntIP)
 {
     uiMgntIP = uiNewMgntIP;
-    return AGENT_OK;
+    return;
 }
 
 UINT32 ServerAntAgentCfg_C::GetReportPeriod()
@@ -252,17 +211,6 @@ INT32 ServerAntAgentCfg_C::SetDetectDropThresh(UINT32 uiNewThresh)
     return AGENT_OK;
 }
 
-INT32 ServerAntAgentCfg_C::SetHostname(string newHostname)
-{
-    hostname = newHostname;
-    return AGENT_OK;
-}
-
-string ServerAntAgentCfg_C::GetHostname()
-{
-    return hostname;
-}
-
 UINT32 ServerAntAgentCfg_C::GetPortCount()
 {
     return uiPortCount;
@@ -300,19 +248,13 @@ UINT32 ServerAntAgentCfg_C::GetBigPkgRate()
 
 INT32 ServerAntAgentCfg_C::SetBigPkgRate(UINT32 newRate)
 {
-    if (MIN_BIG_PACKAGE_RATE == newRate)
-    {
-        SEND_BIG_PKG = 0;
-        CLEAR_BIG_PKG = 1;
-    }
-    else if (MAX_BIG_PACKAGE_RATE == newRate)
-    {
-        SEND_BIG_PKG = 1;
-        CLEAR_BIG_PKG = 0;
-    }
-    else
+    if (MIN_BIG_PACKAGE_RATE > newRate || MAX_BIG_PACKAGE_RATE < newRate)
     {
         return AGENT_E_PARA;
+    }
+	if (GetBigPkgRate() != newRate)
+    {
+        BIG_PKG_RATE = 1;
     }
     uiBigPkgRate = newRate;
     return AGENT_OK;

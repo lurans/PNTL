@@ -2,12 +2,8 @@
 #define __SRC_ServerAntAgentCfg_H__
 
 #include <string>
-
-#include "Sal.h"
 #include "AgentCommon.h"
-#include <vector>
 
-const INT32 EXIT_PROBE_PERIOD = -1;
 const UINT32 STOP_PROBE_PERIOD = 0;
 const UINT32 MIN_PROBE_PERIOD = 60;
 const UINT32 MAX_PROBE_PERIOD = 60 * 30;
@@ -70,18 +66,18 @@ public:
     ServerAntAgentCfg_C();                  // 类构造函数, 填充默认值.
     ~ServerAntAgentCfg_C();                 // 类析构函数, 释放必要资源.
 
-    INT32 GetServerAddress(UINT32 * puiServerIP,
+    void GetServerAddress(UINT32 * puiServerIP,
                            UINT32 * puiServerDestPort);        // 查询ServerAntServer地址信息.
-    INT32 SetServerAddress(UINT32 uiNewServerIP,
+    void SetServerAddress(UINT32 uiNewServerIP,
                            UINT32 uiNewServerDestPort);         // 设置ServerAntServer地址信息, 非0有效.
 
-    INT32 GetAgentAddress(UINT32 * puiAgentIP,
+    void GetAgentAddress(UINT32 * puiAgentIP,
                           UINT32 * puiAgentDestPort);         // 查询ServerAntAgent地址信息.
-    INT32 SetAgentAddress(UINT32 uiNewAgentIP,
+    void SetAgentAddress(UINT32 uiNewAgentIP,
                           UINT32 uiNewAgentDestPort);          // 设置ServerAntAgent地址信息, 非0有效.
 
-    INT32 GetMgntIP(UINT32* puiMgntIP);
-    INT32 SetMgntIP(UINT32 uiNewMgntIP);         // 设定管理口ip
+    void GetMgntIP(UINT32* puiMgntIP);
+    void SetMgntIP(UINT32 uiNewMgntIP);         // 设定管理口ip
 
     UINT32 GetPollingTimerPeriod();   // 查询Polling周期
     INT32 SetPollingTimerPeriod(UINT32 uiNewPeriod);  //设置Polling周期, 如跟已有周期不一致则同时刷新定时器
@@ -103,15 +99,12 @@ public:
     UINT32 GetDetectDropThresh();                         // 查询Detect报文丢包门限
     INT32 SetDetectDropThresh(UINT32 uiNewThresh);         // 设定Detect报文丢包门限
 
-    INT32 GetProtocolUDP(UINT32 * puiSrcPortMin,
+    void GetProtocolUDP(UINT32 * puiSrcPortMin,
                          UINT32 * puiSrcPortMax,
                          UINT32 * puiDestPort);           // 查询UDP探测报文端口范围.
-    INT32 SetProtocolUDP(UINT32 uiSrcPortMin,
+    void SetProtocolUDP(UINT32 uiSrcPortMin,
                          UINT32 uiSrcPortMax,
                          UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
-
-    INT32 SetHostname(string newHostname);
-    string GetHostname();
 
     UINT32 GetPortCount();
     INT32 SetPortCount(UINT32 newPortCount);

@@ -1,7 +1,3 @@
-
-#include <stdlib.h>
-#include <unistd.h>
-
 #include <errno.h>
 
 #include <sys/time.h>
@@ -16,6 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+#include "AgentCommon.h"
 
 #define UDP_TEST_PORT       6000
 #define UDP_SERVER_IP       "127.0.0.1"
@@ -120,52 +118,84 @@ DetectWorker_C::~DetectWorker_C()
 
 INT32 DetectWorker_C::RecvServerMsg()
 {
+    INT32             iSockFd = 0;    // 本任务使用的socket描述符
+    iSockFd = GetManageSocket();
+    struct sockaddr_in stPrtnerAddr;    // 对端socket地址信息
+
+    INT32 iTos = 1;
     INT32 iRet = 0;
     struct timeval tm;      // 缓存当前时间.
     char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// 保存报文所有附加信息的buffer, 当前只预留了tos值空间.
     struct msghdr msg;      // 描述报文信息, socket收发包使用.
     struct cmsghdr *cmsg;   // 用于遍历 msg.msg_control中所有报文附加信息, 目前是tos值.
     struct iovec iov[1];    // 用于保存报文payload buffer的结构体.参见msg.msg_iov. 当前只使用一个缓冲区.
-    UINT32 uiMsgType = 0;;
-
-   /*  socket已经ready, 此时socket和Protocol等成员应该已经完成初始化. */
-
-    sal_memset(&tm, 0, sizeof(tm));
-    tm.tv_sec  = GetCurrentInterval() / SECOND_USEC;  //us -> s
-    tm.tv_usec = GetCurrentInterval() % SECOND_USEC; // us -> us
-    iRet = setsockopt(iManageSocket, SOL_SOCKET, SO_RCVTIMEO, &tm, sizeof(tm)); //设置socket 读取超时时间
-    if( 0 > iRet )
-    {
-        DETECT_WORKER_ERROR("RX: Setsockopt SO_RCVTIMEO failed[%d]: %s [%d]", iRet, strerror(errno), errno);
-        return AGENT_E_HANDLER;
-    }
+    CHAR cMsgType = 0;
 
     // 报文payload接收buffer
-    iov[0].iov_base =  &uiMsgType;
+    iov[0].iov_base =  &cMsgType;
     iov[0].iov_len  = sizeof(UINT32);
     msg.msg_iov = iov;
     msg.msg_iovlen = 1;
     msg.msg_flags = 0;
     msg.msg_control = acCmsgBuf;
     msg.msg_controllen = sizeof(acCmsgBuf);
-
-        DETECT_WORKER_INFO("begin: RecvServerMsg----------------- ");
+    // 对端socket地址
+    msg.msg_name = &stPrtnerAddr;
+    msg.msg_namelen = sizeof(stPrtnerAddr);
+    sal_memset(&stPrtnerAddr, 0, sizeof(stPrtnerAddr));
 
     // 接收报文
-    iRet = recvmsg(iManageSocket, &msg, 0);
-        DETECT_WORKER_INFO("end: RecvServerMsg----------------- ");
-
-    if (iRet == sizeof(UINT32))
+    iRet = recvmsg(iManageSocket, &msg, MSG_DONTWAIT);
+    if (-1 == iRet)
     {
-        DETECT_WORKER_INFO("RX: RecvServerMsg-----------------  type is:[%d]", uiMsgType);
-
-       /* switch(uiMsgType)
+        // Receive error or no data to receive
+        return iRet;
+    }
+    if (iRet == sizeof(CHAR))
+    {
+        DETECT_WORKER_INFO("RX: RecvServerMsg action type is:[%c]", cMsgType);
+        switch(cMsgType)
         {
-        }*/
+            case ServerAntsAgentAction:
+                PROBE_INTERVAL = 0;
+                DETECT_WORKER_INFO("Set probe_interval to [%u], will stop detect. ", PROBE_INTERVAL);
+                break;
+            case ServerAntsAgentIp:
+                SHOULD_REPORT_IP = 1;
+                DETECT_WORKER_INFO("Set SHOULD_REPORT_IP to [%u], will report agent ip in next interval. ", SHOULD_REPORT_IP);
+                break;
+            case ServerAntsAgentConf:
+                SHOULD_QUERY_CONF = 1;
+                DETECT_WORKER_INFO("Set SHOULD_QUERY_CONF to [%u], will query config in next interval. ", SHOULD_QUERY_CONF);
+                break;
+            case ServerAntsAgentPingList:
+                SHOULD_PROBE = 1;
+                DETECT_WORKER_INFO("Set SHOULD_PROBE to [%u], will query pinglist in next interval. ", SHOULD_PROBE);
+                break;
+            default:
+                DETECT_WORKER_ERROR("Wrong type [%c] ", cMsgType);
+                break;
+        }
     }
 
+    msg.msg_control = NULL;
+    msg.msg_controllen = 0;
+
+    // IP_TOS对于stream(TCP)socket不会修改ECN bit, 其他情况下会覆盖ip头中整个tos字段
+    iRet = setsockopt(iSockFd, SOL_IP, IP_TOS, &iTos, sizeof(iTos));
+    if( 0 > iRet)
+    {
+        DETECT_WORKER_WARNING("RX: Setsockopt IP_TOS failed[%d]: %s [%d]", iRet, strerror(errno), errno);
+    }
+
+    iRet = sendmsg(iSockFd, &msg, 0);
+    if (iRet != sizeof(UINT32) ) // send failed
+    {
+        DETECT_WORKER_WARNING("RX: Send reply packet failed[%d]: %s [%d]", iRet, strerror(errno), errno);
+    }
     return AGENT_OK;
 }
+
 
 // Thread回调函数.
 // PreStopHandler()执行后, ThreadHandler()需要在GetCurrentInterval() us内主动退出.
@@ -511,12 +541,8 @@ INT32 DetectWorker_C::InitSocket()
     UINT32 uiSrcPortMin = 0, uiSrcPortMax=0, uiDestPort=0;
 
 
-    iRet = pcAgentCfg ->GetProtocolUDP(&uiSrcPortMin, &uiSrcPortMax, &uiDestPort);
-    if (iRet)
-    {
-        FLOW_MANAGER_ERROR("Get Protocol UDP cfg failed[%d]", iRet);
-        return AGENT_E_PARA;
-    }
+    pcAgentCfg ->GetProtocolUDP(&uiSrcPortMin, &uiSrcPortMax, &uiDestPort);
+
     FLOW_MANAGER_INFO("InitSocket~~~~~~~~~~~~~~~~~~~~~~~~[%d]", uiDestPort);
     ReleaseSocket();
 
@@ -600,7 +626,7 @@ INT32 DetectWorker_C::InitManageSocket()
 
     iManageSocket = SocketTmp;
 
-    DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP,%u", iManageSocket,33001,servaddr.sin_addr.s_addr);
+    DETECT_WORKER_INFO("Init a new socket [%d], Bind: %d,IP, %s", iManageSocket,33001, sal_inet_ntoa(servaddr.sin_addr.s_addr));
 
     return AGENT_OK;
 }
@@ -615,6 +641,16 @@ INT32 DetectWorker_C::GetSocket()
 
     return SocketTmp;
 }
+
+INT32 DetectWorker_C::GetManageSocket()
+{
+    INT32 SocketTmp;
+
+    SocketTmp = iManageSocket;
+
+    return SocketTmp;
+}
+
 
 // Rx任务收到应答报文后, 通知worker刷新会话列表, sender的Rx任务使用.
 INT32 DetectWorker_C::RxUpdateSession
@@ -682,7 +718,6 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
 
     pstSendMsg = (PacketInfo_S *)aucBuff;
     gettimeofday(&tm,NULL); //获取当前时间
-    DETECT_WORKER_WARNING("is big pkg [%u]", pNewSession->stFlowKey.uiIsBigPkg);
     if (pNewSession->stFlowKey.uiIsBigPkg)
     {
         sal_memset(aucBuff, 0, sizeof(aucBuff));

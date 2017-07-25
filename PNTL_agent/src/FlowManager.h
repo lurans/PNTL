@@ -2,8 +2,6 @@
 #ifndef __SRC_FlowManager_H__
 #define __SRC_FlowManager_H__
 
-//#include <string>
-
 #include "ThreadClass.h"
 #include "DetectWorker.h"
 #include "ServerAntAgentCfg.h"
@@ -57,7 +55,6 @@ typedef struct tagAgentFlowTableEntry
     vector <DetectResultPkt_S> vFlowDetectResultPkt;
     UINT32 uiFlowDropCounter;     // 流当前连续丢包计数, 超过门限后触发丢包上报事件.
     UINT32 uiFlowTrackingCounter; // 流处于Tracking状态时, 每隔一段时间发送一个探测报文.
-    UINT32 uiUrgentFlowCounter;   // Urgent流当前探测计数, 超过门限后完成Urgent探测, 触发上报事件.
 
     /* 准备上报的探测结果 */
     DetectResult_S stFlowDetectResult;
@@ -145,31 +142,28 @@ private:
 
     // Agent 使用的流表.
     // 操作工作流表需互斥, 操作配置流表无需互斥. 当前单线程场景实际不会触发互斥.
-    vector <AgentFlowTableEntry_S> AgentFlowTable[2];   // 两个流表, 一个为工作流表, 另一个为配置流表, 互相独立, 配置完成后提交倒换.
+    vector <AgentFlowTableEntry_S> AgentFlowTable;   // 两个流表, 一个为工作流表, 另一个为配置流表, 互相独立, 配置完成后提交倒换.
     UINT32 uiAgentWorkingFlowTable;               // 当前工作流表, 0或1, 另外一个为配置流表.
     sal_mutex_t stAgentFlowTableLock;                   // 操作工作流表和修改uiWorkingFlowTable时需要互斥.
 
     // Agent流表处理
-    INT32 AgentClearFlowTable(UINT32 uiTableNumber);// 清空特定流表
+    INT32 AgentClearFlowTable();// 清空特定流表
     INT32 AgentCommitCfgFlowTable();                      // 将配置流表与工作流表倒换, 配置生效.由RefreshAgentFlowTable()触发.
-    INT32 AgentFlowTableAdd(
-        UINT32 uiAgentFlowTableNumber,
-        ServerFlowTableEntry_S * pstServerFlowEntry);   // 向AgentFlowTable中添加Entry
+    void AgentFlowTableAdd(ServerFlowTableEntry_S * pstServerFlowEntry);
+
     INT32 AgentRefreshFlowTable();                        // 刷新Agent流表, 由CommitServerCfgFlowTable()触发.
     INT32 AgentFlowTableEntryAdjust();                    // 根据range调整下一个report周期打开哪些流.
-    INT32 AgentFlowTableEntryClearResult
-    (UINT32 uiAgentFlowIndex);                // 清空特定AgentFlow的探测结果
+    void AgentFlowTableEntryClearResult(UINT32 uiAgentFlowIndex);                // 清空特定AgentFlow的探测结果
 
 
     // Server下发的流表
     // 操作工作流表需互斥, 操作配置流表无需互斥. 当前单线程场景实际不会触发互斥.
-    vector <ServerFlowTableEntry_S> ServerFlowTable[2]; // 两个流表, 一个为工作流表, 另一个为配置流表, 互相独立, 配置完成后提交倒换.
+    vector <ServerFlowTableEntry_S> ServerFlowTable; // 工作流表
     UINT32 uiServerWorkingFlowTable;              // 当前工作流表, 0或1, 另外一个为配置流表.
     sal_mutex_t stServerFlowTableLock;                  // 操作工作流表和修改uiWorkingServerFlowTable时需要互斥.
-    UINT32 uiServerFlowTableIsEmpty;              // Server流表为空时, 缩短轮询周期为正常值的1/1000, 最小间隔为30s.
 
     // Server流表处理
-    INT32 ServerClearFlowTable(UINT32 uiTableNumber);   // 清空特定流表
+    INT32 ServerClearFlowTable();   // 清空特定流表
     INT32 ServerFlowTablePreAdd(
         ServerFlowKey_S * pstNewServerFlowKey,
         ServerFlowTableEntry_S * pstNewServerFlowEntry);    // 向ServerFlowTable中添加Entry前的预处理, 包括入参检查及参数初始化
@@ -201,10 +195,7 @@ private:
     INT32 FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay);   // 延时上报接口
 
     UINT32 uiLastQuerytTimeCounter;           // 最近一次启动查询Server的时间点
-    INT32 QueryCheck(UINT32 counter);           // 检测此时是否该启动查询Server配置流程.
     INT32 DoQuery();                                  // 启动从Server刷新配置流程.
-    INT32 GetFlowFromServer
-    (ServerFlowKey_S * pstNewFlow);         // 从Server获取一条新的Flow.
 
     /* Thread 实现代码 */
     INT32 ThreadHandler();                        // 任务主处理函数
@@ -221,11 +212,10 @@ public:
 
     INT32 Init(ServerAntAgentCfg_C * pcNewAgentCfg);   // 初始化函数
 
-    INT32 ServerWorkingFlowTableAdd
-    (ServerFlowKey_S stServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
+    INT32 ServerWorkingFlowTableAdd(ServerFlowKey_S *pstServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
 
     INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
-    INT32 SetPkgFlag(ServerAntAgentCfg_C* config, UINT32 flag);
+    INT32 SetPkgFlag();
 };
 
 #endif

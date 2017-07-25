@@ -1,12 +1,8 @@
-
 #include <errno.h>
 
 using namespace std;
 
-#include "Sal.h"
-#include "AgentCommon.h"
 #include "Log.h"
-
 #include "ThreadClass.h"
 
 enum
@@ -34,9 +30,7 @@ void * ThreadFun(void * p)
     {
         THREAD_CLASS_ERROR("Thread Update State To WORKING failed[%d]", iRet);
         pthread_exit(NULL);
-
     }
-    //THREAD_CLASS_INFO("Thread start working.");
 
     iRet = pcThread->ThreadHandler();
     if(iRet)
@@ -56,8 +50,6 @@ void * ThreadFun(void * p)
 // 构造函数, 填充默认值.
 ThreadClass_C::ThreadClass_C()
 {
-    // THREAD_CLASS_INFO("Creat a new ThreadClass.");
-
     uiThreadUpdateInterval = THREAD_DEFAULT_UPDATE_INTERVAL; // 100ms
     uiThreadState = THREAD_STATE_WORKING;
     ThreadFd = 0;
@@ -66,8 +58,6 @@ ThreadClass_C::ThreadClass_C()
 // 析构函数, 释放必要资源.
 ThreadClass_C::~ThreadClass_C()
 {
-    // THREAD_CLASS_INFO("Destroy an old ThreadClass.");
-
     StopThread();           // 停止任务
 }
 
@@ -76,10 +66,7 @@ ThreadClass_C::~ThreadClass_C()
 INT32 ThreadClass_C::SetNewInterval(UINT32 uiNewInterval)
 {
     INT32 iRet = AGENT_OK;
-
-    //THREAD_CLASS_INFO("Set Thread Update Interval to [%d] us", uiNewInterval);
     uiThreadUpdateInterval = uiNewInterval;
-
     return iRet;
 }
 
@@ -94,10 +81,10 @@ INT32 ThreadClass_C::StartThread()
 {
     INT32 iRet = AGENT_OK;
 
-    if (ThreadFd)   // 先停止任务.
+    if (ThreadFd) // 先停止任务.
+    {
         StopThread();
-
-    //THREAD_CLASS_INFO("Start a Thread with ThreadUpdateInterval [%d]us", uiThreadUpdateInterval);
+    }
 
     iRet = ThreadUpdateState(THREAD_STATE_STOPED); // 恢复任务默认状态
     if(iRet)
@@ -128,7 +115,7 @@ INT32 ThreadClass_C::StartThread()
 // 停止任务.
 INT32 ThreadClass_C::StopThread()
 {
-    UINT32 uiInterval = GetCurrentInterval()/2 + THREAD_UPDATE_MIN;  // 计算检查周期
+    UINT32 uiInterval = GetCurrentInterval() / 2 + THREAD_UPDATE_MIN;  // 计算检查周期
     UINT32 uiStopCounter = THREAD_STOP_COUNTER;
     INT32 iRet = AGENT_OK;
 
@@ -214,6 +201,4 @@ INT32 ThreadClass_C::PreStopHandler()
     THREAD_CLASS_WARNING("Pre Stop Handler use default func");
     SetNewInterval(0);
 }
-
-
 
