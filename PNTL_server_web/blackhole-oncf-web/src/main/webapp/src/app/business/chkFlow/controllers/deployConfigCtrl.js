@@ -223,8 +223,8 @@ define(["language/chkFlow",
 
                     var para = {
                         "ak":ak,
-                         "sk":sk,
-                         "repo_url":ip
+                        "sk":sk,
+                        "repo_url":ip
                     };
                     return para;
                 };
@@ -233,7 +233,7 @@ define(["language/chkFlow",
                     promise.then(function(responseData){
                         $scope.akTextBox.value = responseData.ak;
                         $scope.skTextBox.value = responseData.sk;
-                        $scope.ipTextBox.value = responseData.ip;
+                        $scope.ipTextBox.value = responseData.repo_url;
                     },function(responseData){
                         //showERRORMsg
                         commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
