@@ -75,34 +75,21 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         strTemp = ptDataTmp.get<string>("IP");
         uiIp = sal_inet_aton(strTemp.c_str());
         uiPort = ptDataTmp.get<UINT32>("Port");
-        iRet = pcCfg->SetServerAddress(uiIp, uiPort);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetServerAddress and port failed[%d]", iRet);
-            return iRet;
-        }
+        pcCfg->SetServerAddress(uiIp, uiPort);
 
         // 解析ServerAntAgent数据.
         ptDataTmp.clear();
         ptDataTmp = ptDataRoot.get_child("ServerAntAgent");
         strTemp = ptDataTmp.get<string>("MgntIP");
         uiIp = sal_inet_aton(strTemp.c_str());
-        iRet = pcCfg->SetMgntIP(uiIp);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetMgntIPgtIP failed[%d]", iRet);
-            return iRet;
-        }
+        pcCfg->SetMgntIP(uiIp);
+
+       
 
         strTemp = ptDataTmp.get<string>("AgentIP");
         uiIp = sal_inet_aton(strTemp.c_str());
         uiPort = ptDataTmp.get<UINT32>("Port");
-        iRet = pcCfg->SetAgentAddress(uiIp, uiPort);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetAgentAddress and port failed[%d]", iRet);
-            return iRet;
-        }
+        pcCfg->SetAgentAddress(uiIp, uiPort);
 
         uiData = ptDataTmp.get<UINT32>("ReportPeriod");
         iRet = pcCfg->SetReportPeriod(uiData);
@@ -149,12 +136,8 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         UINT32 uiSrcPortMin = ptDataTmp.get<UINT32>("SrcPortMin");
         UINT32 uiSrcPortMax = ptDataTmp.get<UINT32>("SrcPortMax");
         UINT32 uiDestPort   = ptDataTmp.get<UINT32>("DestPort");
-        iRet = pcCfg->SetProtocolUDP(uiSrcPortMin, uiSrcPortMax, uiDestPort);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetProtocolUDP failed[%d]", iRet);
-            return iRet;
-        }
+        pcCfg->SetProtocolUDP(uiSrcPortMin, uiSrcPortMax, uiDestPort);
+
     }
     catch (exception const & e)
     {
@@ -184,12 +167,8 @@ INT32 CreateProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream *
         ptDataRoot.put("scope", "global");
 
         UINT32 uiIp;
-        iRet = pcCfg->GetAgentAddress(&uiIp, NULL);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("GetAgentAddress failed[%d]", iRet);
-            return iRet;
-        }
+        UINT32 uiAgentDestPort;
+        pcCfg->GetAgentAddress(&uiIp, &uiAgentDestPort);
 
         ptDataTemp.put("agent-ip", sal_inet_ntoa(uiIp));
         ptDataRoot.put_child("content", ptDataTemp);
@@ -211,18 +190,18 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 
     stringstream ssJsonData;
     ptree ptDataRoot;
-    UINT32 uiIp, uiMgntIp;
+    UINT32 uiIp, uiMgntIp, uiAgentDestPort;
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
     {
-        iRet = pcCfg->GetAgentAddress(&uiIp, NULL);
+        pcCfg->GetAgentAddress(&uiIp, &uiAgentDestPort);
         if (iRet)
         {
             JSON_PARSER_ERROR("GetAgentAddress failed[%d]", iRet);
             return iRet;
         }
 
-        iRet = pcCfg->GetMgntIP(&uiMgntIp);
+        pcCfg->GetMgntIP(&uiMgntIp);
         ptDataRoot.put("vbond_ip", sal_inet_ntoa(uiIp));    // 数据面IP
         ptDataRoot.put("agent_ip", sal_inet_ntoa(uiMgntIp));
 
@@ -596,8 +575,8 @@ INT32 IssueFlowFromJsonFlowArray(ptree ptFlowArray, FlowManager_C* pcFlowManager
             }
 
             // 普通流程添加到配置表, 待配置倒换后生效.
-            iRet = pcFlowManager->ServerWorkingFlowTableAdd(stNewServerFlowKey);
-            if (iRet)
+            iRet = pcFlowManager->ServerWorkingFlowTableAdd(&stNewServerFlowKey);
+            if (AGENT_OK != iRet)
             {
                 JSON_PARSER_ERROR("Add New ServerWorkingFlowTable failed [%d]", iRet);
                 return iRet;
@@ -609,47 +588,9 @@ INT32 IssueFlowFromJsonFlowArray(ptree ptFlowArray, FlowManager_C* pcFlowManager
         JSON_PARSER_ERROR("Caught exception [%s] when IssueFlowFromJsonFlowArray.", e.what());
         return AGENT_E_ERROR;
     }
-    return iRet;
-}
-
-
-#define UrgentFlowIssueSignature    "HuaweiDC3ServerAntsProbelistIssue"
-#define UrgentFlowIssueAction       "post"
-
-// 解析json格式的字符串, 并下发到FlowManager, 负责处理Server主导下发的Urgent探测流.
-INT32 ProcessUrgentFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
-{
-    INT32 iRet = AGENT_OK;
-    // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
-    try
-    {
-        // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
-        stringstream ssStringData(pcJsonData);
-
-        // boost::property_tree对象, 用于存储json格式数据.
-        ptree ptDataRoot, ptFlowArray;
-        read_json(ssStringData, ptDataRoot);
-
-        // 检查pt中的解析结果
-
-        ptFlowArray.clear();
-        ptFlowArray = ptDataRoot.get_child("flows");
-        iRet = IssueFlowFromJsonFlowArray(ptFlowArray, pcFlowManager, AGENT_TRUE);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d], Flow info[%s]", iRet, pcJsonData);
-            return iRet;
-        }
-    }
-    catch (exception const & e)
-    {
-        JSON_PARSER_ERROR("Caught exception [%s] when ProcessUrgentFlowFromServer. Flow info[%s]", e.what(), pcJsonData);
-        return AGENT_E_ERROR;
-    }
 
     return iRet;
 }
-
 
 /*
 ServerAntServer 回复的普通探测流格式

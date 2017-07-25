@@ -541,12 +541,8 @@ INT32 DetectWorker_C::InitSocket()
     UINT32 uiSrcPortMin = 0, uiSrcPortMax=0, uiDestPort=0;
 
 
-    iRet = pcAgentCfg ->GetProtocolUDP(&uiSrcPortMin, &uiSrcPortMax, &uiDestPort);
-    if (iRet)
-    {
-        FLOW_MANAGER_ERROR("Get Protocol UDP cfg failed[%d]", iRet);
-        return AGENT_E_PARA;
-    }
+    pcAgentCfg ->GetProtocolUDP(&uiSrcPortMin, &uiSrcPortMax, &uiDestPort);
+
     FLOW_MANAGER_INFO("InitSocket~~~~~~~~~~~~~~~~~~~~~~~~[%d]", uiDestPort);
     ReleaseSocket();
 

@@ -208,12 +208,8 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     // 生成 URL
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
-    iRet = pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << PINGLIST_URL;
 
@@ -268,12 +264,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C *pcAgentCfg, stringstream * pstrRep
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
 
-    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << strUrl;
 
@@ -311,12 +302,7 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
     // 生成 URL
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
-    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
 
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_IP_URL;
@@ -368,12 +354,8 @@ INT32 RequestConfigFromServer(FlowManager_C* pcFlowManager)
     // 生成 URL
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
-    iRet = pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_CONFIG_URL;
 
