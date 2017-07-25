@@ -3,7 +3,7 @@ define([], function () {
     var configFlowService = function (exception, camel){
         var rest_prefix = window.rest_prefix;
 
-        this.firstDeploy = function(data){
+        this.install= function(data){
             var uri = rest_prefix + "/chkflow/pntlInit";
             var promise = camel.post({
                 "url": {
@@ -14,6 +14,7 @@ define([], function () {
             });
             return promise;
         };
+
         this.postVariableConfig = function(data){
             var uri = rest_prefix + "/chkflow/pntlVariableConf";
             var promise = camel.post({
@@ -36,6 +37,28 @@ define([], function () {
             });
             return promise;
         };
+        this.startProbe = function(data){
+            var uri = rest_prefix + "/chkflow/startAgents";
+            var promise = camel.post({
+                "url": {
+                    "s": uri
+                },
+                "params":data,
+                "timeout":60000
+            });
+            return promise;
+        };
+        this.stopProbe = function(data){
+            var uri = rest_prefix + "/chkflow/stopProbe";
+            var promise = camel.post({
+                "url": {
+                    "s": uri
+                },
+                "params":data,
+                "timeout":60000
+            });
+            return promise;
+        };
         this.getVariableConfig = function(){
             var uri = rest_prefix + "/chkflow/pntlConf";
             var promise = camel.get({
@@ -46,7 +69,7 @@ define([], function () {
             });
             return promise;
         };
-        this.probeExit = function(data){
+        this.uninstall = function(data){
             var uri = rest_prefix + "/chkflow/exitProbe";
             var promise = camel.post({
                 "url": {

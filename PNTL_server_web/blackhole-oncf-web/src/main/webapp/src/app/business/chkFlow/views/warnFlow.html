@@ -16,14 +16,17 @@
                           width="azTextBox.width"
                           tooltip = "azTextBox.tooltip"></tiny-textbox>
         </div>
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:50px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_start_time}}
             </div>
-            <tiny-datetime id= "start_time.id"
-                           type="start_time.type"
-                           date-format = "start_time.dateFormat"
-                           time-format="start_time.timeFormat">
+            <tiny-datetime id= "dateTime.id1"
+                           type="dateTime.type"
+                           date-format = "dateTime.dateFormat"
+                           max-date = "dateTime.maxDate1"
+                           min-date = "dateTime.minDate1"
+                           on-close = "dateTime.onCloseMin"
+                           time-format="dateTime.timeFormat">
             </tiny-datetime>
         </div>
         <div style="float:left;margin-right:70px;">
@@ -43,9 +46,9 @@
             <tiny-select id="type.id"
                          values="type.values"
                          width="135"
-                         ></tiny-select>
+            ></tiny-select>
         </div>
-</div><br>
+    </div><br>
     <div class="row-fluid">
         <div style="float:left; margin-right:50px;">
             <div class="span1 input_label1" style="width: 60px;">
@@ -56,14 +59,17 @@
                           width="podTextBox.width"
                           tooltip = "podTextBox.tooltip"></tiny-textbox>
         </div>
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:50px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_end_time}}
             </div>
-            <tiny-datetime id= "end_time.id"
-                           type="end_time.type"
-                           date-format = "end_time.dateFormat"
-                           time-format="end_time.timeFormat">
+            <tiny-datetime id= "dateTime.id2"
+                           type="dateTime.type"
+                           date-format = "dateTime.dateFormat"
+                           min-date = "dateTime.minDate2"
+                           max-date = "dateTime.maxDate2"
+                           on-close = "dateTime.onCloseMax"
+                           time-format="dateTime.timeFormat">
             </tiny-datetime>
         </div>
         <div style="float:left;margin-right:120px;">

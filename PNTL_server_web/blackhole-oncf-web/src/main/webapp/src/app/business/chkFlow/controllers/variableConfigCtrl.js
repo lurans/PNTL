@@ -16,14 +16,6 @@ define(["language/chkFlow",
                     id : "searchTip",
                     auto:false
                 });
-                // var minData = 60;
-                // $scope.$watch(function () {
-                //     return $scope.probeRoundTextBox.value;
-                // },function (newvalue,oldvalue) {
-                //     minData = newvalue;
-                //     console.log(newvalue,oldvalue);
-                //     console.log(minData);
-                // })
                 $scope.variable = {
                     "probeIntervalTime" : i18n.chkFlow_term_probe_interval_time_name,
                     "probePortCount": i18n.chkFlow_term_probe_port_count_name,
@@ -177,8 +169,8 @@ define(["language/chkFlow",
                     }
                     var para = getParaFromInput();
                     if(para === ""){
-                        alert(i18n.chkFlow_term_dscp_tip);
-                        commonException.showMsg(i18n.chkFlow_term_config_err, "error");
+                        divTip.option("content",i18n.chkFlow_term_dscp_tip);
+                        divTip.show(30000);
                     }else {
                         postVariableConfig(para);
                     }

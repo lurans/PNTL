@@ -67,17 +67,29 @@
                 <div class="startOrStop" style="overflow:auto;">
                     <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_start_stop}}</div>
                     <div class="level2Content">
-                        <div class="deploy_btn" style="float:left; margin-right:40px;">
-                            <tiny-button id="deployBtn.id"
-                                         text="deployBtn.text"
-                                         disable="deployBtn.disable"
-                                         click="deployBtnOK()"></tiny-button>
+                        <div class="install_btn" style="float:left; margin-right:40px;">
+                            <tiny-button id="installBtn.id"
+                                         text="installBtn.text"
+                                         disable="installBtn.disable"
+                                         click="installBtnOK()"></tiny-button>
                         </div>
-                        <div class="probeExit_btn" style="float:left">
-                            <tiny-button id="probeExitBtn.id"
-                                         text="probeExitBtn.text"
-                                         disable="probeExitBtn.disable"
-                                         click="probeExitBtnOK()"></tiny-button>
+                        <div class="probeExit_btn" style="float:left;margin-right:40px;">
+                            <tiny-button id="uninstallBtn.id"
+                                         text="uninstallBtn.text"
+                                         disable="uninstallBtn.disable"
+                                         click="uninstallBtnOK()"></tiny-button>
+                        </div>
+                        <div class="probeStart_btn" style="float:left;margin-right:40px;">
+                            <tiny-button id="probeStartBtn.id"
+                                         text="probeStartBtn.text"
+                                         disable="probeStartBtn.disable"
+                                         click="probeStartBtnOK()"></tiny-button>
+                        </div>
+                        <div class="probeStop_btn" style="float:left">
+                            <tiny-button id="probeStopBtn.id"
+                                         text="probeStopBtn.text"
+                                         disable="probeStopBtn.disable"
+                                         click="probeStopBtnOK()"></tiny-button>
                         </div>
                     </div>
                 </div>
