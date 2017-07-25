@@ -8,7 +8,7 @@ define(["language/chkFlow",
             function($scope, $rootScope, $state, $sce, $compile, $timeout, configFlowServ) {
                 $scope.i18n = i18n;
                 $scope.installFileUpload = {
-                    "id":"installFileUpload_id1",
+                    "id":"installFileUpload_id",
                     "inputValue":"",
                     "fileObjName":"X-File",
                     "maxSize":8*1024*1024,//单文件大小不超过 8M
@@ -33,18 +33,19 @@ define(["language/chkFlow",
                     "select" :  function(event,file,selectFileQueue) {
                         if(file.name != "ServerAntAgentForEuler.tar.gz"
                             && file.name != "ServerAntAgentForSles.tar.gz"){
-                            //commonException.showMsg(i18n.chkFlow_term_upload_err5, "error");
                             alert(i18n.chkFlow_term_upload_err5);
-                            file.empty()
+                            file.empty();
                         }
                     },
                     "completeDefa" : function(event, result, selectFileQueue) {
                         var resultJson = JSON.parse(result);
                         selectFileQueue.forEach(function(item,index){
                             if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
-                                $("#installFileUpload_id1").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
-                                $("#installFileUpload_id1").widget().setTotalProgress(index + 1, selectFileQueue.length);
+                                $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
+                                $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
                             }else {
+                                $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "error");
+                                $("#installFileUpload_id").widget().setTotalProgress(0, selectFileQueue.length);
                                 commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
                             }
                         })
