@@ -1083,7 +1083,8 @@ INT32 FlowManager_C::DoReport()
 
     for(uiFlowTableIndex = 0; uiFlowTableIndex < AgentFlowTable[AGENT_WORKING_FLOW_TABLE].size(); uiFlowTableIndex++)
     {
-
+        if (AGENT_DETECT_PROTOCOL_UDP == AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey.eProtocol)
+        {
             // 只处理enable的非Urgent Entry
             if ((FLOW_ENTRY_STATE_CHECK(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_ENABLE))
                     && (AGENT_TRUE != AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].stFlowKey.uiUrgentFlow))
@@ -1098,6 +1099,7 @@ INT32 FlowManager_C::DoReport()
                     FLOW_MANAGER_ERROR("Flow Latency Report failed[%d], index[%u]", iRet, uiFlowTableIndex);
                 }
             }
+        }
     }
 
     // 根据range调整下一个上报周期使能AgentFlowTable中的哪些流.
