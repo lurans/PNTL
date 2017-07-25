@@ -63,8 +63,6 @@ public class Constants {
 
     public static final String HTTP_PREFIX = "http://";
 
-    public static final String HTTPS_PREFIX = "https://";
-
     public static final String VRM_PORT = "7070";
 
     public static final String SSO_SSO_TAG = "sso_sso_url_tag";

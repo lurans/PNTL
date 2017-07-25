@@ -16,7 +16,6 @@ typedef void (*Func)();
 class ThreadClass_C
 {
 private:
-    /*  */
     UINT32   uiThreadUpdateInterval;  // 单位us. Thread状态机刷新时间.StopCallBack()下发后,最长ThreadUpdateInterval us内
     // ThreadHandler()应该返回, 否则Thread会被强制终止.
     UINT32   uiThreadState;           // Thread状态机

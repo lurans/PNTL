@@ -2,7 +2,6 @@ using namespace std;
 
 #include "Log.h"
 #include "ServerAntAgentCfg.h"
-#include "AgentCommon.h"
 
 #define LOCK() \
         if (AgentCfgLock) \

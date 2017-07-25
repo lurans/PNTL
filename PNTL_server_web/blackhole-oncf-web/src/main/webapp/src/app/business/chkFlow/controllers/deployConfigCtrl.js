@@ -12,39 +12,46 @@ define(["language/chkFlow",
                     "id":"installFileUpload_id",
                     "inputValue":"",
                     "fileObjName":"X-File",
-                    "maxSize":8*1024*1024,//单文件大小不超过 8M
-                    "maxTotalSize":20*1024*1024,//总文件大小不小于 20M
+                    "maxSize":8*1024*1024,//单个文件大小不超过 8M
+                    "maxTotalSize":20*1024*1024,
                     "disable":false,
                     "multi" : "true",
                     "method": "post",
-                    "fileType":".tar.gz;.sh;.yml;",
+                    "fileType":".tar.gz;.sh;.yml",
                     "action" : "/rest/chkflow/uploadFiles", //文件上传地址路径
-                    "selectError" : function(event,file,errorMsg,selectFileQueue) {
+                    "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err1, "error");
                             alert(i18n.chkFlow_term_upload_err1);
                         } else if ("EXCEED_FILE_SIZE" === errorMsg) {
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err4, "error");
                             alert(i18n.chkFlow_term_upload_err4);
                         } else if("MAX_TOTAL_SIZE" === errorMsg){
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err4, "error");
                             alert(i18n.chkFlow_term_upload_err4);
                         }
                     },
                     "select" :  function(event,file,selectFileQueue) {
-                        for(var i = 0;i<selectFileQueue.length;i++){
-                            if(selectFileQueue[i].fileName != "ServerAntAgentForEuler.tar.gz"
-                                || selectFileQueue[i].fileName != "ServerAntAgentForSles.tar.gz"
-                                || selectFileQueue[i].fileName != "install_pntl.sh"
-                                || selectFileQueue[i].fileName != "ipList.yml"){
-                                alert(i18n.chkFlow_term_upload_err5);
-                            }
+                        if(file.name != "ServerAntAgentForEuler.tar.gz"
+                            && file.name != "ServerAntAgentForSles.tar.gz"
+                            && file.name != "install_pntl.sh"
+                            && file.name != "ipList.yml"){
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err5, "error");
+                            alert(i18n.chkFlow_term_upload_err5);
+                            file.empty()
                         }
                     },
+
                     "completeDefa" : function(event, result, selectFileQueue) {
-                        if(result.result === "success") {
-                            $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
-                            $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
-                        }else {
-                            commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
-                        }
+                        var resultJson = JSON.parse(result);
+                        selectFileQueue.forEach(function(item,index){
+                            if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
+                                $("#installFileUpload_id").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
+                                $("#installFileUpload_id").widget().setTotalProgress(index + 1, selectFileQueue.length);
+                            }else {
+                                commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
+                            }
+                        })
                     }
                 };
                 $scope.akTextBox = {
@@ -125,46 +132,88 @@ define(["language/chkFlow",
                     "text":i18n.chkFlow_term_confirm,
                     "disable":false
                 };
-                $scope.probeExitBtn = {
-                    "id" : "probeExitBtnId",
-                    "text" : i18n.chkFlow_term_exit_probe_btn,
+                $scope.uninstallBtn = {
+                    "id" : "uninstallBtnId",
+                    "text" : i18n.chkFlow_term_uninstall_btn,
                     "disable":false
                 };
-                $scope.deployBtn = {
-                    "id" : "deployBtnId",
-                    "text" : i18n.chkFlow_term_deploy_btn,
+                $scope.installBtn = {
+                    "id" : "installBtnId",
+                    "text" : i18n.chkFlow_term_install_btn,
                     "disable":false
                 };
-                $scope.deployBtnOK = function(){
-                    $scope.deployBtn.disable = true;
+                $scope.probeStartBtn = {
+                    "id" : "probeStartID",
+                    "text" : i18n.chkFlow_term_start_Probe_btn,
+                    "disable":false
+                };
+                $scope.probeStopBtn = {
+                    "id" : "probeStopID",
+                    "text" : i18n.chkFlow_term_stop_Probe_btn,
+                    "disable":false
+                };
+                $scope.installBtnOK = function(){
+                    $scope.installBtn.disable = true;
                     var para={};
-                    postFirstDeploy(para);
+                    postInstall(para);
                     //console.log('3');
                 };
-                $scope.probeExitBtnOK = function(){
-                    $scope.probeExitBtn.disable = true;
+                $scope.uninstallBtnOK = function(){
+                    $scope.uninstallBtn.disable = true;
                     var para={};
-                    postProbeExit(para);
+                    postUninstall(para);
                 };
-                var postProbeExit = function(para){
-                    var promise = configFlowServ.probeExit(para);
+                $scope.probeStartBtnOK = function(){
+                    $scope.probeStartBtn.disable = true;
+                    var para={};
+                    postProbeStart(para);
+                };
+                $scope.probeStopBtnOK = function(){
+                    $scope.probeStopBtnOK.disable = true;
+                    var para={};
+                    postProbeStop(para);
+                };
+                var postUninstall = function(para){
+                    var promise = configFlowServ.uninstall(para);
                     promise.then(function(responseData){
                         commonException.showMsg(i18n.chkFlow_term_exit_probe_ok);
-                        $scope.probeExitBtn.disable = false;
+                        $scope.uninstallBtn.disable = false;
                     },function(responseData){
                         commonException.showMsg(i18n.chkFlow_term_exit_probe_err, "error");
-                        $scope.probeExitBtn.disable = false;
+                        $scope.uninstallBtn.disable = false;
                     });
                 };
-                var postFirstDeploy = function(para){
-                    var promise = configFlowServ.firstDeploy(para);
+                var postInstall = function(para){
+                    var promise = configFlowServ.install(para);
                     promise.then(function(responseData){
                         //OK
                         commonException.showMsg(i18n.chkFlow_term_deploy_ok);
-                        $scope.deployBtn.disable = false;
+                        $scope.installBtn.disable = false;
                     },function(responseData){
                         commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
-                        $scope.deployBtn.disable = false;
+                        $scope.installBtn.disable = false;
+                    });
+                };
+                var postProbeStart = function(para){
+                    var promise = configFlowServ.startProbe(para);
+                    promise.then(function(responseData){
+                        //OK
+                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
+                        $scope.probeStartBtn.disable = false;
+                    },function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
+                        $scope.probeStartBtn.disable = false;
+                    });
+                };
+                var postProbeStop = function(para){
+                    var promise = configFlowServ.stopProbe(para);
+                    promise.then(function(responseData){
+                        //OK
+                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
+                        $scope.probeStopBtn.disable = false;
+                    },function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
+                        $scope.probeStopBtn.disable = false;
                     });
                 };
                 function getParaFromInput(){
@@ -175,7 +224,7 @@ define(["language/chkFlow",
                     var para = {
                         "ak":ak,
                          "sk":sk,
-                         "ip":ip
+                         "repo_url":ip
                     };
                     return para;
                 };

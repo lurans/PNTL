@@ -6,6 +6,14 @@ define(["language/chkFlow",
         var warnFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "warnFlowServ","$window",
             function ($scope, $rootScope, $state, $sce, $compile, $timeout, warnFlowServ,$window) {
                 $scope.i18n = i18n;
+                var divTip = new tinyWidget.Tip({
+                    content : "",
+                    element : ("#search_id"),
+                    position : "right",
+                    width: 300,
+                    id : "searchTip",
+                    auto:false
+                });
                 $scope.search = {
                     "id":"search_id",
                     "text" : i18n.chkFlow_term_search_btn,
@@ -31,7 +39,7 @@ define(["language/chkFlow",
                         }else{
                             selectType = "";
                         }
-                        if((startTime < endTime&&startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
+                        if((startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
                             var searchData = {
                                 "az_id":az,
                                 "pod_id":pod,
@@ -43,13 +51,12 @@ define(["language/chkFlow",
                             };
                             postData(searchData);
                        }else if(startTime === ""){
-                            alert(i18n.chkFlow_term_tip1);
+                            divTip.option("content",i18n.chkFlow_term_tip1);
+                            divTip.show(30000);
                             $scope.search.disable = false;
                         }else if (endTime === ""){
-                            alert(i18n.chkFlow_term_tip2);
-                            $scope.search.disable = false;
-                        }else if(startTime >= endTime){
-                            alert(i18n.chkFlow_term_tip3);
+                            divTip.option("content",i18n.chkFlow_term_tip2);
+                            divTip.show(30000);
                             $scope.search.disable = false;
                         }
                     }
@@ -93,17 +100,24 @@ define(["language/chkFlow",
                         checked : false
                     }]
                 };
-                $scope.start_time = {
-                    "id": "start_time_id",
+                $scope.dateTime = {
+                    "id1": "start_time_id",
+                    "id2": "end_time_id",
                     "type" : "datetime",
                     "dateFormat" : "yy-mm-dd",
-                    "timeFormat" : "hh:mm:ss"
-                };
-                $scope.end_time = {
-                    "id": "end_time_id",
-                    "type" : "datetime",
-                    "dateFormat" : "yy-mm-dd",
-                    "timeFormat" : "hh:mm:ss"
+                    "timeFormat" : "hh:mm:ss",
+                    "minDate1" : "",
+                    "maxDate1" : "",
+                    "minDate2" : "",
+                    "maxDate2" : "",
+                    "onCloseMin" : function(date) {
+                        $scope.dateTime.minDate2 = date;
+                        $scope.$digest();
+                    },
+                    "onCloseMax" : function(date) {
+                        $scope.dateTime.maxDate1 = date;
+                        $scope.$digest();
+                    }
                 };
                 $scope.src_ip = {
                     "id": "src_ip_id",

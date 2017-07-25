@@ -103,8 +103,6 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
 {
     INT32 iRet = AGENT_OK;
 
-    UINT32 uiCollectorIP = 0;
-    UINT32 uiCollectorPort = 0;
     // UDP 协议初始化
     UINT32 uiSrcPortMin = 0;
     UINT32 uiSrcPortMax = 0;
@@ -182,7 +180,6 @@ INT32 FlowManager_C::AgentClearFlowTable()
     // 清空整个流表.
     AgentFlowTable.clear();
 
-
     return AGENT_OK;
 }
 
@@ -203,7 +200,6 @@ void FlowManager_C::AgentFlowTableAdd(ServerFlowTableEntry_S * pstServerFlowEntr
     stNewAgentEntry.vFlowDetectResultPkt.clear();
     stNewAgentEntry.uiFlowDropCounter = 0;
     stNewAgentEntry.uiFlowTrackingCounter= 0;
-
 
     // 刷新key信息
     stNewAgentEntry.stFlowKey.uiUrgentFlow = pstServerFlowEntry->stServerFlowKey.uiUrgentFlow;
@@ -294,6 +290,7 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
         {
             uiSrcPortRange = pServerEntry->stServerFlowKey.uiSrcPortRange;
         }
+		
         if ( pServerEntry->uiAgentFlowWorkingIndexMax + uiSrcPortRange <= pServerEntry->uiAgentFlowIndexMax)
         {
             pServerEntry->uiAgentFlowWorkingIndexMin = pServerEntry->uiAgentFlowWorkingIndexMax + 1;
@@ -345,7 +342,6 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
             }
         }
     }
-
     return AGENT_OK;
 }
 
@@ -353,7 +349,6 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
 // 清空特定流表
 INT32 FlowManager_C::ServerClearFlowTable()
 {
-
     // 清空整个流表.
     ServerFlowTable.clear();
 
@@ -421,6 +416,7 @@ INT32 FlowManager_C::ServerFlowTablePreAdd(ServerFlowKey_S * pstNewServerFlowKey
                                pstNewServerFlowKey->uiSrcPortMin, pstNewServerFlowKey->uiSrcPortMax, uiSrcPortMin, uiSrcPortMax);
             return AGENT_E_PARA;
         }
+		
         // 检查Range范围
         if ( uiAgentSrcPortRange < pstNewServerFlowKey->uiSrcPortRange )
         {
@@ -590,7 +586,7 @@ INT32 FlowManager_C::FlowComputeSD(INT64 * plSampleData, UINT32 uiSampleNumber, 
     {
         lVariance += pow((plSampleData[uiSampleIndex] - lSampleMeanValue), 2);
     }
-    lVariance = lVariance/uiSampleNumber; // 方差
+    lVariance = lVariance / uiSampleNumber; // 方差
     *plStandardDeviation = sqrt(lVariance); // 标准差
 
     return AGENT_OK;
@@ -739,19 +735,25 @@ INT32 FlowManager_C::FlowPrepareReport(UINT32 uiFlowTableIndex)
 
     // 获取plT4Temp(rtt)中位数
     if( 2 <= uiSampleNumber)
-        lDataTemp = uiSampleNumber/2 - 1;
+    {
+        lDataTemp = uiSampleNumber / 2 - 1;
+    }
     else
+    {
         lDataTemp = 0;
     AgentFlowTable[uiFlowTableIndex].stFlowDetectResult.lLatency50Percentile = plT4Temp[lDataTemp];
 
     // 获取plT4Temp(rtt)99%位数
     if( 2 <= uiSampleNumber)
+    {
         lDataTemp = uiSampleNumber*99/100 - 1;
+    }
     else
+    {
         lDataTemp = 0;
-    AgentFlowTable[uiFlowTableIndex].stFlowDetectResult.lLatency99Percentile = plT4Temp[lDataTemp];
-
-
+        AgentFlowTable[uiFlowTableIndex].stFlowDetectResult.lLatency99Percentile = plT4Temp[lDataTemp];
+    }
+    
 
     delete [] plT3Temp;
     plT3Temp = NULL;
@@ -769,8 +771,6 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
     INT32 iRet = AGENT_OK;
     AgentFlowTableEntry_S * pstAgentFlowEntry = NULL;
     stringstream  ssReportData; // 用于生成json格式上报数据
-
-    FLOW_MANAGER_INFO("FlowDropReport____________[%d]", uiFlowTableIndex);
 
     iRet = FlowPrepareReport(uiFlowTableIndex);
     if (iRet)
@@ -822,7 +822,6 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
 
     pstAgentFlowEntry = &(AgentFlowTable[uiFlowTableIndex]);
     iRet = CreateLatencyReportData(pstAgentFlowEntry, &ssReportData, maxDelay);
-
 
     if (AGENT_FILTER_DELAY == iRet)
     {

@@ -25,6 +25,12 @@ define(["can/util/fixture/fixture", "tiny-lib/underscore"], function (fixture, _
         "POST /rest/chkflow/exitProbe":function(original, response) {
             response(200, "success", variables, {})
         },
+        "POST /rest/chkflow/startAgents":function(original, response) {
+            response(200, "success", variables, {})
+        },
+        "POST /rest/chkflow/stopProbe":function(original, response) {
+            response(200, "success", variables, {})
+        },
         "POST /rest/chkflow/pntlInit":function(original, response) {
             response(200, "success", variables, {})
         },

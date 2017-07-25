@@ -161,6 +161,7 @@ public class PntlConfigService {
             pntlConfig.setBasicToken(dataObj.get("basicToken").toString());
             pntlConfig.setEulerRepoUrl(dataObj.get("eulerRepoUrl").toString());
             pntlConfig.setSuseRepoUrl(dataObj.get("suseRepoUrl").toString());
+            pntlConfig.setRepoUrl(dataObj.get("repo_url").toString());
             pntlConfig.setInstallScriptRepoUrl(dataObj.get("installScriptRepoUrl").toString());
 
             validPntlConfig(pntlConfig);
@@ -168,7 +169,7 @@ public class PntlConfigService {
             Map<String, Object> data = pntlConfig.convertToMap();
             YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
         } catch (ApplicationException | InvalidParamException e) {
-            String errMsg = "set config [" + Resource.NAME_CONF + "] failed : " + e.getLocalizedMessage();
+            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
             result.addError("", e.prefix() + errMsg);
             return result;

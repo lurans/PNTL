@@ -17,34 +17,36 @@ define(["language/chkFlow",
                     "multi" : "true",
                     "method": "post",
                     "fileType":".tar.gz",
-                    "action" : "/rest/chkflow/updateAgents", //文件上传地址路径
+                    "action" : "/rest/chkflow/uploadFiles", //文件上传地址路径
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err2, "error");
                             alert(i18n.chkFlow_term_upload_err2);
                         } else if ("EXCEED_FILE_SIZE" === errorMsg) {
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err4, "error");
                             alert(i18n.chkFlow_term_upload_err4);
                         } else if("MAX_TOTAL_SIZE" === errorMsg){
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err4, "error");
                             alert(i18n.chkFlow_term_upload_err4);
                         }
                     },
                     "select" :  function(event,file,selectFileQueue) {
-                        for(var i = 0;i<selectFileQueue.length;i++){
-                            if(selectFileQueue[i].fileName != "ServerAntAgentForEuler.tar.gz"
-                                || selectFileQueue[i].fileName != "ServerAntAgentForSles.tar.gz"){
-                                alert(i18n.chkFlow_term_upload_err5);
-                            }
+                        if(file.name != "ServerAntAgentForEuler.tar.gz"
+                            && file.name != "ServerAntAgentForSles.tar.gz"){
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err5, "error");
+                            alert(i18n.chkFlow_term_upload_err5);
+                            file.empty()
                         }
                     },
                     "completeDefa" : function(event, result, selectFileQueue) {
+                        var resultJson = JSON.parse(result);
                         selectFileQueue.forEach(function(item,index){
-                            if(result.result === "success") {
+                            if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
                                 $("#installFileUpload_id1").widget().setMultiQueueDetail(selectFileQueue[index].filePath, "success");
                                 $("#installFileUpload_id1").widget().setTotalProgress(index + 1, selectFileQueue.length);
                             }else {
                                 commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
                             }
-
-                            //tip
                         })
                     }
                 };
@@ -60,30 +62,33 @@ define(["language/chkFlow",
                     "method": "post",
                     "fileType":".yml",
                     "completeDefa" : function(event, result, selectFileQueue) {
-                            if(result.result === "success") {
-                                commonException.showMsg(i18n.chkFlow_term_upload_success, "success");
-                            }else {
-                                commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
-                            }
+                        var resultJson = JSON.parse(result);
+                        if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
+                            commonException.showMsg(i18n.chkFlow_term_upload_success, "success");
+                        }else {
+                            commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
+                        }
                     },
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err3, "error");
                             alert(i18n.chkFlow_term_upload_err3);
                         } else if ("EXCEED_FILE_SIZE" === errorMsg) {
+                            //commonException.showMsg(i18n.chkFlow_term_upload_err4, "error");
                             alert(i18n.chkFlow_term_upload_err4);
                         }
                     },
                     "beforeSubmit" : function() {
                         var checkedkey = $("#radioGroup_id").widget().opChecked("checked");
-                        //console.log(checkedkey);
-                        var checkValue;
+                        var checkValue={"op":""};
                         if(checkedkey === "1"){
-                            checkValue = "添加";
+                            checkValue.op = "add";
                         }else if(checkedkey === "2"){
-                            checkValue = "删除";
+                            checkValue.op = "del";
                         }
                         //增加上传文件附带信息
                         $("#singleFileUpload_id").widget().addFormData(checkValue);
+                        $("input[name='tinyFormDatas']").prop("name","operation");
                     },
                     "layout" : "horizon",
                     "values" : [{
