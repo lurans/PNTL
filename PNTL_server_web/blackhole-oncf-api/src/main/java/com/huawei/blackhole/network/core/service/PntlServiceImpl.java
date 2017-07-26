@@ -89,13 +89,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return result;
     }
 
-    /**
-     * 保存业务ip，生成pingMesh
-     * @param agentIp
-     * @param vbondIp
-     * @return
-     */
-    public Result<String> saveAgentIp(String agentIp, String vbondIp){
+    private Result<String> checkAgentVbondIpValid(String agentIp, String vbondIp){
         Result<String> result = new Result<>();
         if (agentIpMap == null){
             agentIpMap = new HashMap<>();
@@ -109,6 +103,23 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "vbondIp is invalid:" + vbondIp);
             return result;
         }
+        return result;
+    }
+
+    /**
+     * 保存业务ip，生成pingMesh
+     * @param agentIp
+     * @param vbondIp
+     * @return
+     */
+    public Result<String> saveAgentIp(String agentIp, String vbondIp){
+        Result<String> result = new Result<>();
+
+        result = checkAgentVbondIpValid(agentIp, vbondIp);
+        if (!result.isSuccess()){
+            return result;
+        }
+
         agentIpMap.put(agentIp, vbondIp);
         addVbondIpToHostList(agentIp, vbondIp);
 
