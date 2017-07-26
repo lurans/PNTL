@@ -69,13 +69,23 @@ INT32 ServerAntAgent()
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
     
 	iRet = ReportAgentIPToServer(pcCfg);
-    int reportCount = 1;
+    UINT32 reportCount = 1;
     while (iRet)
     {
         INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
         sleep(5);
-        INIT_ERROR("Retry to report Agent ip to Server, time [%d]", ++reportCount);
+        INIT_ERROR("Retry to report Agent ip to Server, time [%u]", ++reportCount);
         iRet = ReportAgentIPToServer(pcCfg);
+    }
+
+    iRet = RequestConfigFromServer(pcFlowManager);
+	reportCount = 1;
+	while (iRet)
+    {
+        INIT_ERROR("Request Agent config from Server fail[%d]", iRet);
+        sleep(5);
+        INIT_ERROR("Retry to request Agent config from Server, time [%u]", ++reportCount);
+        iRet = RequestConfigFromServer(pcFlowManager);
     }
 
     while(1)
