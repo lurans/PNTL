@@ -163,14 +163,14 @@ define(["language/chkFlow",
                     $scope.variableBtn.disable = true;
                     if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
                         divTip.option("content",i18n.chkFlow_term_input_valid);
-                        divTip.show(30000);
+                        divTip.show(1000);
                         $scope.variableBtn.disable = false;
                         return;
                     }
                     var para = getParaFromInput();
                     if(para === ""){
                         divTip.option("content",i18n.chkFlow_term_dscp_tip);
-                        divTip.show(30000);
+                        divTip.show(1000);
                     }else {
                         postVariableConfig(para);
                     }
