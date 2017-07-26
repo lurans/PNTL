@@ -193,10 +193,15 @@ public class Pntl {
                 body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
-                    if ((Integer)resp.getRespBody().get("code") != 0){
+                    int code = (Integer)resp.getRespBody().get("code");
+                    if (code != 0){
                         /* agent返回失败，1000部分成功，2000全部失败，其他非0值，调用接口失败 */
-                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, resp.getRespBody().get("reason").toString());
-                        result.addError("", "send file to agent failed " + resp.getRespBody().get("reason").toString());
+                        String errMsg = "code is" + code;
+                        if (code != 1000 && code != 2000){
+                            errMsg = resp.getRespBody().get("reason").toString();
+                        }
+                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, errMsg);
+                        result.addError("", "send file to agent failed " + errMsg);
                     } else {
                         setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_SUCC, "send files to agent success");
                     }

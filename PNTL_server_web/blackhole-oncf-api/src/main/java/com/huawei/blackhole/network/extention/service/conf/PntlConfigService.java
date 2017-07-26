@@ -413,7 +413,7 @@ public class PntlConfigService {
         builder.addBinaryBody("attachment", f);
         builder.addTextBody("type", "0");
         builder.addTextBody("uploader", PntlInfo.OPS_USERNAME);
-        builder.addTextBody("space", PntlInfo.PNTL_ROOT_NAME);
+        builder.addTextBody("space", PntlInfo.PTNL_UPLOADER_SPACE);
         builder.addTextBody("override", "true");
         builder.addTextBody("description", "");
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);

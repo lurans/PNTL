@@ -518,7 +518,12 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             if (resp.getStatusCode().isError()){
                 result.addError("", "install agent failed");
             } else if ((Integer) resp.getRespBody().get("code") != 0){
-                result.addError(String.valueOf(resp.getRespBody().get("code")), resp.getRespBody().get("reason").toString());
+                int code = (Integer) resp.getRespBody().get("code");
+                String errMsg = "code is" + code;
+                if (code != 1000 && code != 2000){
+                    errMsg = resp.getRespBody().get("reason").toString();
+                }
+                result.addError(String.valueOf(resp.getRespBody().get("code")), errMsg);
             }
         } catch (ClientException e){
             LOG.error("Send ip list to agents failed, " + e.getMessage());
