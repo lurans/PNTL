@@ -39,8 +39,6 @@ private:
 
     UINT32 uiAgentIP;                 //  本Agent的数据面IP地址, Agent探测IP.
     UINT32 uiMgntIP;                  // 本Agent的管理面IP地址，Server向Agent推送消息时使用.
-    UINT32 uiAgentDestPort;           //  本Agent的端口地址, Server向Agent推送消息时使用.
-    string hostname;	                   // 本Ageng部署的节点主机名称
 
     /* Agent 全局周期控制 */
     UINT32 uiAgentPollingTimerPeriod; // Agent Polling周期, 单位为us, 默认100ms, 用于设定Agent定时器.
@@ -71,10 +69,8 @@ public:
     void SetServerAddress(UINT32 uiNewServerIP,
                            UINT32 uiNewServerDestPort);         // 设置ServerAntServer地址信息, 非0有效.
 
-    void GetAgentAddress(UINT32 * puiAgentIP,
-                          UINT32 * puiAgentDestPort);         // 查询ServerAntAgent地址信息.
-    void SetAgentAddress(UINT32 uiNewAgentIP,
-                          UINT32 uiNewAgentDestPort);          // 设置ServerAntAgent地址信息, 非0有效.
+    void GetAgentAddress(UINT32 * puiAgentIP);         // 查询ServerAntAgent地址信息.
+    void SetAgentAddress(UINT32 uiNewAgentIP);          // 设置ServerAntAgent地址信息, 非0有效.
 
     void GetMgntIP(UINT32* puiMgntIP);
     void SetMgntIP(UINT32 uiNewMgntIP);         // 设定管理口ip
@@ -91,13 +87,13 @@ public:
     INT32 SetReportPeriod(UINT32 uiNewPeriod);         // 设定Report周期
 
     UINT32 GetQueryPeriod();                         // 查询query周期
-    INT32 SetQueryPeriod(UINT32 uiNewPeriod);         // 设定query周期
+    void SetQueryPeriod(UINT32 uiNewPeriod);         // 设定query周期
 
     UINT32 GetDetectTimeout();                        // 查询Detect报文超时时间
     INT32 SetDetectTimeout(UINT32 uiNewPeriod);         // 设定Detect报文超时时间
 
     UINT32 GetDetectDropThresh();                         // 查询Detect报文丢包门限
-    INT32 SetDetectDropThresh(UINT32 uiNewThresh);         // 设定Detect报文丢包门限
+    void SetDetectDropThresh(UINT32 uiNewThresh);         // 设定Detect报文丢包门限
 
     void GetProtocolUDP(UINT32 * puiSrcPortMin,
                          UINT32 * puiSrcPortMax,
@@ -116,7 +112,7 @@ public:
     INT32 SetBigPkgRate(UINT32 newRate);
 
     UINT32 GetMaxDelay();
-    INT32 SetMaxDelay(UINT32 newMaxDelay);
+    void SetMaxDelay(UINT32 newMaxDelay);
 };
 
 #endif

@@ -1107,10 +1107,10 @@ INT32 FlowManager_C::ThreadHandler()
 {
     INT32 iRet = AGENT_OK;
     UINT32 counter = 0;
-    UINT32 randDelay = rand() % 5;
     uiLastCheckTimeCounter = counter;
     uiLastReportTimeCounter = counter;
     uiLastQuerytTimeCounter = counter;
+	
     while (GetCurrentInterval())
     {
         // 当前周期是否该启动探测流程.
@@ -1119,11 +1119,8 @@ INT32 FlowManager_C::ThreadHandler()
             if (BIG_PKG_RATE)
             {
                 // 设置了最大包比例，需要发送最大包
-                iRet = SetPkgFlag();
-                if (!iRet)
-                {
-                    BIG_PKG_RATE = 0;
-                }
+                SetPkgFlag();
+                BIG_PKG_RATE = 0;
             }
 
             // 启动探测流程.
@@ -1157,43 +1154,38 @@ INT32 FlowManager_C::ThreadHandler()
         }
 
         // 当前周期是否该查询Server配置
-        if (SHOULD_PROBE && 0 == counter % randDelay)
+
+        if (SHOULD_PROBE)
         {
+            SHOULD_PROBE = 0;
             // 启动查询Server配置流程.
             iRet = DoQuery();
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query failed[%d]", iRet);
-            }
-            else
-            {
-                SHOULD_PROBE = 0;
+				SHOULD_PROBE = 1;
             }
         }
-
-        if (SHOULD_QUERY_CONF && 0 == counter % randDelay)
+		
+        if (SHOULD_QUERY_CONF)
         {
+            SHOULD_QUERY_CONF = 0;
             iRet = DoQueryConfig();
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query Config failed[%d]", iRet);
-            }
-            else
-            {
-                SHOULD_QUERY_CONF = 0;
+				SHOULD_QUERY_CONF = 1;
             }
         }
 
-        if (SHOULD_REPORT_IP && 0 == counter % randDelay)
+        if (SHOULD_REPORT_IP)
         {
+            SHOULD_REPORT_IP = 0;
             iRet = ReportAgentIPToServer(this->pcAgentCfg);
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("ReportAgentIPToServer failed[%d]", iRet);
-            }
-            else
-            {
-                SHOULD_REPORT_IP = 0;
+				SHOULD_REPORT_IP = 1;
             }
         }
 
@@ -1271,7 +1263,7 @@ INT32 FlowManager_C::FlowManagerAction(INT32 interval)
     return iRet;
 }
 
-INT32 FlowManager_C::SetPkgFlag()
+void FlowManager_C::SetPkgFlag()
 {
     vector<AgentFlowTableEntry_S>::iterator pAgentFlowEntry;
     for(pAgentFlowEntry = AgentFlowTable.begin(); pAgentFlowEntry != AgentFlowTable.end();
@@ -1279,7 +1271,6 @@ INT32 FlowManager_C::SetPkgFlag()
     {
         pAgentFlowEntry->stFlowKey.uiIsBigPkg = !pAgentFlowEntry->stFlowKey.uiIsBigPkg;
     }
-    return AGENT_OK;
 }
 
 INT32 FlowManager_C::DoQueryConfig()

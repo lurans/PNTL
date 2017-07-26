@@ -88,8 +88,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 
         strTemp = ptDataTmp.get<string>("AgentIP");
         uiIp = sal_inet_aton(strTemp.c_str());
-        uiPort = ptDataTmp.get<UINT32>("Port");
-        pcCfg->SetAgentAddress(uiIp, uiPort);
+        pcCfg->SetAgentAddress(uiIp);
 
         uiData = ptDataTmp.get<UINT32>("ReportPeriod");
         iRet = pcCfg->SetReportPeriod(uiData);
@@ -99,12 +98,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
             return iRet;
         }
         uiData = ptDataTmp.get<UINT32>("QueryPeriod");
-        iRet = pcCfg->SetQueryPeriod(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetQueryPeriod failed[%d]", iRet);
-            return iRet;
-        }
+        pcCfg->SetQueryPeriod(uiData);
 
         uiData = ptDataTmp.get<UINT32>("DetectPeriod");
         iRet = pcCfg->SetDetectPeriod(uiData);
@@ -123,12 +117,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         }
 
         uiData = ptDataTmp.get<UINT32>("DetectDropThresh");
-        iRet = pcCfg->SetDetectDropThresh(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectDropThresh failed[%d]", iRet);
-            return iRet;
-        }
+        pcCfg->SetDetectDropThresh(uiData);
 
         // 解析ServerAntAgent.ProtocolUDP数据.
         ptDataTmp.clear();
@@ -167,8 +156,7 @@ INT32 CreateProbeListRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream *
         ptDataRoot.put("scope", "global");
 
         UINT32 uiIp;
-        UINT32 uiAgentDestPort;
-        pcCfg->GetAgentAddress(&uiIp, &uiAgentDestPort);
+        pcCfg->GetAgentAddress(&uiIp);
 
         ptDataTemp.put("agent-ip", sal_inet_ntoa(uiIp));
         ptDataRoot.put_child("content", ptDataTemp);
@@ -190,11 +178,11 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 
     stringstream ssJsonData;
     ptree ptDataRoot;
-    UINT32 uiIp, uiMgntIp, uiAgentDestPort;
+    UINT32 uiIp, uiMgntIp;
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
     {
-        pcCfg->GetAgentAddress(&uiIp, &uiAgentDestPort);
+        pcCfg->GetAgentAddress(&uiIp);
         if (iRet)
         {
             JSON_PARSER_ERROR("GetAgentAddress failed[%d]", iRet);
@@ -744,7 +732,6 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
             return AGENT_E_PARA;
         }
         JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
-        iRet = pcFlowManager->FlowManagerAction((INT32)interval);
 
         interval = ptDataRoot.get<UINT32>("port_count");
         iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
@@ -765,12 +752,7 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
         JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
         interval = ptDataRoot.get<UINT32>("delay_threshold");
-        iRet = pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetMaxDelay[%u] failed[%d]");
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
         JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
 
         interval = ptDataRoot.get<UINT32>("dscp");
@@ -849,12 +831,7 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
         interval = ptDataRoot.get<UINT32>("delay_threshold");
-        iRet = pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetMaxDelay[%u] failed[%d]");
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
         JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
 
         interval = ptDataRoot.get<UINT32>("dscp");
