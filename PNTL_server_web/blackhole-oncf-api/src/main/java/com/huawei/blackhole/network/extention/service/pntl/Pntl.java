@@ -32,22 +32,25 @@ public class Pntl {
     private static final String PNTL_UNINSTALL_PATH = "/opt/huawei/ServerAntAgent";
     private static final String FILE_RIGHT = "644";
 
-    private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
+    private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){
+        {
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_SUSE);
         put(PntlInfo.OS_EULER, PntlInfo.AGENT_EULER);
     }};
-    private static final Map<String, String> SCRIPT_FILENAME= new HashMap<String, String>(){{
+    private static final Map<String, String> SCRIPT_FILENAME = new HashMap<String, String>(){
+        {
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_INSTALL_FILENAME);
         put(PntlInfo.OS_EULER, PntlInfo.AGENT_INSTALL_FILENAME);
     }};
-    private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){{
+    private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){
+        {
         put(FILETYPE_AGENT, AGENT_FILENAME);
         put(FILETYPE_SCRIPT, SCRIPT_FILENAME);
     }};
 
     private static Map<String, String> DownloadUrl = new HashMap<>();
 
-    public static String getDownloadUrl(String key){
+    private static String getDownloadUrl(String key){
         return DownloadUrl.get(key);
     }
 
@@ -207,26 +210,6 @@ public class Pntl {
         return result;
     }
 
-    /**
-     * 从server获取学习完成的traceroue结果
-     * @param host
-     * @return
-     * @throws ClientException
-     */
-    public RestResp getTracerouteResult(PntlHostContext host)
-        throws ClientException{
-        RestResp resp = null;
-
-        String url = PntlInfo.URL_IP + PntlInfo.AGENT_LOG_URL_SUFFIX;
-        ///todo
-        resp = RestClientExt.post(url, null, null, null);
-        if (resp.getStatusCode().isError()){
-            LOG.info("get traceroute result from " + host.getVbondIp() + "failed");
-        }
-
-        return resp;
-    }
-
     public static void setCommonHeaderForAgent(Map<String, String> header, String token){
         if (header == null){
             return;
@@ -256,6 +239,7 @@ public class Pntl {
     /**
      * 下发安装命令，执行安装脚本，进行agent安装
      * @param pntlHostList
+     * @param token
      * @return
      * @throws ClientException
      */
