@@ -198,7 +198,7 @@ public class Pntl {
                         setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_SUCC, "send files to agent success");
                     }
                 } catch (ClientException | JSONException e){
-                    LOG.error("Send script to agent failed");
+                    LOG.error("Send file to agent failed:" + e.getMessage());
                     result.addError("", e.getMessage());
                 }
             }
