@@ -43,6 +43,7 @@ define([], function () {
         "chkFlow_term_dst_ip":"DST_IP",
         "chkFlow_term_az_id":"AZ_ID",
         "chkFlow_term_pod_id":"POD_ID",
+        "chkFlow_term_no_support":"Not Yet Support",
         "chkFlow_term_src_ip":"SRC_IP",
         "chkFlow_term_ak_sk":"Deploy Parameter Settings",
         "chkFlow_term_deploy_alert_label1":"After the deployment of the probe tool, the user can set the parameter in Variable Config item.",
