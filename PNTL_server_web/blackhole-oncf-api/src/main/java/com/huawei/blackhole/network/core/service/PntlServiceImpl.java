@@ -103,6 +103,18 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", "vbondIp is invalid:" + vbondIp);
             return result;
         }
+
+        boolean findIp = false;
+        for (PntlHostContext host : hostList){
+            if (host.getAgentIp().equals(agentIp)){
+                findIp = true;
+                break;
+            }
+        }
+        if (!findIp){
+            result.addError("", agentIp + "is not exit");
+            return result;
+        }
         return result;
     }
 
