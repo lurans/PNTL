@@ -187,8 +187,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             return result;
         }
 
-        for (int i = 0; i < hostList.size(); i++){
-            String agentIp = hostList.get(i).getAgentIp();
+        for (PntlHostContext host : hostList) {
+            String agentIp = host.getAgentIp();
             SocketClientService socketClient = new SocketClientService(agentIp,
                     PntlInfo.SOCKET_PORT, PntlInfo.AGENT_CONF);
             socketClient.start();
@@ -223,8 +223,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
             return result;
         }
-        for (int i = 0; i < hostList.size(); i++){
-            String agentIp = hostList.get(i).getAgentIp();
+        for (PntlHostContext host : hostList) {
+            String agentIp = host.getAgentIp();
             SocketClientService socketClient = new SocketClientService(agentIp,
                     PntlInfo.SOCKET_PORT, PntlInfo.AGENT_TIME_INTERVAL);
             socketClient.start();
@@ -482,19 +482,19 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Long count = 0L;
         int reportPeriod = CommonInfo.getReportPeriod(); /* second */
         int refleshPeriod = reportPeriod + PntlInfo.MONITOR_INTERVAL_TIME_NEWEST; /* add 5min */
-        while (true){
+        while (true) {
             LossRate.refleshLossRateWarning();
             DelayInfo.refleshDelayInfoWarning();
 
             /* 7 days */
-            if (count%(PntlInfo.MONITOR_INTERVAL_TIME_HISTORY) == 0){
+            if (count % (PntlInfo.MONITOR_INTERVAL_TIME_HISTORY) == 0) {
                 try {
                     PntlWarning.refleshHistoryWarning();
-                } catch (ParseException e){
+                } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
-            try{
+            try {
                 Thread.sleep(refleshPeriod * 1000);
                 count++;
             } catch (InterruptedException e) {
@@ -518,28 +518,16 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             if (resp.getStatusCode().isError()){
                 result.addError("", "install agent failed");
             } else if ((Integer) resp.getRespBody().get("code") != 0){
-                result.addError(String.valueOf(resp.getRespBody().get("code")), resp.getRespBody().get("reason").toString());
+                int code = (Integer) resp.getRespBody().get("code");
+                String errMsg = "code is" + code;
+                if (code != 1000 && code != 2000){
+                    errMsg = resp.getRespBody().get("reason").toString();
+                }
+                result.addError(String.valueOf(resp.getRespBody().get("code")), errMsg);
             }
         } catch (ClientException e){
             LOG.error("Send ip list to agents failed, " + e.getMessage());
             result.addError("", e.toString());
-        }
-
-        return result;
-    }
-
-    /**
-     * 获取traceroute学习结果
-     * @param host
-     * @return
-     */
-    public Result<String> getTracerouteLog(PntlHostContext host){
-        Result<String> result = new Result<>();
-
-        try {
-            pntlRequest.getTracerouteResult(host);
-        } catch (ClientException e){
-            result.addError("", e.getMessage());
         }
 
         return result;
@@ -886,7 +874,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     public Result<String> updateAgents(String type){
         Result<String> result = new Result<>();
 
-        List<PntlHostContext> updateHostsList = new ArrayList<PntlHostContext>();
+        List<PntlHostContext> updateHostsList;
         try {
             updateHostsList = readFileHostList(PntlInfo.PNTL_UPDATE_IPLIST_CONFIG);
         } catch (Exception e){

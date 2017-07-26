@@ -32,22 +32,25 @@ public class Pntl {
     private static final String PNTL_UNINSTALL_PATH = "/opt/huawei/ServerAntAgent";
     private static final String FILE_RIGHT = "644";
 
-    private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
+    private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){
+        {
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_SUSE);
         put(PntlInfo.OS_EULER, PntlInfo.AGENT_EULER);
     }};
-    private static final Map<String, String> SCRIPT_FILENAME= new HashMap<String, String>(){{
+    private static final Map<String, String> SCRIPT_FILENAME = new HashMap<String, String>(){
+        {
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_INSTALL_FILENAME);
         put(PntlInfo.OS_EULER, PntlInfo.AGENT_INSTALL_FILENAME);
     }};
-    private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){{
+    private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){
+        {
         put(FILETYPE_AGENT, AGENT_FILENAME);
         put(FILETYPE_SCRIPT, SCRIPT_FILENAME);
     }};
 
     private static Map<String, String> DownloadUrl = new HashMap<>();
 
-    public static String getDownloadUrl(String key){
+    private static String getDownloadUrl(String key){
         return DownloadUrl.get(key);
     }
 
@@ -190,10 +193,15 @@ public class Pntl {
                 body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
-                    if ((Integer)resp.getRespBody().get("code") != 0){
+                    int code = (Integer)resp.getRespBody().get("code");
+                    if (code != 0){
                         /* agent返回失败，1000部分成功，2000全部失败，其他非0值，调用接口失败 */
-                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, resp.getRespBody().get("reason").toString());
-                        result.addError("", "send file to agent failed " + resp.getRespBody().get("reason").toString());
+                        String errMsg = "code is" + code;
+                        if (code != 1000 && code != 2000){
+                            errMsg = resp.getRespBody().get("reason").toString();
+                        }
+                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, errMsg);
+                        result.addError("", "send file to agent failed " + errMsg);
                     } else {
                         setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_SUCC, "send files to agent success");
                     }
@@ -205,26 +213,6 @@ public class Pntl {
         }
 
         return result;
-    }
-
-    /**
-     * 从server获取学习完成的traceroue结果
-     * @param host
-     * @return
-     * @throws ClientException
-     */
-    public RestResp getTracerouteResult(PntlHostContext host)
-        throws ClientException{
-        RestResp resp = null;
-
-        String url = PntlInfo.URL_IP + PntlInfo.AGENT_LOG_URL_SUFFIX;
-        ///todo
-        resp = RestClientExt.post(url, null, null, null);
-        if (resp.getStatusCode().isError()){
-            LOG.info("get traceroute result from " + host.getVbondIp() + "failed");
-        }
-
-        return resp;
     }
 
     public static void setCommonHeaderForAgent(Map<String, String> header, String token){
@@ -256,6 +244,7 @@ public class Pntl {
     /**
      * 下发安装命令，执行安装脚本，进行agent安装
      * @param pntlHostList
+     * @param token
      * @return
      * @throws ClientException
      */
