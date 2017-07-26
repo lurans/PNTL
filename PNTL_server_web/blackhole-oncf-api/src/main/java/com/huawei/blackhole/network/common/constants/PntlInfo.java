@@ -1,7 +1,7 @@
 package com.huawei.blackhole.network.common.constants;
 
 public class PntlInfo {
-    public static final String URL_IP = "https://8.15.4.96:8243";//beta
+    public static final String URL_IP = "https://cas.lf.hwclouds.com:8243";//beta
     //public static final String URL_IP = "https://192.168.211.98:8243";//alpha
 
     public static final String CMDB_URL_SUFFIX = "/v1/cloud-cmdb/hosts";
