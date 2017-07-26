@@ -285,6 +285,53 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
     }
 
+    private void sendFilesToAgentsTask(List<PntlHostContext> hosts){
+        Runnable scriptSendTask = new Runnable() {
+            @Override
+            public void run() {
+                Result<String> result = new Result<String>();
+                try {
+                    String token = identityWrapperService.getPntlAccessToken();
+                    result = pntlRequest.sendFilesToAgents(hosts, token);
+                } catch (ClientException e){
+                    LOG.error("Send files to agents failed: " + e.getMessage());
+                    result.addError("", e.toString());
+                }
+            }
+        };
+        resultService.execute(scriptSendTask);
+    }
+
+    private Result<String> waitMoment(){
+        Result<String> result = new Result<>();
+        //wait 30s
+        for (int i = 0; i < Constants.PNTL_WAIT_NUM; i++) {
+            try {
+                Thread.sleep(Constants.PNTL_WATI_TIME);
+            } catch (InterruptedException e) {
+                LOG.warn("ignore : interrupted sleep");
+                result.addError("", "ignore : interrupted sleep");
+                return result;
+            }
+        }
+        return result;
+    }
+
+    private int getFailAgentCount(List<PntlHostContext> hosts){
+        int failAgentCount = 0;
+        /*若所有的host均失败，则不需要install，直接返回*/
+        for (PntlHostContext host : hosts){
+            if (host.getAgentStatus() == null){
+                continue;
+            }
+
+            if (host.getAgentStatus().equals(PntlInfo.PNTL_AGENT_STATUS_FAIL)){
+                failAgentCount++;
+            }
+        }
+        return failAgentCount;
+    }
+
     /*
      *1. 上传到仓库
      *2. 分发到agent
@@ -299,45 +346,14 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         /*初始话agent状态，去除上次安装结果*/
         resetAgentStatus(hosts);
+        sendFilesToAgentsTask(hosts);
 
-        Runnable scriptSendTask = new Runnable() {
-            @Override
-            public void run() {
-                Result<String> result = new Result<String>();
-                try {
-                    String token = identityWrapperService.getPntlAccessToken();
-                    result = pntlRequest.sendFilesToAgents(hosts, token);
-                } catch (ClientException e){
-                    LOG.error("Send files to agents failed: " + e.getMessage());
-                    String msg = e.toString();
-                    result.addError("", msg);
-                }
-            }
-        };
-        resultService.execute(scriptSendTask);
-
-        //wait 30s
-        for (int i = 0; i < Constants.PNTL_WAIT_NUM; i++) {
-            try {
-                Thread.sleep(Constants.PNTL_WATI_TIME);
-            } catch (InterruptedException e) {
-                LOG.warn("ignore : interrupted sleep");
-                result.addError("", "ignore : interrupted sleep");
-                return result;
-            }
+        result = waitMoment();
+        if (!result.isSuccess()){
+            return result;
         }
 
-        int failAgentCount = 0;
-        /*若所有的host均失败，则不需要install，直接返回*/
-        for (PntlHostContext host : hosts){
-            if (host.getAgentStatus() == null){
-                continue;
-            }
-
-            if (host.getAgentStatus().equals(PntlInfo.PNTL_AGENT_STATUS_FAIL)){
-                failAgentCount++;
-            }
-        }
+        int failAgentCount = getFailAgentCount(hosts);
         if (failAgentCount == hosts.size()){
             result.addError("", "send files to agent fail");
             return result;
