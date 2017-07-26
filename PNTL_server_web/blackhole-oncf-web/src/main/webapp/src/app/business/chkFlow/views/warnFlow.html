@@ -7,7 +7,7 @@
 <!--<tiny-button text="btnCtrl.text" tooltip="btnCtrl.desc" click="btnCtrl.doSth(event)"></tiny-button>-->
 <div class="container-fluid">
     <div class="row-fluid">
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:20px;">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_az_id}}
             </div>
@@ -17,7 +17,7 @@
                           tooltip = "azTextBox.tooltip"
                           disable="azTextBox.disable"></tiny-textbox>
         </div>
-        <div style="float:left; margin-right:50px;" class="timeLimit">
+        <div style="float:left; margin-right:20px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_start_time}}
             </div>
@@ -30,28 +30,18 @@
                            time-format="dateTime.timeFormat">
             </tiny-datetime>
         </div>
-        <div style="float:left;margin-right:50px;">
-            <div class="span1 input_label1" style="width: 60px;">
+        <div style="float:left;margin-right:20px;">
+            <div class="span1 input_label1" style="width: 50px;">
                 {{i18n.chkFlow_term_src_ip}}
             </div>
             <tiny-ip id="src_ip.id"
                      type="src_ip.type"
                      value="src_ip.value"
-                     tooltip = "src_ip.tooltip"
-            > </tiny-ip>
-        </div>
-        <div style="float:left;">
-            <div class="span1 input_label1" style="width: 40px;">
-                {{i18n.chkFlow_term_Type}}
-            </div>
-            <tiny-select id="type.id"
-                         values="type.values"
-                         width="135"
-            ></tiny-select>
+                     tooltip = "src_ip.tooltip"> </tiny-ip>
         </div>
     </div><br>
     <div class="row-fluid">
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:20px;">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_pod_id}}
             </div>
@@ -61,7 +51,7 @@
                           tooltip = "podTextBox.tooltip"
                           disable="azTextBox.disable"></tiny-textbox>
         </div>
-        <div style="float:left; margin-right:50px;" class="timeLimit">
+        <div style="float:left; margin-right:20px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_end_time}}
             </div>
@@ -74,14 +64,21 @@
                            time-format="dateTime.timeFormat">
             </tiny-datetime>
         </div>
-        <div style="float:left;margin-right:120px;">
-            <div class="span1 input_label1" style="width: 60px;">
+        <div style="float:left;margin-right:20px;">
+            <div class="span1 input_label1" style="width: 50px;">
                 {{i18n.chkFlow_term_dst_ip}}
             </div>
             <tiny-ip id="dst_ip.id"
                      value="dst_ip.value"
-                     tooltip = "dst_ip.tooltip"
-            > </tiny-ip>
+                     tooltip = "dst_ip.tooltip"> </tiny-ip>
+        </div>
+        <div style="float:left;margin-right:20px;">
+            <div class="span1 input_label1" style="width: 40px;">
+                {{i18n.chkFlow_term_Type}}
+            </div>
+            <tiny-select id="type.id"
+                         values="type.values"
+                         width="135"></tiny-select>
         </div>
         <div style="float:right;">
             <tiny-button id="search.id" text="search.text"

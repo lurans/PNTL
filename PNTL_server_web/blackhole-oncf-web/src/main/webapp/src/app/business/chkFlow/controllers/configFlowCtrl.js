@@ -14,8 +14,8 @@ define(["language/chkFlow",
                         text : i18n.chkFlow_term_deploy
                     },
                     {
-                        state : "blackhole.manager.configFlow.variableConfig",
-                        text : i18n.chkFlow_term_variable_config
+                        state : "blackhole.manager.configFlow.agentConfig",
+                        text : i18n.chkFlow_term_agent_config
                     },
                     {
                         state : "blackhole.manager.configFlow.upgradeConfig",
