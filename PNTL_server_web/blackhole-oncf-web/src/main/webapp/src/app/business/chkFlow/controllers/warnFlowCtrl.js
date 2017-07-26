@@ -50,7 +50,7 @@ define(["language/chkFlow",
                                 "type":selectType
                             };
                             postData(searchData);
-                       }else if(startTime === ""){
+                        }else if(startTime === ""){
                             divTip.option("content",i18n.chkFlow_term_tip1);
                             divTip.show(1000);
                             $scope.search.disable = false;
@@ -65,6 +65,18 @@ define(["language/chkFlow",
                 var postData = function(para){
                     var promise = warnFlowServ.postSearchData(para);
                     promise.then(function(responseData){
+                        $scope.table.data = [];
+                        for (var i = 0;i<responseData.length;i++){
+                            if(responseData[i].delay != ""){
+                                responseData[i].value = responseData[i].delay + "ms";
+                                responseData[i].type = i18n.chkFlow_term_delayTime;
+                            }else if(responseData[i].lossRate != ""){
+                                responseData[i].value = responseData[i].lossRate;
+                                responseData[i].type = i18n.chkFlow_term_packetsLossRate;
+                            }
+                        }
+                        $scope.table.data = responseData;
+                        $scope.table.totalRecords = responseData.length;
                         commonException.showMsg(i18n.chkFlow_term_submit_ok);
                         $scope.search.disable = false;
                     },function(responseData){
@@ -93,9 +105,9 @@ define(["language/chkFlow",
                         label : i18n.chkFlow_term_choose,
                         checked : true
                     }, {
-                            selectId : "2",
-                            label : i18n.chkFlow_term_delayTime,
-                            checked : false
+                        selectId : "2",
+                        label : i18n.chkFlow_term_delayTime,
+                        checked : false
                     },{
                         selectId : "3",
                         label : i18n.chkFlow_term_packetsLossRate,

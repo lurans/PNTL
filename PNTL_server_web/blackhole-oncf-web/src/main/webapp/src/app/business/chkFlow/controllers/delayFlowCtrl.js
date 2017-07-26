@@ -211,6 +211,7 @@ define(["language/chkFlow",
                     var delayInfoPromise = delayFlowServ.getDelayInfo();
                     delayInfoPromise.then(function(responseData){
                         getDelayLinkInfo(responseData);
+                        $("#delay_time_chart").html("");
                         delay_info_chart();
                     },function(responseData){
                         //showERRORMsg
