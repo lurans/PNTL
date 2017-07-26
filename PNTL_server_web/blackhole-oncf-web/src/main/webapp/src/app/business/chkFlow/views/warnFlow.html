@@ -14,7 +14,8 @@
             <tiny-textbox id="azTextBox.id"
                           value="azTextBox.value"
                           width="azTextBox.width"
-                          tooltip = "azTextBox.tooltip"></tiny-textbox>
+                          tooltip = "azTextBox.tooltip"
+                          disable="azTextBox.disable"></tiny-textbox>
         </div>
         <div style="float:left; margin-right:50px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
@@ -29,7 +30,7 @@
                            time-format="dateTime.timeFormat">
             </tiny-datetime>
         </div>
-        <div style="float:left;margin-right:70px;">
+        <div style="float:left;margin-right:50px;">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_src_ip}}
             </div>
@@ -57,7 +58,8 @@
             <tiny-textbox id="podTextBox.id"
                           value="podTextBox.value"
                           width="podTextBox.width"
-                          tooltip = "podTextBox.tooltip"></tiny-textbox>
+                          tooltip = "podTextBox.tooltip"
+                          disable="azTextBox.disable"></tiny-textbox>
         </div>
         <div style="float:left; margin-right:50px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
@@ -81,7 +83,7 @@
                      tooltip = "dst_ip.tooltip"
             > </tiny-ip>
         </div>
-        <div style="float:left;">
+        <div style="float:right;">
             <tiny-button id="search.id" text="search.text"
                          icons-class="search.iconsClass"
                          width="search.width"
@@ -91,7 +93,7 @@
     </div>
 </div>
 <div class="dashboard_title"></div>
-<div style="width:1000px;margin-top: 20px">
+<div style="margin-top: 20px">
     <tiny-table id="table.id"
                 data='table.data'
                 columns='table.columns'

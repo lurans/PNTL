@@ -126,7 +126,13 @@ define(["language/chkFlow",
                     "value": "",
                     "type" : "ipv4",
                     "tooltip":i18n.chkFlow_term_ip_tooltip,
-
+                    "validate": [
+                        {
+                            "validFn" : "required"
+                        },
+                        {
+                            "validFn" : "ipv4",
+                        }]
                 };
                 $scope.akSkBtn = {
                     "id":"akSkBtnId",
