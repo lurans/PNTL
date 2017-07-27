@@ -291,9 +291,9 @@ public class PntlConfigService {
         try {
             validIpListAttachment(file, name);
         } catch (InvalidParamException | InvalidFormatException e) {
-            String errMsg = e.toString();
+            String errMsg = "upload ipList failed:" + e.getMessage();
             result.addError("", errMsg);
-            LOGGER.error(errMsg, e);
+            LOGGER.error(errMsg);
             return result;
         }
 
@@ -381,9 +381,9 @@ public class PntlConfigService {
         try {
             validAgentPkgAttachment(attachment);
         } catch (InvalidParamException | InvalidFormatException e) {
-            String errMsg = e.toString();
+            String errMsg = "upload agentPkg failed" + e.toString();
             result.addError("", errMsg);
-            LOGGER.error(errMsg, e);
+            LOGGER.error(errMsg);
             return result;
         }
 
