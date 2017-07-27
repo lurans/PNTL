@@ -53,7 +53,6 @@ typedef struct tagAgentFlowTableEntry
     /* 原始探测结果 */
     vector <DetectResultPkt_S> vFlowDetectResultPkt;
     UINT32 uiFlowDropCounter;     // 流当前连续丢包计数, 超过门限后触发丢包上报事件.
-    UINT32 uiFlowTrackingCounter; // 流处于Tracking状态时, 每隔一段时间发送一个探测报文.
 
     /* 准备上报的探测结果 */
     DetectResult_S stFlowDetectResult;

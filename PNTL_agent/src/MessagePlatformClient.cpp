@@ -16,6 +16,7 @@ using namespace std;
 size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssResponce)
 {
     char * pStr = (char *)ptr;
+
     if (strlen(pStr) != (nmemb + 2))
     {
         MSG_CLIENT_WARNING("ReceiveResponce wrong pStr size is [%u]", strlen(pStr));
@@ -34,7 +35,7 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
                        strlen(newPStr), newPStr, nmemb);
     free(newPStr);
 
-    return size * nmemb;
+    return size*nmemb;
 }
 
 const CHAR* SERVER_CERT_PATH = "/opt/huawei/ServerAntAgent/server_cert.pem";

@@ -35,9 +35,7 @@ using namespace std;
 //Agent Flow Table Entry的uiFlowState bit定义
 // 当前Entry是否生效.
 #define FLOW_ENTRY_STATE_ENABLE     (1L << 0)
-// 当前Entry是否处于追踪模式, 由丢包触发.
-#define FLOW_ENTRY_STATE_TRACKING   (1L << 1)
-// 当前Entry是否处于丢包模式, 由丢包触发.
+  // 当前Entry是否处于丢包模式, 由丢包触发.
 #define FLOW_ENTRY_STATE_DROPPING   (1L << 2)
 
 #define FLOW_ENTRY_STATE_CHECK(state, flag)     ( (state) & (flag) )
@@ -199,7 +197,6 @@ void FlowManager_C::AgentFlowTableAdd(ServerFlowTableEntry_S * pstServerFlowEntr
     sal_memset(&(stNewAgentEntry.stFlowDetectResult), 0, sizeof(stNewAgentEntry.stFlowDetectResult));
     stNewAgentEntry.vFlowDetectResultPkt.clear();
     stNewAgentEntry.uiFlowDropCounter = 0;
-    stNewAgentEntry.uiFlowTrackingCounter= 0;
 
     // 刷新key信息
     stNewAgentEntry.stFlowKey.uiUrgentFlow = pstServerFlowEntry->stServerFlowKey.uiUrgentFlow;
@@ -250,7 +247,6 @@ void FlowManager_C::AgentFlowTableEntryClearResult(UINT32 uiAgentFlowIndex)
     AgentFlowTable[uiAgentFlowIndex].uiFlowState = 0;
     AgentFlowTable[uiAgentFlowIndex].vFlowDetectResultPkt.clear();
     AgentFlowTable[uiAgentFlowIndex].uiFlowDropCounter = 0;
-    AgentFlowTable[uiAgentFlowIndex].uiFlowTrackingCounter = 0;
 
     sal_memset(&(AgentFlowTable[uiAgentFlowIndex].stFlowDetectResult), 0, sizeof(DetectResult_S));
     AGENT_WORKING_FLOW_TABLE_UNLOCK();
@@ -290,7 +286,7 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
         {
             uiSrcPortRange = pServerEntry->stServerFlowKey.uiSrcPortRange;
         }
-		
+
         if ( pServerEntry->uiAgentFlowWorkingIndexMax + uiSrcPortRange <= pServerEntry->uiAgentFlowIndexMax)
         {
             pServerEntry->uiAgentFlowWorkingIndexMin = pServerEntry->uiAgentFlowWorkingIndexMax + 1;
@@ -336,8 +332,7 @@ INT32 FlowManager_C::AgentFlowTableEntryAdjust()
                         uiAgentFlowIndex <= pServerEntry->uiAgentFlowWorkingIndexMax;
                         uiAgentFlowIndex ++)
                 {
-                    FLOW_ENTRY_STATE_SET(AgentFlowTable[uiAgentFlowIndex].uiFlowState,
-                                         FLOW_ENTRY_STATE_ENABLE);
+                    FLOW_ENTRY_STATE_SET(AgentFlowTable[uiAgentFlowIndex].uiFlowState, FLOW_ENTRY_STATE_ENABLE);
                 }
             }
         }
@@ -416,7 +411,7 @@ INT32 FlowManager_C::ServerFlowTablePreAdd(ServerFlowKey_S * pstNewServerFlowKey
                                pstNewServerFlowKey->uiSrcPortMin, pstNewServerFlowKey->uiSrcPortMax, uiSrcPortMin, uiSrcPortMax);
             return AGENT_E_PARA;
         }
-		
+
         // 检查Range范围
         if ( uiAgentSrcPortRange < pstNewServerFlowKey->uiSrcPortRange )
         {
@@ -545,7 +540,7 @@ INT32 FlowManager_C::DoDetect()
     {
         iRet = AGENT_OK;
     }
-	
+
     return iRet;
 }
 
@@ -754,7 +749,7 @@ INT32 FlowManager_C::FlowPrepareReport(UINT32 uiFlowTableIndex)
         lDataTemp = 0;
         AgentFlowTable[uiFlowTableIndex].stFlowDetectResult.lLatency99Percentile = plT4Temp[lDataTemp];
     }
-    
+
 
     delete [] plT3Temp;
     plT3Temp = NULL;
@@ -836,8 +831,6 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
     }
     strReportData = ssReportData.str();
 
-    SAVE_LATENCY_INFO("%s", ssReportData.str().c_str());
-
     iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LATENCY_URL);
     if (iRet)
     {
@@ -853,9 +846,7 @@ INT32 FlowManager_C::FlowDropNotice(UINT32 uiFlowTableIndex)
 {
     INT32 iRet = AGENT_OK;
 
-   
-    FLOW_ENTRY_STATE_SET(AgentFlowTable[uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_TRACKING);
-    AgentFlowTable[uiFlowTableIndex].uiFlowTrackingCounter = 0;
+    FLOW_ENTRY_STATE_SET(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_DROPPING);
 
     iRet = FlowDropReport(uiFlowTableIndex);
     if (iRet)
@@ -882,7 +873,7 @@ INT32 FlowManager_C::DetectResultProcess(UINT32 uiFlowTableIndex)
     // 若第一个报文发送成功,但是丢包. 则lT1为发送时间, lT2=0.
     if (1 == AgentFlowTable[uiFlowTableIndex].vFlowDetectResultPkt.size())
     {
-       
+
         // 时间戳以ms为单位进行上报.
         AgentFlowTable[uiFlowTableIndex].stFlowDetectResult.lT1 = (INT64)stDetectResultPkt.stT1.uiSec * SECOND_MSEC
                 + (INT64)stDetectResultPkt.stT1.uiUsec / MILLISECOND_USEC;
@@ -902,7 +893,7 @@ INT32 FlowManager_C::DetectResultProcess(UINT32 uiFlowTableIndex)
     {
         AgentFlowTable[uiFlowTableIndex].stFlowDetectResult.lPktDropCounter ++;
         AgentFlowTable[uiFlowTableIndex].uiFlowDropCounter ++;
-     
+
     }
     else if ( SESSION_STATE_WAITING_CHECK == stDetectResultPkt.uiSessionState ) //未丢包
     {
@@ -910,7 +901,6 @@ INT32 FlowManager_C::DetectResultProcess(UINT32 uiFlowTableIndex)
         AgentFlowTable[uiFlowTableIndex].uiFlowDropCounter = 0;
         FLOW_ENTRY_STATE_CLEAR(AgentFlowTable[uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_DROPPING);
     }
-
 
     // 普通流持续丢包, 触发丢包快速上报,同时启动追踪报文.
     if ( !(FLOW_ENTRY_STATE_CHECK(AgentFlowTable[uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_DROPPING))
@@ -1053,7 +1043,7 @@ INT32 FlowManager_C::DoReport()
                 FLOW_MANAGER_ERROR("Flow Latency Report failed[%d], index[%u]", iRet, uiFlowTableIndex);
             }
         }
-        
+
     }
 
     // 根据range调整下一个上报周期使能AgentFlowTable中的哪些流.
@@ -1110,7 +1100,7 @@ INT32 FlowManager_C::ThreadHandler()
     uiLastCheckTimeCounter = counter;
     uiLastReportTimeCounter = counter;
     uiLastQuerytTimeCounter = counter;
-	
+
     while (GetCurrentInterval())
     {
         // 当前周期是否该启动探测流程.
@@ -1163,10 +1153,10 @@ INT32 FlowManager_C::ThreadHandler()
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query failed[%d]", iRet);
-				SHOULD_PROBE = 1;
+                SHOULD_PROBE = 1;
             }
         }
-		
+
         if (SHOULD_QUERY_CONF)
         {
             SHOULD_QUERY_CONF = 0;
@@ -1174,7 +1164,7 @@ INT32 FlowManager_C::ThreadHandler()
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query Config failed[%d]", iRet);
-				SHOULD_QUERY_CONF = 1;
+                SHOULD_QUERY_CONF = 1;
             }
         }
 
@@ -1185,7 +1175,7 @@ INT32 FlowManager_C::ThreadHandler()
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("ReportAgentIPToServer failed[%d]", iRet);
-				SHOULD_REPORT_IP = 1;
+                SHOULD_REPORT_IP = 1;
             }
         }
 

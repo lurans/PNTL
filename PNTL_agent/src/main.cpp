@@ -57,7 +57,7 @@ INT32 ServerAntAgent()
     INIT_INFO("-------- Start FlowManager --------");
     pcFlowManager = new FlowManager_C;
     iRet = pcFlowManager->Init(pcCfg);
-    if (iRet)
+    if (AGENT_OK != iRet)
     {
         destroyFlowManagerObj(pcFlowManager);
         destroyServerCfgObj(pcCfg);
@@ -67,26 +67,30 @@ INT32 ServerAntAgent()
 
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
-    
-	iRet = ReportAgentIPToServer(pcCfg);
-    UINT32 reportCount = 1;
-    while (iRet)
-    {
-        INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
-        sleep(5);
-        INIT_ERROR("Retry to report Agent ip to Server, time [%u]", ++reportCount);
-        iRet = ReportAgentIPToServer(pcCfg);
-    }
 
-    iRet = RequestConfigFromServer(pcFlowManager);
-	reportCount = 1;
-	while (iRet)
+    UINT32 reportCount = 1;
+    do
     {
-        INIT_ERROR("Request Agent config from Server fail[%d]", iRet);
-        sleep(5);
-        INIT_ERROR("Retry to request Agent config from Server, time [%u]", ++reportCount);
+        iRet = ReportAgentIPToServer(pcCfg);
+        if (AGENT_OK != iRet)
+        {
+            INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
+            sleep(5*reportCount);
+            INIT_ERROR("Retry to report Agent ip to Server, time [%u]", ++reportCount);
+        }
+    }while (iRet)
+
+    reportCount = 1;
+    do
+    {
         iRet = RequestConfigFromServer(pcFlowManager);
-    }
+        if (AGENT_OK != iRet)
+        {
+            INIT_ERROR("Request Agent config from Server fail[%d]", iRet);
+            sleep(5*reportCount);
+            INIT_ERROR("Retry to request Agent config from Server, time [%u]", ++reportCount);
+        }
+    }while (iRet)
 
     while(1)
     {
