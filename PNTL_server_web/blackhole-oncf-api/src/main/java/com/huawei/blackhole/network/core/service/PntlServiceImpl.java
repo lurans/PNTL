@@ -872,8 +872,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
         Iterator<PntlHostContext> it = updateHostsList.iterator();
         while (it.hasNext()){
+            PntlHostContext h = it.next();
             for (PntlHostContext host : hostList){
-                PntlHostContext h = it.next();
                 if (host.equals(h)){
                     it.remove();
                     break;
