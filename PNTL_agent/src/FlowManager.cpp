@@ -1191,7 +1191,7 @@ INT32 FlowManager_C::ThreadHandler()
 
         if (PROBE_INTERVAL != 9999)
         {
-            this->pcAgentCfg->SetDetectPeriod(PROBE_INTERVAL);
+            SetNewInterval(PROBE_INTERVAL);
             PROBE_INTERVAL = 9999;
         }
 
