@@ -84,7 +84,6 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         uiIp = sal_inet_aton(strTemp.c_str());
         pcCfg->SetMgntIP(uiIp);
 
-       
 
         strTemp = ptDataTmp.get<string>("AgentIP");
         uiIp = sal_inet_aton(strTemp.c_str());
@@ -698,17 +697,17 @@ INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 }
 
 /*
-	接收从Server端下发的配置参数
-	格式为
-	{
-		"probe_period":"0",
-		"port_count" : "5",
-		"report_period" : "",
-		"delay_threshold":"",
-		"dscp":"",
-		"lossPkg_timeout":"",
-		"package_rate":""
-	}
+    接收从Server端下发的配置参数
+    格式为
+    {
+    "probe_period":"0",
+    "port_count" : "5",
+    "report_period" : "",
+    "delay_threshold":"",
+    "dscp":"",
+    "lossPkg_timeout":"",
+    "package_rate":""
+
 */
 INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
 {
