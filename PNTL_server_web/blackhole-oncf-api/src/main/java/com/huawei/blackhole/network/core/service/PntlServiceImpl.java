@@ -230,8 +230,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                     result.addError("", "cmd to exit agent failed");
                 }
             } catch (ClientException e){
-                LOG.error("cmd to exit agent failed, " + e.getMessage());
-                result.addError("", e.toString());
+                String errMsg = "cmd to exit agent failed, " + e.getMessage();
+                LOG.error(errMsg);
+                result.addError("", errMsg);
             }
             return result;
         }
@@ -317,8 +318,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                     String token = identityWrapperService.getPntlAccessToken();
                     result = pntlRequest.sendFilesToAgents(hosts, token);
                 } catch (ClientException e){
-                    LOG.error("Send files to agents failed: " + e.getMessage());
-                    result.addError("", e.toString());
+                    String errMsg = "Send files to agents failed: " + e.getMessage();
+                    LOG.error(errMsg);
+                    result.addError("", errMsg);
                 }
             }
         };
@@ -382,7 +384,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             return result;
         }
 
-        LOG.info("agent upload ok, begin to install");
+        LOG.info("send files to agents ok, begin to install");
         try{
             result = installAgent(hosts);
         } catch(ClientException e){
@@ -528,7 +530,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             String token = identityWrapperService.getPntlAccessToken();
             resp = pntlRequest.installAgent(pntlHostList, token);
             if (resp.getStatusCode().isError()){
-                result.addError("", "install agent failed");
+                result.addError("", "install agents failed:" + resp.getStatusCode());
             } else if ((Integer) resp.getRespBody().get("code") != 0){
                 int code = (Integer) resp.getRespBody().get("code");
                 String errMsg = "code is" + code;
@@ -538,8 +540,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 result.addError(String.valueOf(resp.getRespBody().get("code")), errMsg);
             }
         } catch (ClientException e){
-            LOG.error("Send ip list to agents failed, " + e.getMessage());
-            result.addError("", e.toString());
+            String errMsg = "Send ip list to agents failed, " + e.getMessage();
+            LOG.error(errMsg);
+            result.addError("", errMsg);
         }
 
         return result;

@@ -1,7 +1,7 @@
 package com.huawei.blackhole.network.common.constants;
 
 public class PntlInfo {
-    public static final String URL_IP = "https://8.15.4.96:8243";//beta
+    public static final String URL_IP = "https://cas.lf.hwclouds.com:8243";//beta
     //public static final String URL_IP = "https://192.168.211.98:8243";//alpha
 
     public static final String CMDB_URL_SUFFIX = "/v1/cloud-cmdb/hosts";
@@ -32,7 +32,7 @@ public class PntlInfo {
     public static final String USERNAME = "user_name";
     public static final String SERVICENAME = "service_name";
     public static final String BEARER = "Bearer";
-    public static final String OPS_USERNAME = "y00214328";
+    public static final String OPS_USERNAME = "c00000000";
     public static final String PNTL_SERVICENAME = "pntl";
     public static final String PNTL_ROOT_NAME = "root";
     public static final String PTNL_UPLOADER_SPACE = "c00000000";
