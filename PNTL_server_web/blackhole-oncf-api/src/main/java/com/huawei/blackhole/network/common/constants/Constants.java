@@ -21,6 +21,10 @@ public class Constants {
     public static final long PNTL_WATI_TIME = 3 * 1000;
     public static final long PNTL_WAIT_TIME_PINGMESH = 100;
 
+    public static final String TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    public static final String DECIMAL_FORMAT = "0.000";
+
     public static final String WEBAPP = "webapp";
 
     public static final String ROUTER_DEVICE_OWNER = "network:router_interface_distributed";

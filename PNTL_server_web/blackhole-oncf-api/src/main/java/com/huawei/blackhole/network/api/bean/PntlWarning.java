@@ -3,6 +3,7 @@ package com.huawei.blackhole.network.api.bean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +25,7 @@ public class PntlWarning implements Serializable{
     private static final Logger LOG = LoggerFactory.getLogger(PntlWarning.class);
 
     private static final String LOSS_RATE = "1";
-    private static final String TIME_DELAY= "2";
+    private static final String TIME_DELAY = "2";
 
     @JsonProperty("result")
     private static List<PntlWarnInfo> result = new ArrayList<PntlWarnInfo>();
@@ -203,7 +204,7 @@ public class PntlWarning implements Serializable{
                 || (StringUtils.isEmpty(param.getStarTime()) && !StringUtils.isEmpty(param.getEndTime()))){
             return false;
         }else if(!StringUtils.isEmpty(param.getStarTime())&&!StringUtils.isEmpty(param.getStarTime())){
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            SimpleDateFormat df = new SimpleDateFormat(Constants.TIME_FORMAT);
             try {
                 Long d1 = df.parse(param.getStarTime()).getTime();
                 Long d2 = df.parse(param.getEndTime()).getTime();
@@ -244,7 +245,7 @@ public class PntlWarning implements Serializable{
         if (StringUtils.isEmpty(starTime) && StringUtils.isEmpty(endTime)){
             return result;
         }
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
+        SimpleDateFormat df = new SimpleDateFormat(Constants.TIME_FORMAT);
         try {
             Long d1 = df.parse(starTime).getTime();
             Long d2 = df.parse(endTime).getTime();
@@ -312,7 +313,7 @@ public class PntlWarning implements Serializable{
             return;
         }
         Iterator<PntlWarnInfo> it = resultList.iterator();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
+        SimpleDateFormat df = new SimpleDateFormat(Constants.TIME_FORMAT);
         while (it.hasNext()){
             PntlWarnInfo p = it.next();
             Long intervalTime = System.currentTimeMillis()/1000 - df.parse(p.getTime()).getTime() ;
