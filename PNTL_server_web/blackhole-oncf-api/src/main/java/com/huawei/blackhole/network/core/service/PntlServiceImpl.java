@@ -294,7 +294,10 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             setFlowCommon(flow, agentIp);
             flowList.add(flow);
         }
-        agentFlowsJson.setList(flowList);
+
+        if (!flowList.isEmpty()){
+            agentFlowsJson.setList(flowList);
+        }
 
         return agentFlowsJson;
     }

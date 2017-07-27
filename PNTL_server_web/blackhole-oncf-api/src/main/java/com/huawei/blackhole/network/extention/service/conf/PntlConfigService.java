@@ -316,7 +316,10 @@ public class PntlConfigService {
         }
 
         /*更新ipList之后，重新加载文件*/
-        result = pntlService.initHostList();
+        if (StringUtils.isEmpty(othername)){
+            result = pntlService.initHostList();
+        }
+
         return result;
     }
 
