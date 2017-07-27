@@ -85,7 +85,7 @@ define(["language/chkFlow",
                     $scope.akSkBtn.disable = true;
                     if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){
                         divTip.option("content",i18n.chkFlow_term_input_valid);
-                        divTip.show(30000);
+                        divTip.show(1000);
                         $scope.akSkBtn.disable = false;
                         return;
                     }

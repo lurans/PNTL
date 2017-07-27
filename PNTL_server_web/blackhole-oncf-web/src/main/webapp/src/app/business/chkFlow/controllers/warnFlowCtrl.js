@@ -52,11 +52,11 @@ define(["language/chkFlow",
                             postData(searchData);
                        }else if(startTime === ""){
                             divTip.option("content",i18n.chkFlow_term_tip1);
-                            divTip.show(30000);
+                            divTip.show(1000);
                             $scope.search.disable = false;
                         }else if (endTime === ""){
                             divTip.option("content",i18n.chkFlow_term_tip2);
-                            divTip.show(30000);
+                            divTip.show(1000);
                             $scope.search.disable = false;
                         }
                     }
@@ -125,7 +125,6 @@ define(["language/chkFlow",
                     "id": "src_ip_id",
                     "value": "",
                     "type" : "ipv4",
-                    "tooltip":i18n.chkFlow_term_ip_tooltip,
                     "validate": [
                         {
                             "validFn" : "ipv4",
@@ -135,7 +134,6 @@ define(["language/chkFlow",
                     "id": "dst_ip_id",
                     "value": "",
                     "type" : "ipv4",
-                    "tooltip":i18n.chkFlow_term_ip_tooltip,
                 }
 
                 $scope.table = {
@@ -147,22 +145,22 @@ define(["language/chkFlow",
                         "sWidth":"16%",
                         "mData":"time"
                     }, {
-                        "sTitle" : "AZ",
+                        "sTitle" : i18n.chkFlow_term_az,
                         "sWidth":"10%",
                         "mData":"az_id",
                         "bSortable":false
                     }, {
-                        "sTitle" : "POD",
+                        "sTitle" : i18n.chkFlow_term_pod,
                         "sWidth":"10%",
                         "mData":"pod_id",
                         "bSortable":false
                     }, {
-                        "sTitle" : "Src IP",
+                        "sTitle" : i18n.chkFlow_term_src_ip,
                         "sWidth":"20%",
                         "mData":"src_ip",
                         "bSortable":false
                     },{
-                        "sTitle" : "Dst IP",
+                        "sTitle" : i18n.chkFlow_term_dst_ip,
                         "sWidth":"20%",
                         "mData":"dst_ip",
                         "bSortable":false

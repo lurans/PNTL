@@ -3,14 +3,6 @@ using namespace std;
 #include "Log.h"
 #include "ServerAntAgentCfg.h"
 
-#define LOCK() \
-        if (AgentCfgLock) \
-            sal_mutex_take(AgentCfgLock, sal_mutex_FOREVER)
-
-#define UNLOCK() \
-        if (AgentCfgLock) \
-            sal_mutex_give(AgentCfgLock)
-
 // 构造函数, 初始化默认值.
 ServerAntAgentCfg_C::ServerAntAgentCfg_C()
 {
@@ -21,7 +13,6 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     uiServerDestPort            = 0;                        //  ServerAntServer的端口地址, Agent向Server发起查询会话时使用.
 
     uiAgentIP                   = sal_inet_aton("0.0.0.0"); //  本Agent的IP地址, Server向Agent推送消息时使用.
-    uiAgentDestPort             = 0;                        //  本Agent的端口地址, Server向Agent推送消息时使用.
 
     /* Agent 全局周期控制 */
     uiAgentPollingTimerPeriod   = 100000;   // Agent Polling周期, 单位为us, 默认100ms, 用于设定Agent定时器.
@@ -40,15 +31,12 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     uiMaxDelay = 0;
     uiBigPkgRate = 0;
     uiPortCount = 0;
-    AgentCfgLock = sal_mutex_create("ServerAntAgentCfg");
-
 }
 
 // 析构函数,释放资源
 ServerAntAgentCfg_C::~ServerAntAgentCfg_C()
 {
     AGENT_CFG_INFO("Destroy ServerAntAgentCfg");
-    sal_mutex_destroy(AgentCfgLock);
 }
 
 void ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP,  UINT32 * puiServerDestPort)
@@ -56,43 +44,31 @@ void ServerAntAgentCfg_C::GetServerAddress(UINT32 * puiServerIP,  UINT32 * puiSe
 
     *puiServerIP = uiServerIP;
     *puiServerDestPort = uiServerDestPort;
-
     return;
 }
 
 void ServerAntAgentCfg_C::SetServerAddress(UINT32 uiNewServerIP, UINT32 uiNewServerDestPort)
 {
-
     uiServerIP = uiNewServerIP;
     uiServerDestPort = uiNewServerDestPort;
-
     return;
 }
 
-void ServerAntAgentCfg_C::GetAgentAddress(UINT32 * puiAgentIP,
-        UINT32 * puiAgentDestPort)          // 查询ServerAntAgent地址信息.
+void ServerAntAgentCfg_C::GetAgentAddress(UINT32 * puiAgentIP)          // 查询ServerAntAgent地址信息.
 {
     *puiAgentIP = uiAgentIP;
-    *puiAgentDestPort = uiAgentDestPort;
-
     return;
 }
 
 void ServerAntAgentCfg_C::GetMgntIP(UINT32* puiMgntIP)
 {
-
     *puiMgntIP = uiMgntIP;
-
     return;
 }
 
-void ServerAntAgentCfg_C::SetAgentAddress(UINT32 uiNewAgentIP,   UINT32 uiNewAgentDestPort)
+void ServerAntAgentCfg_C::SetAgentAddress(UINT32 uiNewAgentIP)
 {
-
     uiAgentIP = uiNewAgentIP;
-
-    uiAgentDestPort = uiNewAgentDestPort;
-
     return;
 }
 
@@ -100,13 +76,9 @@ void ServerAntAgentCfg_C::GetProtocolUDP(UINT32 * puiSrcPortMin,
         UINT32 * puiSrcPortMax,
         UINT32 * puiDestPort)          // 查询UDP探测报文端口范围.
 {
-
     *puiSrcPortMin = stProtocolUDP.uiSrcPortMin;
-
     *puiSrcPortMax = stProtocolUDP.uiSrcPortMax;
-
     *puiDestPort    = stProtocolUDP.uiDestPort;
-
     return;
 }
 
@@ -114,13 +86,9 @@ void ServerAntAgentCfg_C::SetProtocolUDP(UINT32 uiSrcPortMin,
         UINT32 uiSrcPortMax,
         UINT32 uiDestPort)             // 设定UDP探测报文端口范围, 只刷新非0端口
 {
-
     stProtocolUDP.uiSrcPortMin = uiSrcPortMin;
-
     stProtocolUDP.uiSrcPortMax = uiSrcPortMax;
-
     stProtocolUDP.uiDestPort   = uiDestPort;
-
     return;
 }
 
@@ -178,10 +146,10 @@ UINT32 ServerAntAgentCfg_C::GetQueryPeriod()
     return uiAgentQueryPeriod;
 }
 
-INT32 ServerAntAgentCfg_C::SetQueryPeriod(UINT32 uiNewPeriod)
+void ServerAntAgentCfg_C::SetQueryPeriod(UINT32 uiNewPeriod)
 {
     uiAgentQueryPeriod = uiNewPeriod;
-    return AGENT_OK;
+    return ;
 }
 
 UINT32 ServerAntAgentCfg_C::GetDetectTimeout()
@@ -204,10 +172,10 @@ UINT32 ServerAntAgentCfg_C::GetDetectDropThresh()
     return uiAgentDetectDropThresh;
 }
 
-INT32 ServerAntAgentCfg_C::SetDetectDropThresh(UINT32 uiNewThresh)
+void ServerAntAgentCfg_C::SetDetectDropThresh(UINT32 uiNewThresh)
 {
     uiAgentDetectDropThresh = uiNewThresh;
-    return AGENT_OK;
+    return ;
 }
 
 UINT32 ServerAntAgentCfg_C::GetPortCount()
@@ -264,9 +232,9 @@ UINT32 ServerAntAgentCfg_C::GetMaxDelay()
     return uiMaxDelay;
 }
 
-INT32 ServerAntAgentCfg_C::SetMaxDelay(UINT32 newMaxDelay)
+void ServerAntAgentCfg_C::SetMaxDelay(UINT32 newMaxDelay)
 {
     uiMaxDelay = newMaxDelay;
-    return AGENT_OK;
+    return ;
 }
 
