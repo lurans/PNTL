@@ -10,7 +10,7 @@ define(["language/chkFlow",
 
                 $scope.button = {
                     "id":"resetBtn_id",
-                    "text" : i18n.chkFlow_term_reset_btn,
+                    "text" : i18n.chkFlow_term_recovery_btn,
                 };
 
                 $scope.ipList=[];

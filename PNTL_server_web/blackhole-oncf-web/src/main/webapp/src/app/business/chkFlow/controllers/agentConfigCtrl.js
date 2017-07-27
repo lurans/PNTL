@@ -8,14 +8,16 @@ define(["language/chkFlow",
             function($scope, $rootScope, $state, $sce, $compile, $timeout, configFlowServ){
                 $scope.i18n = i18n;
                 $scope.isVariableCollapsed = true;
+
                 var divTip = new tinyWidget.Tip({
                     content : "",
-                    element : ("#variableBtnId"),
+                    element : ("#variableSubmitBtnId"),
                     position : "right",
                     width: 300,
                     id : "searchTip",
                     auto:false
                 });
+
                 $scope.variable = {
                     "probeIntervalTime" : i18n.chkFlow_term_probe_interval_time_name,
                     "probePortCount": i18n.chkFlow_term_probe_port_count_name,
@@ -154,28 +156,26 @@ define(["language/chkFlow",
                             "params" : 0
                         }]
                 };
-                $scope.variableBtn = {
-                    "id" : "variableBtnId",
-                    "text" : i18n.chkFlow_term_confirm,
+
+                $scope.variableResetBtn = {
+                    "id" : "variableResetBtnId",
+                    "text" : i18n.chkFlow_term_reset_btn,
                     "disable":false
                 };
-                $scope.variableBtnOK = function(){
-                    $scope.variableBtn.disable = true;
-                    if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
-                        divTip.option("content",i18n.chkFlow_term_input_valid);
-                        divTip.show(1000);
-                        $scope.variableBtn.disable = false;
-                        return;
-                    }
-                    var para = getParaFromInput();
-                    if(para === ""){
-                        divTip.option("content",i18n.chkFlow_term_dscp_tip);
-                        divTip.show(1000);
-                    }else {
-                        postVariableConfig(para);
-                    }
-
-                    
+                $scope.variableSubmitBtn = {
+                    "id" : "variableSubmitBtnId",
+                    "text" : i18n.chkFlow_term_submit,
+                    "disable":false
+                };
+                $scope.probeStartBtn = {
+                    "id" : "probeStartID",
+                    "text" : i18n.chkFlow_term_start_Probe_btn,
+                    "disable":false
+                };
+                $scope.probeStopBtn = {
+                    "id" : "probeStopID",
+                    "text" : i18n.chkFlow_term_stop_Probe_btn,
+                    "disable":false
                 };
 
                 function getParaFromInput(){
@@ -191,7 +191,7 @@ define(["language/chkFlow",
                     var reportRoundNumber = parseInt(reportRound);
                     if(probeRoundNumber>reportRoundNumber){
                         var para1 = "";
-                        $scope.variableBtn.disable = false;
+                        $scope.variableSubmitBtn.disable = false;
                         return para1;
                     }else{
                         var para = {"probe_period":probeRound,
@@ -206,17 +206,6 @@ define(["language/chkFlow",
                         return para;
                     }
                 };
-                var postVariableConfig = function(para){
-                    var promise = configFlowServ.postVariableConfig(para);
-                    promise.then(function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_config_ok);
-                        $scope.variableBtn.disable = false;
-                    },function(responseData){
-                        //showERRORMsg
-                        commonException.showMsg(i18n.chkFlow_term_config_err, "error");
-                        $scope.variableBtn.disable = false;
-                    });
-                };
                 var getVariableConfig = function(){
                     var promise = configFlowServ.getVariableConfig();
                     promise.then(function(responseData){
@@ -228,17 +217,83 @@ define(["language/chkFlow",
                         $scope.packetsLossTextBox.value = responseData.lossRate_threshold;
                         $scope.dscpTextBox.value = responseData.dscp;
                         $scope.lossPkgTimeOutTextBox.value = responseData.lossPkg_timeout;
+                        $scope.variableResetBtn.disable = false;
                     },function(responseData){
-                        //showERRORMsg
                         commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
+                        $scope.variableResetBtn.disable = false;
                     });
                 };
+                var postVariableConfig = function(para){
+                    var promise = configFlowServ.postVariableConfig(para);
+                    promise.then(function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_config_ok);
+                        $scope.variableSubmitBtn.disable = false;
+                    },function(responseData){
+                        //showERRORMsg
+                        commonException.showMsg(i18n.chkFlow_term_config_err, "error");
+                        $scope.variableSubmitBtn.disable = false;
+                    });
+                };
+                var postProbeStart = function(para){
+                    var promise = configFlowServ.startProbe(para);
+                    promise.then(function(responseData){
+                        //OK
+                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
+                        $scope.probeStartBtn.disable = false;
+                    },function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
+                        $scope.probeStartBtn.disable = false;
+                    });
+                };
+                var postProbeStop = function(para){
+                    var promise = configFlowServ.stopProbe(para);
+                    promise.then(function(responseData){
+                        //OK
+                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
+                        $scope.probeStopBtn.disable = false;
+                    },function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
+                        $scope.probeStopBtn.disable = false;
+                    });
+                };
+
+                $scope.variableResetBtnOK = function(){
+                    $scope.variableResetBtn.disable = true;
+                    getVariableConfig();
+                };
+                $scope.variableSubmitBtnOK = function(){
+                    $scope.variableSubmitBtn.disable = true;
+                    if (!window.tinyWidget.UnifyValid.FormValid((".input_content"))){
+                        divTip.option("content",i18n.chkFlow_term_input_valid);
+                        divTip.show(1000);
+                        $scope.variableSubmitBtn.disable = false;
+                        return;
+                    }
+                    var para = getParaFromInput();
+                    if(para === ""){
+                        divTip.option("content",i18n.chkFlow_term_dscp_tip);
+                        divTip.show(1000);
+                    }else {
+                        postVariableConfig(para);
+                    }
+
+
+                };
+                $scope.probeStartBtnOK = function(){
+                    $scope.probeStartBtn.disable = true;
+                    var para={};
+                    postProbeStart(para);
+                };
+                $scope.probeStopBtnOK = function(){
+                    $scope.probeStopBtnOK.disable = true;
+                    var para={};
+                    postProbeStop(para);
+                };
+
                 function init(){
                     getVariableConfig();
                 }
                 init();
-              
-
             }
         ]
 

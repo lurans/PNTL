@@ -8,6 +8,16 @@ define(["language/chkFlow",
             function($scope, $rootScope, $state, $sce, $compile, $timeout, configFlowServ){
                 $scope.i18n = i18n;
                 $scope.isDeployCollapsed = true;
+
+                var divTip = new tinyWidget.Tip({
+                    content : "",
+                    element : ("#akSkBtnId"),
+                    position : "right",
+                    width: 300,
+                    id : "searchTip",
+                    auto:false
+                });
+
                 $scope.deployFileUpload = {
                     "id":"deployFileUpload_id",
                     "inputValue":"",
@@ -55,6 +65,7 @@ define(["language/chkFlow",
                         })
                     }
                 };
+
                 $scope.akTextBox = {
                     "id": "akTextBoxId",
                     "value": "",
@@ -72,36 +83,6 @@ define(["language/chkFlow",
                             "params" : "/^[a-zA-Z0-9_]+$/",
                             "errorDetail": i18n.chkFlow_term_sk_err,
                         }]
-                };
-                var divTip = new tinyWidget.Tip({
-                    content : "",
-                    element : ("#akSkBtnId"),
-                    position : "right",
-                    width: 300,
-                    id : "searchTip",
-                    auto:false
-                });
-                $scope.akSkBtnOK = function () {
-                    $scope.akSkBtn.disable = true;
-                    if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){
-                        divTip.option("content",i18n.chkFlow_term_input_valid);
-                        divTip.show(1000);
-                        $scope.akSkBtn.disable = false;
-                        return;
-                    }
-                    var para = getParaFromInput();
-                    postAkSkBtn(para);
-                };
-                var postAkSkBtn = function (para) {
-                    var promise = configFlowServ.postAkSk(para);
-                    promise.then(function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_config_ok);
-                        $scope.akSkBtn.disable = false;
-                    },function(responseData){
-                        //showERRORMsg
-                        commonException.showMsg(i18n.chkFlow_term_config_err, "error");
-                        $scope.akSkBtn.disable = false;
-                    });
                 };
                 $scope.skTextBox = {
                     "id": "skTextBoxId",
@@ -134,9 +115,10 @@ define(["language/chkFlow",
                             "validFn" : "ipv4",
                         }]
                 };
+
                 $scope.akSkBtn = {
                     "id":"akSkBtnId",
-                    "text":i18n.chkFlow_term_confirm,
+                    "text":i18n.chkFlow_term_submit,
                     "disable":false
                 };
                 $scope.uninstallBtn = {
@@ -149,80 +131,7 @@ define(["language/chkFlow",
                     "text" : i18n.chkFlow_term_install_btn,
                     "disable":false
                 };
-                $scope.probeStartBtn = {
-                    "id" : "probeStartID",
-                    "text" : i18n.chkFlow_term_start_Probe_btn,
-                    "disable":false
-                };
-                $scope.probeStopBtn = {
-                    "id" : "probeStopID",
-                    "text" : i18n.chkFlow_term_stop_Probe_btn,
-                    "disable":false
-                };
-                $scope.installBtnOK = function(){
-                    $scope.installBtn.disable = true;
-                    var para={};
-                    postInstall(para);
-                    //console.log('3');
-                };
-                $scope.uninstallBtnOK = function(){
-                    $scope.uninstallBtn.disable = true;
-                    var para={};
-                    postUninstall(para);
-                };
-                $scope.probeStartBtnOK = function(){
-                    $scope.probeStartBtn.disable = true;
-                    var para={};
-                    postProbeStart(para);
-                };
-                $scope.probeStopBtnOK = function(){
-                    $scope.probeStopBtnOK.disable = true;
-                    var para={};
-                    postProbeStop(para);
-                };
-                var postUninstall = function(para){
-                    var promise = configFlowServ.uninstall(para);
-                    promise.then(function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_exit_probe_ok);
-                        $scope.uninstallBtn.disable = false;
-                    },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_exit_probe_err, "error");
-                        $scope.uninstallBtn.disable = false;
-                    });
-                };
-                var postInstall = function(para){
-                    var promise = configFlowServ.install(para);
-                    promise.then(function(responseData){
-                        //OK
-                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
-                        $scope.installBtn.disable = false;
-                    },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
-                        $scope.installBtn.disable = false;
-                    });
-                };
-                var postProbeStart = function(para){
-                    var promise = configFlowServ.startProbe(para);
-                    promise.then(function(responseData){
-                        //OK
-                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
-                        $scope.probeStartBtn.disable = false;
-                    },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
-                        $scope.probeStartBtn.disable = false;
-                    });
-                };
-                var postProbeStop = function(para){
-                    var promise = configFlowServ.stopProbe(para);
-                    promise.then(function(responseData){
-                        //OK
-                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
-                        $scope.probeStopBtn.disable = false;
-                    },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
-                        $scope.probeStopBtn.disable = false;
-                    });
-                };
+
                 function getParaFromInput(){
                     var ak = $scope.akTextBox.value;
                     var sk = $scope.skTextBox.value;
@@ -246,6 +155,114 @@ define(["language/chkFlow",
                         commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
                     });
                 };
+                var postDeployVariable = function (para) {
+                    var promise = configFlowServ.postAkSk(para);
+                    promise.then(function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_config_ok);
+                        $scope.akSkBtn.disable = false;
+                    },function(responseData){
+                        //showERRORMsg
+                        commonException.showMsg(i18n.chkFlow_term_config_err, "error");
+                        $scope.akSkBtn.disable = false;
+                    });
+                };
+                var postInstall = function(para){
+                    var promise = configFlowServ.install(para);
+                    promise.then(function(responseData){
+                        //OK
+                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
+                        $scope.installBtn.disable = false;
+                    },function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
+                        $scope.installBtn.disable = false;
+                    });
+                };
+                var postUninstall = function(para){
+                    var promise = configFlowServ.uninstall(para);
+                    promise.then(function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_exit_probe_ok);
+                        $scope.uninstallBtn.disable = false;
+                    },function(responseData){
+                        commonException.showMsg(i18n.chkFlow_term_exit_probe_err, "error");
+                        $scope.uninstallBtn.disable = false;
+                    });
+                };
+
+                $scope.akSkBtnOK = function () {
+                    $scope.akSkBtn.disable = true;
+                    if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){
+                        divTip.option("content",i18n.chkFlow_term_input_valid);
+                        divTip.show(1000);
+                        $scope.akSkBtn.disable = false;
+                        return;
+                    }
+                    var para = getParaFromInput();
+                    postDeployVariable(para);
+                };
+                $scope.installBtnOK = function(){
+                    $scope.installBtn.disable = true;
+                    var installConfirmWindow = {
+                        title:i18n.chkFlow_term_install_confirm,
+                        height : "250px",
+                        width : "400px",
+                        content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>安装</span>：在首次部署时，安装并启动agent探测工具，其只对ipList.yml文件中的主机进行安装操作。</p><p style='text-align:center;margin-top: 30px;color: #999;font-size: 14px;'>确定安装？</p>",
+                        closeable:false,
+                        resizable:false,
+                        buttons:[{
+                            key:"btnOK",
+                            label : i18n.chkFlow_term_ok,//按钮上显示的文字
+                            focused : false,//默认焦点
+                            handler : function(event) {//点击回调函数
+                                installConfirmWin.destroy();
+                                var para={};
+                                postInstall(para);
+                            }
+                        }, {
+                            key:"btnCancel",
+                            label : i18n.chkFlow_term_cancel,
+                            focused : true,
+                            handler : function(event) {
+                                installConfirmWin.destroy();
+                                $scope.installBtn.disable = false;
+                            }
+                        }]
+                    }
+                    var installConfirmWin = new tinyWidget.Window(installConfirmWindow);
+                    installConfirmWin.show();
+                };
+                $scope.uninstallBtnOK = function(){
+                    $scope.uninstallBtn.disable = true;
+
+                    var uninstallConfirmWindow = {
+                        title:i18n.chkFlow_term_uninstall_confirm,
+                        height : "250px",
+                        width : "400px",
+                        content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>卸载</span>：结束进程并删除agent探测工具，其只对ipList.yml文件中的主机进行卸载操作。</p><p style='text-align:center;margin-top: 30px;color: #999;font-size: 14px;'>确定卸载？</p>",
+                        closeable:false,
+                        resizable:false,
+                        buttons:[{
+                            key:"btnOK",
+                            label : i18n.chkFlow_term_ok,//按钮上显示的文字
+                            focused : false,//默认焦点
+                            handler : function(event) {//点击回调函数
+                                uninstallConfirmWin.destroy();
+                                var para={};
+                                postUninstall(para);
+                            }
+                        }, {
+                            key:"btnCancel",
+                            label : i18n.chkFlow_term_cancel,
+                            focused : true,
+                            handler : function(event) {
+                                uninstallConfirmWin.destroy();
+                                $scope.uninstallBtn.disable = false;
+                            }
+                        }]
+                    }
+                    var uninstallConfirmWin = new tinyWidget.Window(uninstallConfirmWindow);
+                    uninstallConfirmWin.show();
+                };
+
                 function init(){
                     getVariableConfig();
                 }

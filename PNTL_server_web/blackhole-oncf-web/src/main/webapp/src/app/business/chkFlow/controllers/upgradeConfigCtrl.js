@@ -106,7 +106,7 @@ define(["language/chkFlow",
                     "spacing" : {
                         "width" : "60px"
                     },
-                    "text" : i18n.chkFlow_term_confirm,
+                    "text" : i18n.chkFlow_term_submit,
                     "submitClick" : function() {
                         $("#singleFileUpload_id").widget().submit();
                     }
