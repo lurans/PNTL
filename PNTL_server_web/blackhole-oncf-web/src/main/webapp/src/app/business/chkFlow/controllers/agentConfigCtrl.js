@@ -106,7 +106,7 @@ define(["language/chkFlow",
                         },
                         {
                             "validFn" : "minValue",
-                            "params" : 0
+                            "params" : 1
                         }]
                 };
                 $scope.packetsLossTextBox = {
@@ -119,7 +119,7 @@ define(["language/chkFlow",
                         },
                         {
                             "validFn" : "rangeValue",
-                            "params" : [0,100]
+                            "params" : [1,100]
                         }
                         ]
                 };
@@ -153,7 +153,7 @@ define(["language/chkFlow",
                         },
                         {
                             "validFn" : "minValue",
-                            "params" : 0
+                            "params" : 1
                         }]
                 };
 
@@ -238,10 +238,10 @@ define(["language/chkFlow",
                     var promise = configFlowServ.startProbe(para);
                     promise.then(function(responseData){
                         //OK
-                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
+                        commonException.showMsg(i18n.chkFlow_term_start_ok);
                         $scope.probeStartBtn.disable = false;
                     },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
+                        commonException.showMsg(i18n.chkFlow_term_start_err, "error");
                         $scope.probeStartBtn.disable = false;
                     });
                 };
@@ -249,10 +249,10 @@ define(["language/chkFlow",
                     var promise = configFlowServ.stopProbe(para);
                     promise.then(function(responseData){
                         //OK
-                        commonException.showMsg(i18n.chkFlow_term_deploy_ok);
+                        commonException.showMsg(i18n.chkFlow_term_stop_ok);
                         $scope.probeStopBtn.disable = false;
                     },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_deploy_err, "error");
+                        commonException.showMsg(i18n.chkFlow_term_stop_err, "error");
                         $scope.probeStopBtn.disable = false;
                     });
                 };

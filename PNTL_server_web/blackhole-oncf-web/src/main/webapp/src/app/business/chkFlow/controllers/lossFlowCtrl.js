@@ -178,6 +178,10 @@ define(["language/chkFlow",
                 }
                 function getIpInfo(lossDataJson)
                 {
+                    $scope.ipList=[];
+                    $scope.ipSeq=[];
+                    $scope.lossMatrix=[];
+
                     var len=lossDataJson.length;
                     lossDataJson.forEach(function(ip,i){
                         $scope.ipList[i]=ip['ip'];
@@ -210,8 +214,12 @@ define(["language/chkFlow",
 
                     });
                 }
-                function getIpList(para)
+                function getIpList()
                 {
+                    var para={
+                        "az_id":"",
+                        "pod_id":""
+                    };
                     var ipListPromise = lossFlowServ.postIpList(para);
                     ipListPromise.then(function(responseData){
                         getIpInfo(responseData.result);
@@ -224,7 +232,7 @@ define(["language/chkFlow",
 
                 var init = function()
                 {
-                    getIpList(para);
+                    getIpList();
                 };
                 init();
                 var autoRefresh = $interval(getIpList, 60000);

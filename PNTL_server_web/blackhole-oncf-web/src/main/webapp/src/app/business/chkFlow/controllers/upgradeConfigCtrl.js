@@ -62,20 +62,18 @@ define(["language/chkFlow",
                     "enableDetail" : false,
                     "method": "post",
                     "fileType":".yml",
-                    "completeDefa" : function(event, result, selectFileQueue) {
-                        var resultJson = JSON.parse(result);
-                        if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
-                            commonException.showMsg(i18n.chkFlow_term_upload_success, "success");
+                    "completeDefa" : function(event, result) {
+                        var succStr="{'result':'success'}";
+                        if(-1 != result.indexOf(succStr)){
+                            commonException.showMsg(i18n.chkFlow_term_ip_upgrade_success);
                         }else {
-                            commonException.showMsg(i18n.chkFlow_term_upload_err, "error");
+                            commonException.showMsg(i18n.chkFlow_term_ip_upgrade_fail, "error");
                         }
                     },
                     "selectError" : function(event,file,errorMsg) {
                         if("INVALID_FILE_TYPE" === errorMsg) {
-                            //commonException.showMsg(i18n.chkFlow_term_upload_err3, "error");
                             alert(i18n.chkFlow_term_upload_err3);
                         } else if ("EXCEED_FILE_SIZE" === errorMsg) {
-                            //commonException.showMsg(i18n.chkFlow_term_upload_err4, "error");
                             alert(i18n.chkFlow_term_upload_err4);
                         }
                     },
