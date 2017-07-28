@@ -187,31 +187,20 @@ define(["language/chkFlow",
                         "mData":"value",
                         "bSortable":false
                     }
-                    ]};
-                function getTextLink()
-                {
-                    var textInfoPromise = warnFlowServ.getTextInfo();
-                    textInfoPromise.then(function(responseData){
-                        $scope.table.data = [];
-                        for (var i = 0;i<responseData.length;i++){
-                            if(responseData[i].delay != ""){
-                                responseData[i].value = responseData[i].delay + "ms";
-                                responseData[i].type = i18n.chkFlow_term_delayTime;
-                            }else if(responseData[i].lossRate != ""){
-                                responseData[i].value = responseData[i].lossRate;
-                                responseData[i].type = i18n.chkFlow_term_packetsLossRate;
-                            }
-                        }
-                        $scope.table.data = responseData;
-                        $scope.table.totalRecords = responseData.length;
-
-                    },function(responseData){
-                        //showERRORMsg
-                    });
-                }
+                ]};
                 var init = function()
                 {
-                    getTextLink();
+                    var nullPara = {
+                        "az_id":"",
+                        "pod_id":"",
+                        "src_ip":"",
+                        "dst_ip":"",
+                        "start_time":"",
+                        "end_time":"",
+                        "type":""
+                    };
+
+                    postData(nullPara);
                 };
                 init();
             }];
