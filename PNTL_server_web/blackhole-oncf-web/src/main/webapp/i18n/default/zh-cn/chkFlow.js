@@ -19,6 +19,7 @@ define([], function () {
         "chkFlow_term_delayTime":"时延",
         "chkFlow_term_packetsLossRate":"丢包率",
         "chkFlow_term_tip3":"开始时间要小于结束时间",
+        "chkFlow_term_upload_confirm":"上传确认",
         "chkFlow_term_tip1":"请输入开始时间",
         "chkFlow_term_tip2":"请输入结束时间",
         "chkFlow_term_packets_loss":"丢包率",

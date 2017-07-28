@@ -16,6 +16,7 @@ define([], function () {
         "chkFlow_term_Type":"Type",
         "chkFlow_term_Value":"Value",
         "chkFlow_term_delayTime":"DelayTime",
+        "chkFlow_term_upload_confirm":"Upload Confirm",
         "chkFlow_term_choose":"",
         "chkFlow_term_packetsLossRate":"PacketsLossRate",
         "chkFlow_term_tip3":"Start Time Less Than End Time",
