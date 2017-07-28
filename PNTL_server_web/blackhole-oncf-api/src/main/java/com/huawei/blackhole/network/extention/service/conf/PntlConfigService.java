@@ -215,7 +215,7 @@ public class PntlConfigService {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "package count is invalid");
             }
             int delay_threshold = Integer.valueOf(pntlConfig.getDelayThreshold());
-            if (delay_threshold < 0){
+            if (delay_threshold <= 0){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "delay threshold is invalid");
             }
             int lossRate_threshold = Integer.valueOf(pntlConfig.getLossRateThreshold());
@@ -227,7 +227,7 @@ public class PntlConfigService {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "dscp is invalid");
             }
             int lossPkg_timeout = Integer.valueOf(pntlConfig.getLossPkgTimeout());
-            if (lossPkg_timeout < 0){
+            if (lossPkg_timeout <= 0){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "loss package timeout is invalid");
             }
         } catch (Exception e){
