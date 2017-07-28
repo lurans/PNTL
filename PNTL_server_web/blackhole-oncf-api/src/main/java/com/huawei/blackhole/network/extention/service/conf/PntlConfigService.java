@@ -161,6 +161,7 @@ public class PntlConfigService {
             pntlConfig.setBasicToken(dataObj.get("basicToken").toString());
             pntlConfig.setEulerRepoUrl(dataObj.get("eulerRepoUrl").toString());
             pntlConfig.setSuseRepoUrl(dataObj.get("suseRepoUrl").toString());
+            pntlConfig.setRepoUrl(dataObj.get("repo_url").toString());
             pntlConfig.setInstallScriptRepoUrl(dataObj.get("installScriptRepoUrl").toString());
 
             validPntlConfig(pntlConfig);
@@ -168,7 +169,7 @@ public class PntlConfigService {
             Map<String, Object> data = pntlConfig.convertToMap();
             YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
         } catch (ApplicationException | InvalidParamException e) {
-            String errMsg = "set config [" + Resource.NAME_CONF + "] failed : " + e.getLocalizedMessage();
+            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
             result.addError("", e.prefix() + errMsg);
             return result;
@@ -249,6 +250,7 @@ public class PntlConfigService {
             // 附件是否上传
             throw new InvalidParamException(ExceptionType.CLIENT_ERR, "ipList file required");
         }
+
         String name = file.getDataHandler().getName();
         if (!name.endsWith("yml")) {
             throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid format of ipList file, should be " + filename);
@@ -289,9 +291,9 @@ public class PntlConfigService {
         try {
             validIpListAttachment(file, name);
         } catch (InvalidParamException | InvalidFormatException e) {
-            String errMsg = e.toString();
+            String errMsg = "upload ipList failed:" + e.getMessage();
             result.addError("", errMsg);
-            LOGGER.error(errMsg, e);
+            LOGGER.error(errMsg);
             return result;
         }
 
@@ -314,7 +316,10 @@ public class PntlConfigService {
         }
 
         /*更新ipList之后，重新加载文件*/
-        result = pntlService.initHostList();
+        if (StringUtils.isEmpty(othername)){
+            result = pntlService.initHostList();
+        }
+
         return result;
     }
 
@@ -354,17 +359,44 @@ public class PntlConfigService {
         }
     }
 
+    private void deleteOldAgentFile(String name){
+        new File(FileUtil.getResourcePath() + name).delete();
+    }
+
+    private Result<String> uploadAgentPkgToServer(Attachment file){
+        Result<String> result = new Result<>();
+        String name = file.getDataHandler().getName();
+        File destinationFile = new File(getFileName(name));
+        try {
+            deleteOldAgentFile(name);
+            file.transferTo(destinationFile);
+        } catch (IOException e) {
+            String errMsg = "file to load ipList file to server : " + e.getLocalizedMessage();
+            result.addError("", ExceptionUtil.prefix(ExceptionType.SERVER_ERR) + errMsg);
+            LOGGER.error(errMsg, e);
+            return result;
+        }
+        return result;
+    }
+
     public Result<String> uploadAgentPkgFile(Attachment attachment) {
         Result<String> result = new Result<String>();
         try {
             validAgentPkgAttachment(attachment);
         } catch (InvalidParamException | InvalidFormatException e) {
-            String errMsg = e.toString();
+            String errMsg = "upload agentPkg failed" + e.toString();
             result.addError("", errMsg);
-            LOGGER.error(errMsg, e);
+            LOGGER.error(errMsg);
             return result;
         }
 
+        result = uploadAgentPkgToServer(attachment);
+        if (!result.isSuccess()){
+            String errMsg = "upload to server fail";
+            result.addError("", errMsg);
+            LOGGER.error(errMsg);
+            return  result;
+        }
         String token = null;
         try {
             token = identityWrapperService.getPntlAccessToken();
@@ -374,7 +406,7 @@ public class PntlConfigService {
             result.addError("", errMsg);
             return result;
         }
-        String url = CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
+        String url = Constants.HTTPS_PREFIX + CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
         Map<String, String> header = new HashMap<>();
 
         Pntl.setCommonHeaderForAgent(header, token);
@@ -384,7 +416,7 @@ public class PntlConfigService {
         builder.addBinaryBody("attachment", f);
         builder.addTextBody("type", "0");
         builder.addTextBody("uploader", PntlInfo.OPS_USERNAME);
-        builder.addTextBody("space", PntlInfo.PNTL_ROOT_NAME);
+        builder.addTextBody("space", PntlInfo.PTNL_UPLOADER_SPACE);
         builder.addTextBody("override", "true");
         builder.addTextBody("description", "");
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);

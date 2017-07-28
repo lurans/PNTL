@@ -6,6 +6,14 @@ define(["language/chkFlow",
         var warnFlowCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "warnFlowServ","$window",
             function ($scope, $rootScope, $state, $sce, $compile, $timeout, warnFlowServ,$window) {
                 $scope.i18n = i18n;
+                var divTip = new tinyWidget.Tip({
+                    content : "",
+                    element : ("#search_id"),
+                    position : "right",
+                    width: 300,
+                    id : "searchTip",
+                    auto:false
+                });
                 $scope.search = {
                     "id":"search_id",
                     "text" : i18n.chkFlow_term_search_btn,
@@ -31,7 +39,7 @@ define(["language/chkFlow",
                         }else{
                             selectType = "";
                         }
-                        if((startTime < endTime&&startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
+                        if((startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
                             var searchData = {
                                 "az_id":az,
                                 "pod_id":pod,
@@ -42,14 +50,13 @@ define(["language/chkFlow",
                                 "type":selectType
                             };
                             postData(searchData);
-                       }else if(startTime === ""){
-                            alert(i18n.chkFlow_term_tip1);
+                        }else if(startTime === ""){
+                            divTip.option("content",i18n.chkFlow_term_tip1);
+                            divTip.show(1000);
                             $scope.search.disable = false;
                         }else if (endTime === ""){
-                            alert(i18n.chkFlow_term_tip2);
-                            $scope.search.disable = false;
-                        }else if(startTime >= endTime){
-                            alert(i18n.chkFlow_term_tip3);
+                            divTip.option("content",i18n.chkFlow_term_tip2);
+                            divTip.show(1000);
                             $scope.search.disable = false;
                         }
                     }
@@ -58,6 +65,18 @@ define(["language/chkFlow",
                 var postData = function(para){
                     var promise = warnFlowServ.postSearchData(para);
                     promise.then(function(responseData){
+                        $scope.table.data = [];
+                        for (var i = 0;i<responseData.length;i++){
+                            if(responseData[i].delay != ""){
+                                responseData[i].value = responseData[i].delay + "ms";
+                                responseData[i].type = i18n.chkFlow_term_delayTime;
+                            }else if(responseData[i].lossRate != ""){
+                                responseData[i].value = responseData[i].lossRate;
+                                responseData[i].type = i18n.chkFlow_term_packetsLossRate;
+                            }
+                        }
+                        $scope.table.data = responseData;
+                        $scope.table.totalRecords = responseData.length;
                         commonException.showMsg(i18n.chkFlow_term_submit_ok);
                         $scope.search.disable = false;
                     },function(responseData){
@@ -67,15 +86,17 @@ define(["language/chkFlow",
                 };
                 $scope.azTextBox = {
                     "id": "akTextBox_id",
-                    "value": "",
+                    "value": i18n.chkFlow_term_no_support,
                     "tooltip":i18n.chkFlow_term_ak_tooltip,
-                    "width":"170px"
+                    "width":"130px",
+                    "disable":true,
                 };
                 $scope.podTextBox = {
                     "id": "podTextBox_id",
-                    "value": "",
+                    "value": i18n.chkFlow_term_no_support,
                     "tooltip":i18n.chkFlow_term_ak_tooltip,
-                    "width":"170px"
+                    "width":"130px",
+                    "disable":true,
                 };
                 $scope.type = {
                     "id":"type_id",
@@ -84,38 +105,47 @@ define(["language/chkFlow",
                         label : i18n.chkFlow_term_choose,
                         checked : true
                     }, {
-                            selectId : "2",
-                            label : i18n.chkFlow_term_delayTime,
-                            checked : false
+                        selectId : "2",
+                        label : i18n.chkFlow_term_delayTime,
+                        checked : false
                     },{
                         selectId : "3",
                         label : i18n.chkFlow_term_packetsLossRate,
                         checked : false
                     }]
                 };
-                $scope.start_time = {
-                    "id": "start_time_id",
+                $scope.dateTime = {
+                    "id1": "start_time_id",
+                    "id2": "end_time_id",
                     "type" : "datetime",
                     "dateFormat" : "yy-mm-dd",
-                    "timeFormat" : "hh:mm:ss"
-                };
-                $scope.end_time = {
-                    "id": "end_time_id",
-                    "type" : "datetime",
-                    "dateFormat" : "yy-mm-dd",
-                    "timeFormat" : "hh:mm:ss"
+                    "timeFormat" : "hh:mm:ss",
+                    "minDate1" : "",
+                    "maxDate1" : "",
+                    "minDate2" : "",
+                    "maxDate2" : "",
+                    "onCloseMin" : function(date) {
+                        $scope.dateTime.minDate2 = date;
+                        $scope.$digest();
+                    },
+                    "onCloseMax" : function(date) {
+                        $scope.dateTime.maxDate1 = date;
+                        $scope.$digest();
+                    }
                 };
                 $scope.src_ip = {
                     "id": "src_ip_id",
                     "value": "",
                     "type" : "ipv4",
-                    "tooltip":i18n.chkFlow_term_ip_tooltip
+                    "validate": [
+                        {
+                            "validFn" : "ipv4",
+                        }]
                 };
                 $scope.dst_ip = {
                     "id": "dst_ip_id",
                     "value": "",
                     "type" : "ipv4",
-                    "tooltip":i18n.chkFlow_term_ip_tooltip
                 }
 
                 $scope.table = {
@@ -124,36 +154,36 @@ define(["language/chkFlow",
                     totalRecords:0,
                     "columns" : [{
                         "sTitle" : i18n.chkFlow_term_DateTime,
-                        "sWidth":"20%",
+                        "sWidth":"16%",
                         "mData":"time"
                     }, {
-                        "sTitle" : "AZ",
+                        "sTitle" : i18n.chkFlow_term_az,
                         "sWidth":"10%",
                         "mData":"az_id",
                         "bSortable":false
                     }, {
-                        "sTitle" : "POD",
+                        "sTitle" : i18n.chkFlow_term_pod,
                         "sWidth":"10%",
                         "mData":"pod_id",
                         "bSortable":false
                     }, {
-                        "sTitle" : "Src IP",
-                        "sWidth":"15%",
+                        "sTitle" : i18n.chkFlow_term_src_ip,
+                        "sWidth":"20%",
                         "mData":"src_ip",
                         "bSortable":false
                     },{
-                        "sTitle" : "Dst IP",
-                        "sWidth":"15%",
+                        "sTitle" : i18n.chkFlow_term_dst_ip,
+                        "sWidth":"20%",
                         "mData":"dst_ip",
                         "bSortable":false
                     },{
                         "sTitle" : i18n.chkFlow_term_Type,
-                        "sWidth":"15%",
+                        "sWidth":"12%",
                         "mData":"type",
                         "bSortable":false
                     },{
                         "sTitle" : i18n.chkFlow_term_Value,
-                        "sWidth":"150px",
+                        "sWidth":"12%",
                         "mData":"value",
                         "bSortable":false
                     }

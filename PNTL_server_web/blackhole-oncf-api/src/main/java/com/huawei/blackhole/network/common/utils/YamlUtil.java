@@ -10,6 +10,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class YamlUtil {
 
@@ -54,6 +55,9 @@ public class YamlUtil {
     }
 
     public static void appendConf(Object data, String confFile) throws ApplicationException {
+        if(null == data || 0 == ((ArrayList) data).size()){
+            return;
+        }
         Writer output = null;
         String path = getPath(confFile);
         try{

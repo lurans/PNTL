@@ -3,6 +3,7 @@ package com.huawei.blackhole.network.api.bean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -191,7 +192,7 @@ public class LossRate implements Serializable{
         LossRateResult lossRate = null;
         while (it.hasNext()){
             lossRate = it.next();
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            DateFormat df = new SimpleDateFormat(Constants.TIME_FORMAT);
             try{
                 Date dt = df.parse(lossRate.getTimestamp());
                 Long intervalTime = System.currentTimeMillis()/1000 - dt.getTime()/1000;

@@ -1,5 +1,3 @@
-
-
 #include <curl/curl.h>
 #include <sstream>
 #include <string>
@@ -18,7 +16,6 @@ using namespace std;
 size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssResponce)
 {
     char * pStr = (char *)ptr;
-
     if (strlen(pStr) != (nmemb + 2))
     {
         MSG_CLIENT_WARNING("ReceiveResponce wrong pStr size is [%u]", strlen(pStr));
@@ -37,7 +34,7 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
                        strlen(newPStr), newPStr, nmemb);
     free(newPStr);
 
-    return size*nmemb;
+    return size * nmemb;
 }
 
 const CHAR* SERVER_CERT_PATH = "/opt/huawei/ServerAntAgent/server_cert.pem";
@@ -84,7 +81,7 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
         // 设置服务端证书，用户认证服务端
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH);
 
@@ -208,12 +205,8 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     // 生成 URL
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
-    iRet = pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << PINGLIST_URL;
 
@@ -268,12 +261,7 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C *pcAgentCfg, stringstream * pstrRep
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
 
-    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << strUrl;
 
@@ -311,12 +299,7 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
     // 生成 URL
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
-    iRet = pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
 
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_IP_URL;
@@ -368,12 +351,8 @@ INT32 RequestConfigFromServer(FlowManager_C* pcFlowManager)
     // 生成 URL
     UINT32 uiServerIP = 0;
     UINT32 uiServerPort = 0;
-    iRet = pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Get Server Address failed[%d]", iRet);
-        return iRet;
-    }
+    pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
+
     ssUrl.clear();
     ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_CONFIG_URL;
 

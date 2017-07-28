@@ -3,6 +3,7 @@ package com.huawei.blackhole.network.api.bean;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.core.bean.Result;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,10 @@ import java.util.regex.Pattern;
 public class PntlWarning implements Serializable{
     private static final long serialVersionUID = -8897848136750379361L;
     private static final Logger LOG = LoggerFactory.getLogger(PntlWarning.class);
+
+    private static final String LOSS_RATE = "1";
+    private static final String TIME_DELAY = "2";
+
     @JsonProperty("result")
     private static List<PntlWarnInfo> result = new ArrayList<PntlWarnInfo>();
 
@@ -55,6 +60,9 @@ public class PntlWarning implements Serializable{
         private String starTime;
         @JsonProperty("end_time")
         private String endTime;
+
+        @JsonProperty("type")
+        private String type;
 
         public String getStarTime() {
             return starTime;
@@ -127,6 +135,14 @@ public class PntlWarning implements Serializable{
         public void setLossRate(String lossRate) {
             this.lossRate = lossRate;
         }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType() {
+            this.type = type;
+        }
     }
 
     public static void saveWarnToWarningList(Object newData){
@@ -162,7 +178,8 @@ public class PntlWarning implements Serializable{
     private static boolean isGetAllWaringList(PntlWarnInfo param){
         return StringUtils.isEmpty(param.getAzId()) && StringUtils.isEmpty(param.getPodId())
                 && StringUtils.isEmpty(param.getSrcIp()) && StringUtils.isEmpty(param.getDstIp())
-                && StringUtils.isEmpty(param.getStarTime())&& StringUtils.isEmpty(param.getEndTime());
+                && StringUtils.isEmpty(param.getStarTime())&& StringUtils.isEmpty(param.getEndTime())
+                && StringUtils.isEmpty(param.getType());
     }
 
     private static boolean validParamCheck(PntlWarnInfo param){
@@ -177,38 +194,63 @@ public class PntlWarning implements Serializable{
             return false;
         }
 
-        /*时间不能一个空，一个不空*/
+        if (!StringUtils.isEmpty(param.getType())
+                && !LOSS_RATE.equals(param.getType())
+                && !TIME_DELAY.equals(param.getType())){
+            return false;
+        }
+
         if ((!StringUtils.isEmpty(param.getStarTime()) && StringUtils.isEmpty(param.getEndTime()))
                 || (StringUtils.isEmpty(param.getStarTime()) && !StringUtils.isEmpty(param.getEndTime()))){
             return false;
-        }
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
-        try {
-            Long d1 = df.parse(param.getStarTime()).getTime();
-            Long d2 = df.parse(param.getEndTime()).getTime();
-            if (d1 > d2){
+        }else if(!StringUtils.isEmpty(param.getStarTime())&&!StringUtils.isEmpty(param.getStarTime())){
+            SimpleDateFormat df = new SimpleDateFormat(Constants.TIME_FORMAT);
+            try {
+                Long d1 = df.parse(param.getStarTime()).getTime();
+                Long d2 = df.parse(param.getEndTime()).getTime();
+                if (d1 > d2){
+                    return false;
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
                 return false;
             }
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return false;
         }
 
         return true;
     }
 
-    private static List<PntlWarnInfo> getFilteredResultsByTime(String starTime, String endTime){
+    private static List<PntlWarnInfo> getFilteredResultsByType(String type){
+        List<PntlWarnInfo> filteredResult = new ArrayList<>();
+        if (StringUtils.isEmpty(type)){
+            return PntlWarning.getResult();
+        }
+        for (PntlWarnInfo info : PntlWarning.getResult()){
+            if (LOSS_RATE.equals(type)){
+                if(!info.getLossRate().isEmpty()){
+                    filteredResult.add(info);
+                }
+            } else if (TIME_DELAY.equals(type)){
+                if (!info.getDelay().isEmpty()){
+                    filteredResult.add(info);
+                }
+            }
+        }
+        return filteredResult;
+    }
+
+    private static List<PntlWarnInfo> getFilteredResultsByTime(List<PntlWarnInfo> result, String starTime, String endTime){
         List<PntlWarnInfo> filteredResult = new ArrayList<>();
         /*return all results*/
         if (StringUtils.isEmpty(starTime) && StringUtils.isEmpty(endTime)){
-            return PntlWarning.getResult();
+            return result;
         }
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
+        SimpleDateFormat df = new SimpleDateFormat(Constants.TIME_FORMAT);
         try {
             Long d1 = df.parse(starTime).getTime();
             Long d2 = df.parse(endTime).getTime();
 
-            for (PntlWarnInfo info : PntlWarning.getResult()){
+            for (PntlWarnInfo info : result){
                 Long d = df.parse(info.getTime()).getTime();
                 if (d >= d1 && d <= d2){
                     filteredResult.add(info);
@@ -245,7 +287,8 @@ public class PntlWarning implements Serializable{
 
     private static List<PntlWarnInfo> getFilteredResults(PntlWarnInfo param){
         ///TODO:AZ,POD暂时不做检索
-        return getFilteredResultsByIps(getFilteredResultsByTime(param.getStarTime(), param.getEndTime()),
+        return getFilteredResultsByIps(getFilteredResultsByTime(getFilteredResultsByType(param.getType()),
+                param.getStarTime(), param.getEndTime()),
                 param.getSrcIp(), param.getDstIp());
     }
 
@@ -270,7 +313,7 @@ public class PntlWarning implements Serializable{
             return;
         }
         Iterator<PntlWarnInfo> it = resultList.iterator();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm");
+        SimpleDateFormat df = new SimpleDateFormat(Constants.TIME_FORMAT);
         while (it.hasNext()){
             PntlWarnInfo p = it.next();
             Long intervalTime = System.currentTimeMillis()/1000 - df.parse(p.getTime()).getTime() ;

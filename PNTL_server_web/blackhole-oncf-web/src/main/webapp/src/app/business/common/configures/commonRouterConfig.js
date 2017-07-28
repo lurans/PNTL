@@ -106,12 +106,12 @@ define([
                 }
             },
             {
-                name:"blackhole.manager.configFlow.variableConfig",
-                url:"/variableConfig",
-                templateUrl:"src/app/business/chkFlow/views/variableConfig.html",
+                name:"blackhole.manager.configFlow.agentConfig",
+                url:"/agentConfig",
+                templateUrl:"src/app/business/chkFlow/views/agentConfig.html",
                 controller:"variableConfig.ctrl",
                 scripts: {
-                    'controllers': ['app/business/chkFlow/controllers/variableConfigCtrl'],
+                    'controllers': ['app/business/chkFlow/controllers/agentConfigCtrl'],
                     'services': [
                         'app/business/chkFlow/services/configFlowService']
                 }

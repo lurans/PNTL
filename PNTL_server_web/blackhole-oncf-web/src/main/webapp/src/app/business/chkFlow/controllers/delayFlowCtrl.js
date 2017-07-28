@@ -10,17 +10,13 @@ define(["language/chkFlow",
 
                 $scope.button = {
                     "id":"resetBtn_id",
-                    "text" : i18n.chkFlow_term_reset_btn
+                    "text" : i18n.chkFlow_term_recovery_btn
                 };
 
                 $scope.ipList=[];
                 $scope.ipSeq=[];
                 $scope.delayMatrix=[];
 
-                var para={
-                    "az_id":"",
-                    "pod_id":""
-                };
                 var margin = {top: 10, right: 10, bottom: 50, left: 10};
                 var width = 640,
                     height = 640;
@@ -181,6 +177,10 @@ define(["language/chkFlow",
                 }
                 function getIpInfo(delayDataJson)
                 {
+                    $scope.ipList=[];
+                    $scope.ipSeq=[];
+                    $scope.delayMatrix=[];
+
                     var len=delayDataJson.length;
                     delayDataJson.forEach(function(ip,i){
                         $scope.ipList[i]=ip['ip'];
@@ -195,13 +195,7 @@ define(["language/chkFlow",
                         var dstIp = link['dst_ip'];
                         if(srcIp in $scope.ipSeq && dstIp in $scope.ipSeq)
                         {
-                            //var sendDelay = link['send_delay'][0] == '-' ? -1 : parseFloat(link['send_delay']);
-                            //var recvDelay = link['recv_delay'][0] == '-' ? -1 : parseFloat(link['recv_delay']);
                             var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_round_delay']);
-                            sendRoundDelay=sendRoundDelay/1000;
-                            //var recvRoundDelay = link['recv_round_delay'][0] == '-' ? -1 : parseFloat(link['recv_round_delay']);
-                            //var min = d3.min([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
-                            //var max = d3.max([sendDelay,recvDelay,sendRoundDelay,recvRoundDelay]);
                             $scope.delayMatrix[$scope.ipSeq[srcIp]][$scope.ipSeq[dstIp]].z = sendRoundDelay < 0 ? -1 : sendRoundDelay;
                         }
                     });
@@ -211,13 +205,18 @@ define(["language/chkFlow",
                     var delayInfoPromise = delayFlowServ.getDelayInfo();
                     delayInfoPromise.then(function(responseData){
                         getDelayLinkInfo(responseData);
+                        $("#delay_time_chart").html("");
                         delay_info_chart();
                     },function(responseData){
                         //showERRORMsg
                     });
                 }
-                function getIpList(para)
+                function getIpList()
                 {
+                    var para={
+                        "az_id":"",
+                        "pod_id":""
+                    };
                     var ipListPromise = delayFlowServ.postIpList(para);
                     ipListPromise.then(function(responseData){
                         getIpInfo(responseData.result);
@@ -229,7 +228,7 @@ define(["language/chkFlow",
 
                 var init = function()
                 {
-                    getIpList(para);
+                    getIpList();
                 };
                 init();
                 var autoRefresh = $interval(getIpList, 60000);

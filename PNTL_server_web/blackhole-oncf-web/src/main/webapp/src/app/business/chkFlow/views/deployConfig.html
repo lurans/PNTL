@@ -9,20 +9,20 @@
             </div>
             <div class="deployFileUpload">
                 <div class="level2Head" ><span style="color:red">*</span>{{i18n.chkFlow_term_install_file_upload}}</div>
-                <div class="installFileUpload level2Content" style="overflow: hidden; zoom:1;">
-                    <tiny-fileupload id="installFileUpload.id"
-                                     input-value="installFileUpload.inputValue"
-                                     file-obj-name="installFileUpload.fileObjName"
-                                     max-size = "installFileUpload.maxSize"
-                                     maxTotalSize = "installFileUpload.maxTotalSize"
-                                     disable = "installFileUpload.disable"
-                                     multi="installFileUpload.multi"
-                                     file-type = "installFileUpload.fileType"
-                                     action="installFileUpload.action"
-                                     method = "installFileUpload.method"
-                                     select-error = "installFileUpload.selectError"
-                                     select = "installFileUpload.select"
-                                     complete="installFileUpload.completeDefa">
+                <div class="deployFileUpload level2Content" style="overflow: hidden; zoom:1;">
+                    <tiny-fileupload id="deployFileUpload.id"
+                                     input-value="deployFileUpload.inputValue"
+                                     file-obj-name="deployFileUpload.fileObjName"
+                                     max-size = "deployFileUpload.maxSize"
+                                     maxTotalSize = "deployFileUpload.maxTotalSize"
+                                     disable = "deployFileUpload.disable"
+                                     multi="deployFileUpload.multi"
+                                     file-type = "deployFileUpload.fileType"
+                                     action="deployFileUpload.action"
+                                     method = "deployFileUpload.method"
+                                     select-error = "deployFileUpload.selectError"
+                                     select = "deployFileUpload.select"
+                                     complete="deployFileUpload.completeDefa">
                     </tiny-fileupload>
                 </div>
             </div>
@@ -60,25 +60,23 @@
                                          disable="akSkBtn.disable"
                                          click="akSkBtnOK()"></tiny-button>
                         </div>
-
                     </div>
-
                 </div>
-                <div class="startOrStop" style="overflow:auto;">
-                    <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_start_stop}}</div>
-                    <div class="level2Content">
-                        <div class="deploy_btn" style="float:left; margin-right:40px;">
-                            <tiny-button id="deployBtn.id"
-                                         text="deployBtn.text"
-                                         disable="deployBtn.disable"
-                                         click="deployBtnOK()"></tiny-button>
-                        </div>
-                        <div class="probeExit_btn" style="float:left">
-                            <tiny-button id="probeExitBtn.id"
-                                         text="probeExitBtn.text"
-                                         disable="probeExitBtn.disable"
-                                         click="probeExitBtnOK()"></tiny-button>
-                        </div>
+            </div>
+            <div class="installOrUninstall" style="overflow:auto;">
+                <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_install_uninstall}}</div>
+                <div class="level2Content">
+                    <div class="install_btn" style="float:left; margin-right:40px;">
+                        <tiny-button id="installBtn.id"
+                                     text="installBtn.text"
+                                     disable="installBtn.disable"
+                                     click="installBtnOK()"></tiny-button>
+                    </div>
+                    <div class="uninstall_btn" style="float:left;margin-right:40px;">
+                        <tiny-button id="uninstallBtn.id"
+                                     text="uninstallBtn.text"
+                                     disable="uninstallBtn.disable"
+                                     click="uninstallBtnOK()"></tiny-button>
                     </div>
                 </div>
             </div>

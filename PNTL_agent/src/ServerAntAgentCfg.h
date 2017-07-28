@@ -2,12 +2,8 @@
 #define __SRC_ServerAntAgentCfg_H__
 
 #include <string>
-
-#include "Sal.h"
 #include "AgentCommon.h"
-#include <vector>
 
-const INT32 EXIT_PROBE_PERIOD = -1;
 const UINT32 STOP_PROBE_PERIOD = 0;
 const UINT32 MIN_PROBE_PERIOD = 60;
 const UINT32 MAX_PROBE_PERIOD = 60 * 30;
@@ -18,7 +14,6 @@ const UINT32 MAX_PORT_COUNT = 100;
 const UINT32 MIN_DSCP = 0;
 const UINT32 MAX_DSCP = 63;
 const UINT32 MIN_LOSS_TIMEOUT = 1;
-const UINT32 MAX_LOSS_TIMEOUT = 5;
 const UINT32 MIN_BIG_PACKAGE_RATE = 0;
 const UINT32 MAX_BIG_PACKAGE_RATE = 100;
 
@@ -43,8 +38,6 @@ private:
 
     UINT32 uiAgentIP;                 //  本Agent的数据面IP地址, Agent探测IP.
     UINT32 uiMgntIP;                  // 本Agent的管理面IP地址，Server向Agent推送消息时使用.
-    UINT32 uiAgentDestPort;           //  本Agent的端口地址, Server向Agent推送消息时使用.
-    string hostname;	                   // 本Ageng部署的节点主机名称
 
     /* Agent 全局周期控制 */
     UINT32 uiAgentPollingTimerPeriod; // Agent Polling周期, 单位为us, 默认100ms, 用于设定Agent定时器.
@@ -70,18 +63,16 @@ public:
     ServerAntAgentCfg_C();                  // 类构造函数, 填充默认值.
     ~ServerAntAgentCfg_C();                 // 类析构函数, 释放必要资源.
 
-    INT32 GetServerAddress(UINT32 * puiServerIP,
-                           UINT32 * puiServerDestPort);        // 查询ServerAntServer地址信息.
-    INT32 SetServerAddress(UINT32 uiNewServerIP,
-                           UINT32 uiNewServerDestPort);         // 设置ServerAntServer地址信息, 非0有效.
+    void GetServerAddress(UINT32 * puiServerIP,
+                          UINT32 * puiServerDestPort);        // 查询ServerAntServer地址信息.
+    void SetServerAddress(UINT32 uiNewServerIP,
+                          UINT32 uiNewServerDestPort);         // 设置ServerAntServer地址信息, 非0有效.
 
-    INT32 GetAgentAddress(UINT32 * puiAgentIP,
-                          UINT32 * puiAgentDestPort);         // 查询ServerAntAgent地址信息.
-    INT32 SetAgentAddress(UINT32 uiNewAgentIP,
-                          UINT32 uiNewAgentDestPort);          // 设置ServerAntAgent地址信息, 非0有效.
+    void GetAgentAddress(UINT32 * puiAgentIP);         // 查询ServerAntAgent地址信息.
+    void SetAgentAddress(UINT32 uiNewAgentIP);          // 设置ServerAntAgent地址信息, 非0有效.
 
-    INT32 GetMgntIP(UINT32* puiMgntIP);
-    INT32 SetMgntIP(UINT32 uiNewMgntIP);         // 设定管理口ip
+    void GetMgntIP(UINT32* puiMgntIP);
+    void SetMgntIP(UINT32 uiNewMgntIP);         // 设定管理口ip
 
     UINT32 GetPollingTimerPeriod();   // 查询Polling周期
     INT32 SetPollingTimerPeriod(UINT32 uiNewPeriod);  //设置Polling周期, 如跟已有周期不一致则同时刷新定时器
@@ -95,23 +86,20 @@ public:
     INT32 SetReportPeriod(UINT32 uiNewPeriod);         // 设定Report周期
 
     UINT32 GetQueryPeriod();                         // 查询query周期
-    INT32 SetQueryPeriod(UINT32 uiNewPeriod);         // 设定query周期
+    void SetQueryPeriod(UINT32 uiNewPeriod);         // 设定query周期
 
     UINT32 GetDetectTimeout();                        // 查询Detect报文超时时间
     INT32 SetDetectTimeout(UINT32 uiNewPeriod);         // 设定Detect报文超时时间
 
     UINT32 GetDetectDropThresh();                         // 查询Detect报文丢包门限
-    INT32 SetDetectDropThresh(UINT32 uiNewThresh);         // 设定Detect报文丢包门限
+    void SetDetectDropThresh(UINT32 uiNewThresh);         // 设定Detect报文丢包门限
 
-    INT32 GetProtocolUDP(UINT32 * puiSrcPortMin,
-                         UINT32 * puiSrcPortMax,
-                         UINT32 * puiDestPort);           // 查询UDP探测报文端口范围.
-    INT32 SetProtocolUDP(UINT32 uiSrcPortMin,
-                         UINT32 uiSrcPortMax,
-                         UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
-
-    INT32 SetHostname(string newHostname);
-    string GetHostname();
+    void GetProtocolUDP(UINT32 * puiSrcPortMin,
+                        UINT32 * puiSrcPortMax,
+                        UINT32 * puiDestPort);           // 查询UDP探测报文端口范围.
+    void SetProtocolUDP(UINT32 uiSrcPortMin,
+                        UINT32 uiSrcPortMax,
+                        UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
 
     UINT32 GetPortCount();
     INT32 SetPortCount(UINT32 newPortCount);
@@ -123,7 +111,7 @@ public:
     INT32 SetBigPkgRate(UINT32 newRate);
 
     UINT32 GetMaxDelay();
-    INT32 SetMaxDelay(UINT32 newMaxDelay);
+    void SetMaxDelay(UINT32 newMaxDelay);
 };
 
 #endif

@@ -1,13 +1,6 @@
 package com.huawei.blackhole.network.extention.service.pntl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.huawei.blackhole.network.api.bean.DelayInfoAgent;
-import com.huawei.blackhole.network.api.bean.LossRateAgent;
-import com.huawei.blackhole.network.api.bean.PntlConfig;
-import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
-import com.huawei.blackhole.network.common.constants.Resource;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.exception.ConfigLostException;
 import com.huawei.blackhole.network.common.utils.http.Parameter;
@@ -18,18 +11,11 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
-import com.sun.org.apache.regexp.internal.RE;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.security.Key;
 import java.util.*;
 
 @Service("pntlRequestService")
@@ -43,23 +29,28 @@ public class Pntl {
     private static final String FILETYPE_SCRIPT = "SCRIPT";
     private static final String FILETYPE_AGENT = "AGENT";
     private static final String PNTL_PATH = "/root";
+    private static final String PNTL_UNINSTALL_PATH = "/opt/huawei/ServerAntAgent";
+    private static final String FILE_RIGHT = "644";
 
-    private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){{
+    private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){
+        {
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_SUSE);
         put(PntlInfo.OS_EULER, PntlInfo.AGENT_EULER);
     }};
-    private static final Map<String, String> SCRIPT_FILENAME= new HashMap<String, String>(){{
+    private static final Map<String, String> SCRIPT_FILENAME = new HashMap<String, String>(){
+        {
         put(PntlInfo.OS_SUSE, PntlInfo.AGENT_INSTALL_FILENAME);
         put(PntlInfo.OS_EULER, PntlInfo.AGENT_INSTALL_FILENAME);
     }};
-    private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){{
+    private static final Map<String, Map<String, String>> FILENAME = new HashMap<String, Map<String, String>>(){
+        {
         put(FILETYPE_AGENT, AGENT_FILENAME);
         put(FILETYPE_SCRIPT, SCRIPT_FILENAME);
     }};
 
     private static Map<String, String> DownloadUrl = new HashMap<>();
 
-    public static String getDownloadUrl(String key){
+    private static String getDownloadUrl(String key){
         return DownloadUrl.get(key);
     }
 
@@ -122,74 +113,6 @@ public class Pntl {
         return hostInfo;
     }
 
-    public RestResp sendServerConf(String agentIp, PntlConfig config)
-            throws ClientException, JsonProcessingException {
-        LOG.info("start to send server config");
-
-        Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
-
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
-        ObjectMapper mapper = new ObjectMapper();
-        ServerConf json = new ServerConf();
-        json.setProbePeriod(config.getProbePeriod());
-        json.setPortCount(config.getPortCount());
-        json.setReportPeriod(config.getReportPeriod());
-        json.setDelayThreshold(config.getDelayThreshold());
-        json.setDscp(config.getDscp());
-        json.setLossPkgTimeout(config.getLossPkgTimeout());
-        json.setBigPkgRate(config.getPkgCount());
-        String jsonInString = mapper.writeValueAsString(json);
-
-        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_CONF, jsonInString));
-
-        return RestClientExt.post(url, null, formBody,  header);
-    }
-
-    /**
-     * 发送探测时间间隔到agent
-     * @param agentIp
-     * @param json
-     * @return
-     * @throws ClientException
-     */
-    public RestResp sendProbeInterval(String agentIp, ProbeInterval json)
-            throws ClientException, JsonProcessingException {
-        LOG.info("start to send Probe time interval");
-
-        Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
-
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonInString = mapper.writeValueAsString(json);
-
-        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_ACTION, jsonInString));
-
-        return RestClientExt.post(url, null, formBody,  header);
-    }
-
-
-    /**
-     * 通知agent查询pingList
-     * @param agentIp
-     * @return
-     * @throws ClientException
-     */
-    public RestResp notifyAgentToGetPingList(String agentIp) throws ClientException{
-        LOG.info("Notify agent[" + agentIp + "] to get pingList");
-        Map<String, String> header = new HashMap<>();
-        header.put(PntlInfo.CONTENT_TYPE, PntlInfo.X_FORM_URLENCODED);
-
-        String url = Constants.HTTPS_PREFIX + agentIp + ":" + PORT;
-        List<NameValuePair> formBody = new ArrayList<NameValuePair>();
-        formBody.add(new BasicNameValuePair(PntlInfo.SERVER_ANTS_AGENT_IP, ""));
-
-        return RestClientExt.post(url, null, formBody,  header);
-    }
-
     private void setHostErrorMsg(List<PntlHostContext> hostList, List<String> snList, String agentStatus,
                                  String errMsg){
         for (PntlHostContext host : hostList){
@@ -232,10 +155,14 @@ public class Pntl {
              /*两种os，agent不同*/
             for (PntlHostContext host : pntlHostList) {
                 if (host.getOs() == null){
+                    host.setReason("os is null");
+                    host.setAgentStatus(PntlInfo.PNTL_AGENT_STATUS_FAIL);
                     continue;
                 }
                 String key = host.getOs().toUpperCase();
                 if (!key.equalsIgnoreCase(PntlInfo.OS_SUSE) && !key.equalsIgnoreCase(PntlInfo.OS_EULER)){
+                    host.setReason("os is not Suse or Euler");
+                    host.setAgentStatus(PntlInfo.PNTL_AGENT_STATUS_FAIL);
                     continue;
                 }
                 /*根据不同的文件，获取仓库地址*/
@@ -256,7 +183,7 @@ public class Pntl {
                 }
 
                 body.get(key).setPath(PNTL_PATH);
-                body.get(key).setMode("644");
+                body.get(key).setMode(FILE_RIGHT);
                 if (host.getAgentSN() != null) {
                     agentSnList.get(key).add(host.getAgentSN());
                 }
@@ -266,68 +193,26 @@ public class Pntl {
                 body.get(key.toUpperCase()).setAgentSNList(agentSnList.get(key.toUpperCase()));
                 try {
                     resp = RestClientExt.post(url, null, body.get(key.toUpperCase()), header);
-                    if ((Integer)resp.getRespBody().get("code") != 0){
+                    int code = (Integer)resp.getRespBody().get("code");
+                    if (code != 0){
                         /* agent返回失败，1000部分成功，2000全部失败，其他非0值，调用接口失败 */
-                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, resp.getRespBody().get("reason").toString());
-                        result.addError("", "send file to agent failed " + resp.getRespBody().get("reason").toString());
+                        String errMsg = "code is" + code;
+                        if (code != 1000 && code != 2000){
+                            errMsg = resp.getRespBody().get("reason").toString();
+                        }
+                        setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_FAIL, errMsg);
+                        result.addError("", "send file to agent failed " + errMsg);
                     } else {
                         setHostErrorMsg(pntlHostList, body.get(key.toUpperCase()).getAgentSNList(), PntlInfo.PNTL_AGENT_STATUS_SUCC, "send files to agent success");
                     }
                 } catch (ClientException | JSONException e){
-                    LOG.error("Send script to suse os agent failed");
+                    LOG.error("Send file to agent failed:" + e.getMessage());
                     result.addError("", e.getMessage());
                 }
             }
         }
 
         return result;
-    }
-
-    /**
-     *
-     * 启动traceroute任务，将Dst ip列表发送给traceroute，并启动traceroute网络拓扑学习
-     * @param pntlHostList
-     * @return
-     * @throws ClientException
-     */
-    public RestResp tracerouteTask(List<PntlHostContext> pntlHostList)
-        throws ClientException{
-        LOG.info("start traceroute task");
-
-        RestResp resp = null;
-        StringBuffer ipList = new StringBuffer();
-        for (PntlHostContext host : pntlHostList){
-            ipList.append(host.getVbondIp());
-            if (pntlHostList.indexOf(host) != pntlHostList.size()-1){
-                ipList.append(" ");
-            }
-        }
-
-        for (PntlHostContext host : pntlHostList){
-            String agentSn = host.getAgentSN();
-            ///TODO 向每个agentSn发送ipList
-        }
-
-        return resp;
-    }
-    /**
-     * 从server获取学习完成的traceroue结果
-     * @param host
-     * @return
-     * @throws ClientException
-     */
-    public RestResp getTracerouteResult(PntlHostContext host)
-        throws ClientException{
-        RestResp resp = null;
-
-        String url = PntlInfo.URL_IP + PntlInfo.AGENT_LOG_URL_SUFFIX;
-        ///todo
-        resp = RestClientExt.post(url, null, null, null);
-        if (resp.getStatusCode().isError()){
-            LOG.info("get traceroute result from " + host.getVbondIp() + "failed");
-        }
-
-        return resp;
     }
 
     public static void setCommonHeaderForAgent(Map<String, String> header, String token){
@@ -359,6 +244,7 @@ public class Pntl {
     /**
      * 下发安装命令，执行安装脚本，进行agent安装
      * @param pntlHostList
+     * @param token
      * @return
      * @throws ClientException
      */
@@ -380,7 +266,7 @@ public class Pntl {
                 snList.add(host.getAgentSN());
             }
         }
-        final String command = "service ServerAntAgentService stop";
+        final String command = "cd" + " " + PNTL_UNINSTALL_PATH + ";sh -x UninstallService.sh";
         return sendCommandToAgents(snList, token, command, "sync");
     }
 
@@ -393,22 +279,6 @@ public class Pntl {
         }
         final String command = "service ServerAntAgentService start";
         return sendCommandToAgents(snList, token, command, "sync");
-    }
-
-    public static final class ProbeFlows{
-        private String ServerAntsAgent;
-
-        public String getServerAntsAgent() {
-            return ServerAntsAgent;
-        }
-
-        public void setServerAntsAgent(String serverAntsAgent) {
-            ServerAntsAgent = serverAntsAgent;
-        }
-
-        public ProbeFlows(String str){
-            this.ServerAntsAgent = str;
-        }
     }
 
     public static String getAgentSnByIp(String ip) throws ClientException{

@@ -10,7 +10,7 @@ define(["language/chkFlow",
 
                 $scope.button = {
                     "id":"resetBtn_id",
-                    "text" : i18n.chkFlow_term_reset_btn,
+                    "text" : i18n.chkFlow_term_recovery_btn,
                 };
 
                 $scope.ipList=[];
@@ -203,6 +203,7 @@ define(["language/chkFlow",
                     var lossInfoPromise = lossFlowServ.getLossInfo();
                     lossInfoPromise.then(function(responseData){
                         getLossLinkInfo(responseData);
+                        $("#packets_loss_chart").html("");
                         loss_info_chart();
                     },function(responseData){
                         //showERRORMsg
@@ -226,7 +227,7 @@ define(["language/chkFlow",
                     getIpList(para);
                 };
                 init();
-                var autoRefresh = $interval(getIpList, 30000);
+                var autoRefresh = $interval(getIpList, 60000);
                 $scope.stopAutoRefresh = function () {
                     if (autoRefresh) {
                         $interval.cancel(autoRefresh);

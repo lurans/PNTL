@@ -7,75 +7,80 @@
 <!--<tiny-button text="btnCtrl.text" tooltip="btnCtrl.desc" click="btnCtrl.doSth(event)"></tiny-button>-->
 <div class="container-fluid">
     <div class="row-fluid">
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:20px;">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_az_id}}
             </div>
             <tiny-textbox id="azTextBox.id"
                           value="azTextBox.value"
                           width="azTextBox.width"
-                          tooltip = "azTextBox.tooltip"></tiny-textbox>
+                          tooltip = "azTextBox.tooltip"
+                          disable="azTextBox.disable"></tiny-textbox>
         </div>
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:20px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_start_time}}
             </div>
-            <tiny-datetime id= "start_time.id"
-                           type="start_time.type"
-                           date-format = "start_time.dateFormat"
-                           time-format="start_time.timeFormat">
+            <tiny-datetime id= "dateTime.id1"
+                           type="dateTime.type"
+                           date-format = "dateTime.dateFormat"
+                           max-date = "dateTime.maxDate1"
+                           min-date = "dateTime.minDate1"
+                           on-close = "dateTime.onCloseMin"
+                           time-format="dateTime.timeFormat">
             </tiny-datetime>
         </div>
-        <div style="float:left;margin-right:70px;">
-            <div class="span1 input_label1" style="width: 60px;">
+        <div style="float:left;margin-right:20px;">
+            <div class="span1 input_label1" style="width: 50px;">
                 {{i18n.chkFlow_term_src_ip}}
             </div>
             <tiny-ip id="src_ip.id"
                      type="src_ip.type"
                      value="src_ip.value"
-                     tooltip = "src_ip.tooltip"
-            > </tiny-ip>
+                     tooltip = "src_ip.tooltip"> </tiny-ip>
         </div>
-        <div style="float:left;">
-            <div class="span1 input_label1" style="width: 40px;">
-                {{i18n.chkFlow_term_Type}}
-            </div>
-            <tiny-select id="type.id"
-                         values="type.values"
-                         width="135"
-                         ></tiny-select>
-        </div>
-</div><br>
+    </div><br>
     <div class="row-fluid">
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:20px;">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_pod_id}}
             </div>
             <tiny-textbox id="podTextBox.id"
                           value="podTextBox.value"
                           width="podTextBox.width"
-                          tooltip = "podTextBox.tooltip"></tiny-textbox>
+                          tooltip = "podTextBox.tooltip"
+                          disable="azTextBox.disable"></tiny-textbox>
         </div>
-        <div style="float:left; margin-right:50px;">
+        <div style="float:left; margin-right:20px;" class="timeLimit">
             <div class="span1 input_label1" style="width: 60px;">
                 {{i18n.chkFlow_term_end_time}}
             </div>
-            <tiny-datetime id= "end_time.id"
-                           type="end_time.type"
-                           date-format = "end_time.dateFormat"
-                           time-format="end_time.timeFormat">
+            <tiny-datetime id= "dateTime.id2"
+                           type="dateTime.type"
+                           date-format = "dateTime.dateFormat"
+                           min-date = "dateTime.minDate2"
+                           max-date = "dateTime.maxDate2"
+                           on-close = "dateTime.onCloseMax"
+                           time-format="dateTime.timeFormat">
             </tiny-datetime>
         </div>
-        <div style="float:left;margin-right:120px;">
-            <div class="span1 input_label1" style="width: 60px;">
+        <div style="float:left;margin-right:20px;">
+            <div class="span1 input_label1" style="width: 50px;">
                 {{i18n.chkFlow_term_dst_ip}}
             </div>
             <tiny-ip id="dst_ip.id"
                      value="dst_ip.value"
-                     tooltip = "dst_ip.tooltip"
-            > </tiny-ip>
+                     tooltip = "dst_ip.tooltip"> </tiny-ip>
         </div>
-        <div style="float:left;">
+        <div style="float:left;margin-right:20px;">
+            <div class="span1 input_label1" style="width: 40px;">
+                {{i18n.chkFlow_term_Type}}
+            </div>
+            <tiny-select id="type.id"
+                         values="type.values"
+                         width="135"></tiny-select>
+        </div>
+        <div style="float:right;">
             <tiny-button id="search.id" text="search.text"
                          icons-class="search.iconsClass"
                          width="search.width"
@@ -85,7 +90,7 @@
     </div>
 </div>
 <div class="dashboard_title"></div>
-<div style="width:1000px;margin-top: 20px">
+<div style="margin-top: 20px">
     <tiny-table id="table.id"
                 data='table.data'
                 columns='table.columns'

@@ -14,13 +14,13 @@ dscp: 0
 
 lossPkg_timeout: 1
 
-ak: 0j_xmyclMrfvSzmMrGFdRbTLfYIa
+ak: 7e5oCeNRiHGu6FaGPQLDSQmPXu0a
 
-sk: gTSMfZWx5bo3xILy754tItTp6Mca
+sk: 8X2FBUVEiQWtsKGHI2fXCoT8kXUa
 
-basicToken: MGpfeG15Y2xNcmZ2U3ptTXJHRmRSYlRMZllJYTpnVFNNZlpXeDVibzN4SUx5NzU0dEl0VHA2TWNh
+basicToken: N2U1b0NlTlJpSEd1NkZhR1BRTERTUW1QWHUwYTo4WDJGQlVWRWlRV3RzS0dISTJmWENvVDhrWFVh
 
-repo_url: https://8.15.4.96:8243
+repo_url: 8.15.4.10
 
 eulerRepoUrl: http://8.15.4.10/dfs/download/root/ServerAntAgentForEuler.tar.gz
 
