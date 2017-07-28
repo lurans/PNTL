@@ -843,8 +843,8 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", interval, iRet, MIN_LOSS_TIMEOUT);            
-			return AGENT_E_PARA;
+            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", interval, iRet, MIN_LOSS_TIMEOUT);
+            return AGENT_E_PARA;
         }
         JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 
