@@ -219,7 +219,7 @@ INT32 ServerAntAgentCfg_C::SetBigPkgRate(UINT32 newRate)
     {
         return AGENT_E_PARA;
     }
-	if (GetBigPkgRate() != newRate)
+    if (GetBigPkgRate() != newRate)
     {
         BIG_PKG_RATE = 1;
     }

@@ -64,9 +64,9 @@ public:
     ~ServerAntAgentCfg_C();                 // 类析构函数, 释放必要资源.
 
     void GetServerAddress(UINT32 * puiServerIP,
-                           UINT32 * puiServerDestPort);        // 查询ServerAntServer地址信息.
+                          UINT32 * puiServerDestPort);        // 查询ServerAntServer地址信息.
     void SetServerAddress(UINT32 uiNewServerIP,
-                           UINT32 uiNewServerDestPort);         // 设置ServerAntServer地址信息, 非0有效.
+                          UINT32 uiNewServerDestPort);         // 设置ServerAntServer地址信息, 非0有效.
 
     void GetAgentAddress(UINT32 * puiAgentIP);         // 查询ServerAntAgent地址信息.
     void SetAgentAddress(UINT32 uiNewAgentIP);          // 设置ServerAntAgent地址信息, 非0有效.
@@ -95,11 +95,11 @@ public:
     void SetDetectDropThresh(UINT32 uiNewThresh);         // 设定Detect报文丢包门限
 
     void GetProtocolUDP(UINT32 * puiSrcPortMin,
-                         UINT32 * puiSrcPortMax,
-                         UINT32 * puiDestPort);           // 查询UDP探测报文端口范围.
+                        UINT32 * puiSrcPortMax,
+                        UINT32 * puiDestPort);           // 查询UDP探测报文端口范围.
     void SetProtocolUDP(UINT32 uiSrcPortMin,
-                         UINT32 uiSrcPortMax,
-                         UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
+                        UINT32 uiSrcPortMax,
+                        UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
 
     UINT32 GetPortCount();
     INT32 SetPortCount(UINT32 newPortCount);

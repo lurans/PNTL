@@ -35,7 +35,7 @@ using namespace std;
 //Agent Flow Table Entry的uiFlowState bit定义
 // 当前Entry是否生效.
 #define FLOW_ENTRY_STATE_ENABLE     (1L << 0)
-  // 当前Entry是否处于丢包模式, 由丢包触发.
+// 当前Entry是否处于丢包模式, 由丢包触发.
 #define FLOW_ENTRY_STATE_DROPPING   (1L << 2)
 
 #define FLOW_ENTRY_STATE_CHECK(state, flag)     ( (state) & (flag) )
@@ -69,7 +69,7 @@ FlowManager_C::FlowManager_C()
     uiLastCheckTimeCounter = 0;
     uiLastReportTimeCounter = 0;
     uiLastQuerytTimeCounter = 0;
-	uiLastQueryConfigCounter = 0;
+    uiLastQueryConfigCounter = 0;
     uiLastReportIpCounter = 0;
 
 }
@@ -1049,21 +1049,21 @@ INT32 FlowManager_C::DoReport()
 
 // 检测此时是否该启动查询pinglist流程.
 INT32 FlowManager_C::QueryReportCheck(UINT32* flag, UINT32 uiCounter, UINT32 lastCounter, UINT32* failCounter)
-{ 
+{
     if (*flag && 0 == *(failCounter))
-    { 
+    {
         return AGENT_ENABLE;
     }
     if (*flag && *(failCounter) < MAX_RETRY_TIMES)
     {
         return uiCounter == lastCounter + *(failCounter) * RETRY_INTERVAL;
     }
-	else
-	{ 
-    	*flag = 0;
-		*(failCounter) = 0;
-	    return AGENT_DISABLE;
-	}
+    else
+    {
+        *flag = 0;
+        *(failCounter) = 0;
+        return AGENT_DISABLE;
+    }
 }
 
 // 启动从Server刷新配置流程.
@@ -1111,10 +1111,10 @@ INT32 FlowManager_C::ThreadHandler()
     uiLastQueryConfigCounter = counter;
     uiLastReportIpCounter = counter;
     uiLastQuerytTimeCounter = counter;
-	UINT32 uiQueryPingListFailCounter = 0;
-	UINT32 uiQueryConfFailCounter = 0;
-	UINT32 uiReportIpFailCounter = 0;
-	
+    UINT32 uiQueryPingListFailCounter = 0;
+    UINT32 uiQueryConfFailCounter = 0;
+    UINT32 uiReportIpFailCounter = 0;
+
     while (GetCurrentInterval())
     {
         // 当前周期是否该启动探测流程.
@@ -1165,24 +1165,24 @@ INT32 FlowManager_C::ThreadHandler()
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query failed[%d]", iRet);
-				uiLastQuerytTimeCounter = counter;
-				uiQueryPingListFailCounter += 1;
+                uiLastQuerytTimeCounter = counter;
+                uiQueryPingListFailCounter += 1;
             }
         }
-		
+
         if (QueryReportCheck(&SHOULD_QUERY_CONF, counter, uiLastQueryConfigCounter, &uiQueryConfFailCounter))
         {
             iRet = DoQueryConfig();
             if (AGENT_E_PARA == iRet)
             {
                 FLOW_MANAGER_WARNING("Config param error[%d]", iRet);
-				SHOULD_QUERY_CONF = 0;
+                SHOULD_QUERY_CONF = 0;
             }
-			else if (iRet)
-			{
-			    uiLastQueryConfigCounter = counter;
-			    uiQueryConfFailCounter += 1;
-			}
+            else if (iRet)
+            {
+                uiLastQueryConfigCounter = counter;
+                uiQueryConfFailCounter += 1;
+            }
         }
 
         if (QueryReportCheck(&SHOULD_REPORT_IP, counter, uiLastReportIpCounter, &uiReportIpFailCounter))
@@ -1191,7 +1191,7 @@ INT32 FlowManager_C::ThreadHandler()
             if (iRet)
             {
                 uiLastReportIpCounter = counter;
-			    uiReportIpFailCounter += 1;
+                uiReportIpFailCounter += 1;
             }
         }
 
