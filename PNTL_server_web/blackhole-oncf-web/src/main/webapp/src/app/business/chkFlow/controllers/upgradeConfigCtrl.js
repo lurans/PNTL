@@ -51,7 +51,6 @@ define(["language/chkFlow",
                         })
                     }
                 };
-
                 $scope.singleFileUpload = {
                     "id" : "singleFileUpload_id",
                     "id1" : "radioGroup_id",
@@ -60,6 +59,7 @@ define(["language/chkFlow",
                     "fileObjName":"X-File",
                     "showSubmitBtn" : false,
                     "enableDetail" : false,
+                    "inputValue":"",
                     "method": "post",
                     "fileType":".yml",
                     "completeDefa" : function(event, result) {
@@ -80,9 +80,9 @@ define(["language/chkFlow",
                     "beforeSubmit" : function() {
                         var checkedkey = $("#radioGroup_id").widget().opChecked("checked");
                         var checkValue={"op":""};
-                        if(checkedkey === "1"){
+                        if(checkedkey === "add"){
                             checkValue.op = "add";
-                        }else if(checkedkey === "2"){
+                        }else if(checkedkey === "del"){
                             checkValue.op = "del";
                         }
                         //增加上传文件附带信息
@@ -91,12 +91,12 @@ define(["language/chkFlow",
                     },
                     "layout" : "horizon",
                     "values" : [{
-                        "key" : "1",
+                        "key" : "add",
                         "text" : i18n.chkFlow_term_add,
                         "checked" : true,
                         "disable" : false
                     },{
-                        "key" : "2",
+                        "key" : "del",
                         "text" : i18n.chkFlow_term_delete,
                         "checked" : false,
                         "disable" : false
@@ -109,7 +109,9 @@ define(["language/chkFlow",
                         $("#singleFileUpload_id").widget().submit();
                     }
 
-                }
+                };
+
+                //$('#add').removeAttribute('display');
             }
         ];
         var module = angular.module('common.config');
