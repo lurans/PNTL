@@ -23,6 +23,12 @@ define(["language/chkFlow",
                         "left":"icoMoon-search"
                     },
                     "searchBtn":function () {
+                        if (!window.tinyWidget.UnifyValid.FormValid((".container-fluid"))){
+                            divTip.option("content",i18n.chkFlow_term_input_valid);
+                            divTip.show(1000);
+                            $scope.search.disable = false;
+                            return;
+                        }
                         $scope.search.disable = true;
                         var az = $scope.azTextBox.value;
                         var pod = $scope.podTextBox.value;
@@ -137,16 +143,22 @@ define(["language/chkFlow",
                     "id": "src_ip_id",
                     "value": "",
                     "type" : "ipv4",
+                    "tooltip":i18n.chkFlow_term_ip_tooltip,
                     "validate": [
                         {
-                            "validFn" : "ipv4",
+                            "validFn" : "ipv4"
                         }]
                 };
                 $scope.dst_ip = {
                     "id": "dst_ip_id",
                     "value": "",
                     "type" : "ipv4",
-                }
+                    "tooltip":i18n.chkFlow_term_ip_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "ipv4"
+                        }]
+                };
 
                 $scope.table = {
                     "id":"directivetableId",

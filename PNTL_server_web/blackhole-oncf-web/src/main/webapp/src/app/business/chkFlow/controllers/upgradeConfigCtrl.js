@@ -34,7 +34,7 @@ define(["language/chkFlow",
                         if(file.name != "ServerAntAgentForEuler.tar.gz"
                             && file.name != "ServerAntAgentForSles.tar.gz"){
                             alert(i18n.chkFlow_term_upload_err5);
-                            file.empty();
+                            return false;
                         }
                     },
                     "completeDefa" : function(event, result, selectFileQueue) {
@@ -66,8 +66,12 @@ define(["language/chkFlow",
                         var succStr="{'result':'success'}";
                         if(-1 != result.indexOf(succStr)){
                             commonException.showMsg(i18n.chkFlow_term_ip_upgrade_success);
+                            $scope.singleFileUpload.disable = false;
+                            configFlowServ.hide();
                         }else {
                             commonException.showMsg(i18n.chkFlow_term_ip_upgrade_fail, "error");
+                            $scope.singleFileUpload.disable = false;
+                            configFlowServ.hide();
                         }
                     },
                     "selectError" : function(event,file,errorMsg) {
@@ -77,7 +81,10 @@ define(["language/chkFlow",
                             alert(i18n.chkFlow_term_upload_err4);
                         }
                     },
-                    "beforeSubmit" : function() {
+                    "select" :  function(event,file,selectFileQueue) {
+                        $scope.file = file;
+                    },
+                    "beforeSubmit" : function(event,file) {
                         var checkedkey = $("#radioGroup_id").widget().opChecked("checked");
                         var checkValue={"op":""};
                         if(checkedkey === "1"){
@@ -105,8 +112,42 @@ define(["language/chkFlow",
                         "width" : "60px"
                     },
                     "text" : i18n.chkFlow_term_submit,
+                    "disable":"false",
                     "submitClick" : function() {
-                        $("#singleFileUpload_id").widget().submit();
+                        $scope.singleFileUpload.disable = true;
+                        if(typeof($scope.file) != "undefined"){
+                            var installConfirmWindow = {
+                                title:i18n.chkFlow_term_upload_confirm,
+                                height : "250px",
+                                width : "400px",
+                                content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>文件上传</span>：请确定添加和删除操作，文件上传过程需要1~2分钟，请耐心等待</p><p style='text-align:center;margin-top: 30px;color: #999;font-size: 14px;'>确定上传？</p>",
+                                closeable:false,
+                                resizable:false,
+                                buttons:[{
+                                    key:"btnOK",
+                                    label : i18n.chkFlow_term_ok,//按钮上显示的文字
+                                    focused : false,//默认焦点
+                                    handler : function(event) {//点击回调函数
+                                        installConfirmWin.destroy();
+                                        configFlowServ.show();
+                                        $("#singleFileUpload_id").widget().submit();
+                                    }
+                                }, {
+                                    key:"btnCancel",
+                                    label : i18n.chkFlow_term_cancel,
+                                    focused : true,
+                                    handler : function(event) {
+                                        installConfirmWin.destroy();
+                                        $scope.singleFileUpload.disable = false;
+                                    }
+                                }]
+                            }
+                            var installConfirmWin = new tinyWidget.Window(installConfirmWindow);
+                            installConfirmWin.show();
+                        }else {
+                            $scope.singleFileUpload.disable = false;
+                        }
+
                     }
 
                 }
