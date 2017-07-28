@@ -42,6 +42,9 @@ using namespace std;
 #define FLOW_ENTRY_STATE_SET(state, flag)       ( (state) = ((state)|(flag)) )
 #define FLOW_ENTRY_STATE_CLEAR(state, flag)     ( (state) = ((state)&(~(flag))) )
 
+const UINT32 MAX_RETRY_TIMES = 100;
+
+const UINT32 RETRY_INTERVAL = 5;
 
 // 构造函数, 所有成员初始化默认值.
 FlowManager_C::FlowManager_C()
@@ -55,7 +58,6 @@ FlowManager_C::FlowManager_C()
 
     // 流表处理
     uiAgentWorkingFlowTable = 0;
-    stAgentFlowTableLock = NULL;
     AgentClearFlowTable();
 
     uiServerWorkingFlowTable = 0;
@@ -67,6 +69,8 @@ FlowManager_C::FlowManager_C()
     uiLastCheckTimeCounter = 0;
     uiLastReportTimeCounter = 0;
     uiLastQuerytTimeCounter = 0;
+	uiLastQueryConfigCounter = 0;
+    uiLastReportIpCounter = 0;
 
 }
 
@@ -81,11 +85,6 @@ FlowManager_C::~FlowManager_C()
     AgentClearFlowTable();
     ServerClearFlowTable();
 
-    // 释放互斥锁
-    if ( stAgentFlowTableLock )
-    {
-        sal_mutex_destroy(stAgentFlowTableLock);
-    }
     stAgentFlowTableLock = NULL;
 
 
@@ -121,13 +120,6 @@ INT32 FlowManager_C::Init(ServerAntAgentCfg_C * pcNewAgentCfg)
 
     // 流表初始化
     pcAgentCfg = pcNewAgentCfg;
-
-    stAgentFlowTableLock = sal_mutex_create("Flow Manager FlowTableLock");
-    if( NULL == stAgentFlowTableLock )
-    {
-        FLOW_MANAGER_ERROR("Create mutex failed");
-        return AGENT_E_MEMORY;
-    }
 
     pcAgentCfg->GetProtocolUDP(&uiSrcPortMin, &uiSrcPortMax, &uiDestPort);
 
@@ -846,7 +838,7 @@ INT32 FlowManager_C::FlowDropNotice(UINT32 uiFlowTableIndex)
 {
     INT32 iRet = AGENT_OK;
 
-    FLOW_ENTRY_STATE_SET(AgentFlowTable[AGENT_WORKING_FLOW_TABLE][uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_DROPPING);
+    FLOW_ENTRY_STATE_SET(AgentFlowTable[uiFlowTableIndex].uiFlowState, FLOW_ENTRY_STATE_DROPPING);
 
     iRet = FlowDropReport(uiFlowTableIndex);
     if (iRet)
@@ -1055,6 +1047,25 @@ INT32 FlowManager_C::DoReport()
     return iRet;
 }
 
+// 检测此时是否该启动查询pinglist流程.
+INT32 FlowManager_C::QueryReportCheck(UINT32* flag, UINT32 uiCounter, UINT32 lastCounter, UINT32* failCounter)
+{ 
+    if (*flag && 0 == *(failCounter))
+    { 
+        return AGENT_ENABLE;
+    }
+    if (*flag && *(failCounter) < MAX_RETRY_TIMES)
+    {
+        return uiCounter == lastCounter + *(failCounter) * RETRY_INTERVAL;
+    }
+	else
+	{ 
+    	*flag = 0;
+		*(failCounter) = 0;
+	    return AGENT_DISABLE;
+	}
+}
+
 // 启动从Server刷新配置流程.
 INT32 FlowManager_C::DoQuery()
 {
@@ -1097,10 +1108,13 @@ INT32 FlowManager_C::ThreadHandler()
 {
     INT32 iRet = AGENT_OK;
     UINT32 counter = 0;
-    uiLastCheckTimeCounter = counter;
-    uiLastReportTimeCounter = counter;
+    uiLastQueryConfigCounter = counter;
+    uiLastReportIpCounter = counter;
     uiLastQuerytTimeCounter = counter;
-
+	UINT32 uiQueryPingListFailCounter = 0;
+	UINT32 uiQueryConfFailCounter = 0;
+	UINT32 uiReportIpFailCounter = 0;
+	
     while (GetCurrentInterval())
     {
         // 当前周期是否该启动探测流程.
@@ -1144,38 +1158,40 @@ INT32 FlowManager_C::ThreadHandler()
         }
 
         // 当前周期是否该查询Server配置
-
-        if (SHOULD_PROBE)
+        if (QueryReportCheck(&SHOULD_PROBE, counter, uiLastQuerytTimeCounter, &uiQueryPingListFailCounter))
         {
-            SHOULD_PROBE = 0;
             // 启动查询Server配置流程.
             iRet = DoQuery();
             if (iRet)
             {
                 FLOW_MANAGER_WARNING("Do Query failed[%d]", iRet);
-                SHOULD_PROBE = 1;
+				uiLastQuerytTimeCounter = counter;
+				uiQueryPingListFailCounter += 1;
             }
         }
-
-        if (SHOULD_QUERY_CONF)
+		
+        if (QueryReportCheck(&SHOULD_QUERY_CONF, counter, uiLastQueryConfigCounter, &uiQueryConfFailCounter))
         {
-            SHOULD_QUERY_CONF = 0;
             iRet = DoQueryConfig();
-            if (iRet)
+            if (AGENT_E_PARA == iRet)
             {
-                FLOW_MANAGER_WARNING("Do Query Config failed[%d]", iRet);
-                SHOULD_QUERY_CONF = 1;
+                FLOW_MANAGER_WARNING("Config param error[%d]", iRet);
+				SHOULD_QUERY_CONF = 0;
             }
+			else if (iRet)
+			{
+			    uiLastQueryConfigCounter = counter;
+			    uiQueryConfFailCounter += 1;
+			}
         }
 
-        if (SHOULD_REPORT_IP)
+        if (QueryReportCheck(&SHOULD_REPORT_IP, counter, uiLastReportIpCounter, &uiReportIpFailCounter))
         {
-            SHOULD_REPORT_IP = 0;
             iRet = ReportAgentIPToServer(this->pcAgentCfg);
             if (iRet)
             {
-                FLOW_MANAGER_WARNING("ReportAgentIPToServer failed[%d]", iRet);
-                SHOULD_REPORT_IP = 1;
+                uiLastReportIpCounter = counter;
+			    uiReportIpFailCounter += 1;
             }
         }
 

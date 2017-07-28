@@ -181,6 +181,7 @@ private:
     INT32 FlowDropNotice(UINT32 uiFlowTableIndex);      // 持续丢包, 触发丢包快速上报,同时启动追踪报文.
     UINT32 uiLastReportTimeCounter;               // 最近一次启动上报Collector的时间点
     INT32 ReportCheck(UINT32 counter);              // 检测此时是否该启动上报Collector流程.
+	INT32 QueryReportCheck(UINT32* flag, UINT32 uiCounter, UINT32 lastCounter, UINT32* failCounter);
     INT32 DoReport();                                     // 启动流上报.
     INT32 FlowComputeSD(
         INT64 * plSampleData,
@@ -193,6 +194,8 @@ private:
     INT32 FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay);   // 延时上报接口
 
     UINT32 uiLastQuerytTimeCounter;           // 最近一次启动查询Server的时间点
+    UINT32 uiLastQueryConfigCounter;
+    UINT32 uiLastReportIpCounter;
     INT32 DoQuery();                                  // 启动从Server刷新配置流程.
 
     /* Thread 实现代码 */

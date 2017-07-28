@@ -75,10 +75,10 @@ INT32 ServerAntAgent()
         if (AGENT_OK != iRet)
         {
             INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
-            sleep(5*reportCount);
+            sleep(5 * reportCount);
             INIT_ERROR("Retry to report Agent ip to Server, time [%u]", ++reportCount);
         }
-    }while (iRet)
+    } while (iRet);
 
     reportCount = 1;
     do
@@ -87,10 +87,10 @@ INT32 ServerAntAgent()
         if (AGENT_OK != iRet)
         {
             INIT_ERROR("Request Agent config from Server fail[%d]", iRet);
-            sleep(5*reportCount);
+            sleep(5 * reportCount);
             INIT_ERROR("Retry to request Agent config from Server, time [%u]", ++reportCount);
         }
-    }while (iRet)
+    } while (iRet);
 
     while(1)
     {
