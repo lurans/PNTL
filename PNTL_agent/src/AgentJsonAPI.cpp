@@ -111,7 +111,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         iRet = pcCfg->SetDetectTimeout(uiData);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", uiData, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
+            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", uiData, iRet, MIN_LOSS_TIMEOUT);
             return iRet;
         }
 
@@ -643,7 +643,6 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
         ptree ptDataRoot, ptFlowArray;
         read_json(ssStringData, ptDataRoot);
 
-
         // 从data中解析数据,填充stServerFlowKey, 然后调用FlowManager接口添加探测流.
         ptFlowArray.clear();
         ptFlowArray = ptDataRoot.get_child("flow");
@@ -654,14 +653,12 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
             return iRet;
         }
     }
-
     catch (exception const & e)
     {
         JSON_PARSER_ERROR("Caught exception [%s] when ProcessNormalFlowFromServer. Flow info[%s]", e.what(), pcJsonData);
         return AGENT_E_ERROR;
     }
     return iRet;
-
 }
 
 /*
@@ -697,17 +694,17 @@ INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
 }
 
 /*
-    接收从Server端下发的配置参数
-    格式为
-    {
-    "probe_period":"0",
-    "port_count" : "5",
-    "report_period" : "",
-    "delay_threshold":"",
-    "dscp":"",
-    "lossPkg_timeout":"",
-    "package_rate":""
-
+	接收从Server端下发的配置参数
+	格式为
+	{
+		"probe_period":"0",
+		"port_count" : "5",
+		"report_period" : "",
+		"delay_threshold":"",
+		"dscp":"",
+		"lossPkg_timeout":"",
+		"package_rate":""
+	}
 */
 INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
 {
@@ -767,7 +764,7 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
         iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
+            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", interval, iRet, MIN_LOSS_TIMEOUT);
             return AGENT_E_PARA;
         }
         JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
@@ -846,8 +843,8 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
         if (iRet)
         {
-            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_LOSS_TIMEOUT, MAX_LOSS_TIMEOUT);
-            return AGENT_E_PARA;
+            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", interval, iRet, MIN_LOSS_TIMEOUT);            
+			return AGENT_E_PARA;
         }
         JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 

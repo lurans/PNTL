@@ -159,7 +159,7 @@ UINT32 ServerAntAgentCfg_C::GetDetectTimeout()
 
 INT32 ServerAntAgentCfg_C::SetDetectTimeout(UINT32 uiNewPeriod)
 {
-    if (MIN_LOSS_TIMEOUT > uiNewPeriod || MAX_LOSS_TIMEOUT < uiNewPeriod)
+    if (MIN_LOSS_TIMEOUT > uiNewPeriod)
     {
         return AGENT_E_PARA;
     }
