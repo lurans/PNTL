@@ -4,19 +4,6 @@
 #include <string>
 #include "AgentCommon.h"
 
-const UINT32 STOP_PROBE_PERIOD = 0;
-const UINT32 MIN_PROBE_PERIOD = 60;
-const UINT32 MAX_PROBE_PERIOD = 60 * 30;
-const UINT32 MIN_REPORT_PERIOD = 60;
-const UINT32 MAX_REPORT_PERIOD = 60 * 30;
-const UINT32 MIN_PORT_COUNT = 1;
-const UINT32 MAX_PORT_COUNT = 100;
-const UINT32 MIN_DSCP = 0;
-const UINT32 MAX_DSCP = 63;
-const UINT32 MIN_LOSS_TIMEOUT = 1;
-const UINT32 MIN_BIG_PACKAGE_RATE = 0;
-const UINT32 MAX_BIG_PACKAGE_RATE = 100;
-
 /*
 UDP 协议需要源端口范围用于申请探测socket, 目的端口用于响应探测报文及填充探测
 */
@@ -78,18 +65,18 @@ public:
     INT32 SetPollingTimerPeriod(UINT32 uiNewPeriod);  //设置Polling周期, 如跟已有周期不一致则同时刷新定时器
 
     UINT32 GetDetectPeriod();                         // 查询Detect周期
-    INT32 SetDetectPeriod(UINT32 uiNewPeriod);         // 设定Detect周期
+    void SetDetectPeriod(UINT32 uiNewPeriod);         // 设定Detect周期
 
     UINT32 GetAgentIP();          // 查询ServerAntAgent地址信息.
 
     UINT32 GetReportPeriod();                         // 查询Report周期
-    INT32 SetReportPeriod(UINT32 uiNewPeriod);         // 设定Report周期
+    void SetReportPeriod(UINT32 uiNewPeriod);         // 设定Report周期
 
     UINT32 GetQueryPeriod();                         // 查询query周期
     void SetQueryPeriod(UINT32 uiNewPeriod);         // 设定query周期
 
     UINT32 GetDetectTimeout();                        // 查询Detect报文超时时间
-    INT32 SetDetectTimeout(UINT32 uiNewPeriod);         // 设定Detect报文超时时间
+    void SetDetectTimeout(UINT32 uiNewPeriod);         // 设定Detect报文超时时间
 
     UINT32 GetDetectDropThresh();                         // 查询Detect报文丢包门限
     void SetDetectDropThresh(UINT32 uiNewThresh);         // 设定Detect报文丢包门限
@@ -102,13 +89,13 @@ public:
                         UINT32 uiDestPort);             // 设定UDP探测报文端口范围, 只刷新非0端口
 
     UINT32 GetPortCount();
-    INT32 SetPortCount(UINT32 newPortCount);
+    void SetPortCount(UINT32 newPortCount);
 
     UINT32 getDscp();
-    INT32 SetDscp(UINT32 newDscp);
+    void SetDscp(UINT32 newDscp);
 
     UINT32 GetBigPkgRate();
-    INT32 SetBigPkgRate(UINT32 newRate);
+    void SetBigPkgRate(UINT32 newRate);
 
     UINT32 GetMaxDelay();
     void SetMaxDelay(UINT32 newMaxDelay);
