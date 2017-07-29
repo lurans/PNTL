@@ -90,31 +90,17 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
         pcCfg->SetAgentAddress(uiIp);
 
         uiData = ptDataTmp.get<UINT32>("ReportPeriod");
-        iRet = pcCfg->SetReportPeriod(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u]", uiData, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD);
-            return iRet;
-        }
+        pcCfg->SetReportPeriod(uiData);
+        
         uiData = ptDataTmp.get<UINT32>("QueryPeriod");
         pcCfg->SetQueryPeriod(uiData);
 
         uiData = ptDataTmp.get<UINT32>("DetectPeriod");
-        iRet = pcCfg->SetDetectPeriod(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("set detect period[%u] faild[%d], range should be in [%u, %u]", uiData, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
-            return iRet;
-        }
+        pcCfg->SetDetectPeriod(uiData);
 
         uiData = ptDataTmp.get<UINT32>("DetectTimeoutPeriod");
-        iRet = pcCfg->SetDetectTimeout(uiData);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", uiData, iRet, MIN_LOSS_TIMEOUT);
-            return iRet;
-        }
-
+        pcCfg->SetDetectTimeout(uiData);
+        
         uiData = ptDataTmp.get<UINT32>("DetectDropThresh");
         pcCfg->SetDetectDropThresh(uiData);
 
@@ -721,30 +707,15 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
         read_json(ssStringData, ptDataRoot);
 
         interval = ptDataRoot.get<UINT32>("probe_period");
-        iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
         JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
 
         interval = ptDataRoot.get<UINT32>("port_count");
-        iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetPortCount[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PORT_COUNT, MAX_PORT_COUNT);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetPortCount(interval);
         JSON_PARSER_INFO("Current port count is %u", pcFlowManager->pcAgentCfg->GetPortCount());
 
         interval = ptDataRoot.get<UINT32>("report_period");
-        iRet = pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u] and >= than detectPeriod[%u]", interval, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD, pcFlowManager->pcAgentCfg->GetDetectPeriod());
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
         JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
         interval = ptDataRoot.get<UINT32>("delay_threshold");
@@ -752,30 +723,15 @@ INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* 
         JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
 
         interval = ptDataRoot.get<UINT32>("dscp");
-        iRet = pcFlowManager->pcAgentCfg->SetDscp(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDscp[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_DSCP, MAX_DSCP);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetDscp(interval);
         JSON_PARSER_INFO("Current dscp is %u", pcFlowManager->pcAgentCfg->getDscp());
 
         interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
-        iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", interval, iRet, MIN_LOSS_TIMEOUT);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
         JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 
         interval = ptDataRoot.get<UINT32>("bigPkg_rate");
-        iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], value should be %u or %u.", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
         JSON_PARSER_INFO("Current package rate is %u", pcFlowManager->pcAgentCfg->GetBigPkgRate());
     }
     catch (exception const & e)
@@ -800,30 +756,15 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         // 防止Json消息体不规范
         read_json(ssStringData, ptDataRoot);
         interval = ptDataRoot.get<UINT32>("probe_period");
-        iRet = pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDectPeriod[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PROBE_PERIOD, MAX_PROBE_PERIOD);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
         JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
 
         interval = ptDataRoot.get<UINT32>("port_count");
-        iRet = pcFlowManager->pcAgentCfg->SetPortCount(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetPortCount[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_PORT_COUNT, MAX_PORT_COUNT);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetPortCount(interval);
         JSON_PARSER_INFO("Current port count is %u", pcFlowManager->pcAgentCfg->GetPortCount());
 
         interval = ptDataRoot.get<UINT32>("report_period");
-        iRet = pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetReportPeriod[%u] failed[%d], range should be in [%u, %u] and >= than detectPeriod[%u]", interval, iRet, MIN_REPORT_PERIOD, MAX_REPORT_PERIOD, pcFlowManager->pcAgentCfg->GetDetectPeriod());
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
         JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
         interval = ptDataRoot.get<UINT32>("delay_threshold");
@@ -831,30 +772,15 @@ INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlow
         JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
 
         interval = ptDataRoot.get<UINT32>("dscp");
-        iRet = pcFlowManager->pcAgentCfg->SetDscp(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDscp[%u] failed[%d], range should be in [%u, %u]", interval, iRet, MIN_DSCP, MAX_DSCP);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetDscp(interval);
         JSON_PARSER_INFO("Current dscp is %u", pcFlowManager->pcAgentCfg->getDscp());
 
         interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
-        iRet = pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetDetectTimeout[%u] failed[%d], should be bigger than [%u]", interval, iRet, MIN_LOSS_TIMEOUT);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
         JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
 
         interval = ptDataRoot.get<UINT32>("package_rate");
-        iRet = pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
-        if (iRet)
-        {
-            JSON_PARSER_ERROR("SetBigPkgRate[%u] failed[%d], range should be %u or %u.", interval, iRet, MIN_BIG_PACKAGE_RATE, MAX_BIG_PACKAGE_RATE);
-            return AGENT_E_PARA;
-        }
+        pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
         JSON_PARSER_INFO("Current package rate is %u", pcFlowManager->pcAgentCfg->GetBigPkgRate());
     }
     catch (exception const & e)

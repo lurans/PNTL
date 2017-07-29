@@ -1111,6 +1111,8 @@ INT32 FlowManager_C::ThreadHandler()
     uiLastQueryConfigCounter = counter;
     uiLastReportIpCounter = counter;
     uiLastQuerytTimeCounter = counter;
+	uiLastCheckTimeCounter = counter;
+	uiLastReportTimeCounter = counter;
     UINT32 uiQueryPingListFailCounter = 0;
     UINT32 uiQueryConfFailCounter = 0;
     UINT32 uiReportIpFailCounter = 0;
@@ -1168,6 +1170,10 @@ INT32 FlowManager_C::ThreadHandler()
                 uiLastQuerytTimeCounter = counter;
                 uiQueryPingListFailCounter += 1;
             }
+			else
+			{
+			    SHOULD_PROBE = 0;
+			}
         }
 
         if (QueryReportCheck(&SHOULD_QUERY_CONF, counter, uiLastQueryConfigCounter, &uiQueryConfFailCounter))
@@ -1183,6 +1189,10 @@ INT32 FlowManager_C::ThreadHandler()
                 uiLastQueryConfigCounter = counter;
                 uiQueryConfFailCounter += 1;
             }
+			else
+			{
+			    SHOULD_QUERY_CONF = 0;
+			}    
         }
 
         if (QueryReportCheck(&SHOULD_REPORT_IP, counter, uiLastReportIpCounter, &uiReportIpFailCounter))
@@ -1193,6 +1203,10 @@ INT32 FlowManager_C::ThreadHandler()
                 uiLastReportIpCounter = counter;
                 uiReportIpFailCounter += 1;
             }
+			else 
+			{
+			    SHOULD_REPORT_IP = 0;
+			}
         }
 
         if (PROBE_INTERVAL != 9999)
