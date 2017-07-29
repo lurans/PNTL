@@ -23,6 +23,12 @@ define(["language/chkFlow",
                         "left":"icoMoon-search"
                     },
                     "searchBtn":function () {
+                        if (!window.tinyWidget.UnifyValid.FormValid((".container-fluid"))){
+                            divTip.option("content",i18n.chkFlow_term_input_valid);
+                            divTip.show(1000);
+                            $scope.search.disable = false;
+                            return;
+                        }
                         $scope.search.disable = true;
                         var az = $scope.azTextBox.value;
                         var pod = $scope.podTextBox.value;
@@ -137,16 +143,22 @@ define(["language/chkFlow",
                     "id": "src_ip_id",
                     "value": "",
                     "type" : "ipv4",
+                    "tooltip":i18n.chkFlow_term_ip_tooltip,
                     "validate": [
                         {
-                            "validFn" : "ipv4",
+                            "validFn" : "ipv4"
                         }]
                 };
                 $scope.dst_ip = {
                     "id": "dst_ip_id",
                     "value": "",
                     "type" : "ipv4",
-                }
+                    "tooltip":i18n.chkFlow_term_ip_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "ipv4"
+                        }]
+                };
 
                 $scope.table = {
                     "id":"directivetableId",
@@ -187,31 +199,20 @@ define(["language/chkFlow",
                         "mData":"value",
                         "bSortable":false
                     }
-                    ]};
-                function getTextLink()
-                {
-                    var textInfoPromise = warnFlowServ.getTextInfo();
-                    textInfoPromise.then(function(responseData){
-                        $scope.table.data = [];
-                        for (var i = 0;i<responseData.length;i++){
-                            if(responseData[i].delay != ""){
-                                responseData[i].value = responseData[i].delay + "ms";
-                                responseData[i].type = i18n.chkFlow_term_delayTime;
-                            }else if(responseData[i].lossRate != ""){
-                                responseData[i].value = responseData[i].lossRate;
-                                responseData[i].type = i18n.chkFlow_term_packetsLossRate;
-                            }
-                        }
-                        $scope.table.data = responseData;
-                        $scope.table.totalRecords = responseData.length;
-
-                    },function(responseData){
-                        //showERRORMsg
-                    });
-                }
+                ]};
                 var init = function()
                 {
-                    getTextLink();
+                    var nullPara = {
+                        "az_id":"",
+                        "pod_id":"",
+                        "src_ip":"",
+                        "dst_ip":"",
+                        "start_time":"",
+                        "end_time":"",
+                        "type":""
+                    };
+
+                    postData(nullPara);
                 };
                 init();
             }];
