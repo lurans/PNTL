@@ -41,7 +41,7 @@
                                      tooltip = "repoIpTextBox.tooltip"> </tiny-ip>
                         </div>
                         <div style="float:left; margin-right:50px;">
-                            <div class="span1 input_label1" style="margin-left:0px;width: 70px;">
+                            <div class="span1 input_label1" style="margin-left:0px;width: 45px;">
                                 {{i18n.chkFlow_term_ak_name}}
                             </div>
                             <tiny-textbox id="akTextBox.id"
@@ -72,15 +72,6 @@
                                      tooltip = "kafkaIpTextBox.tooltip"> </tiny-ip>
                         </div>
                         <div style="float:left;margin-right:50px;">
-                            <div class="span1 input_label1" style="margin-left:0px;width: 70px;">
-                                {{i18n.chkFlow_term_kafka_port}}
-                            </div>
-                            <tiny-textbox id="kafkaPortTextBox.id"
-                                     value="kafkaPortTextBox.value"
-                                     validate = "kafkaPortTextBox.validate"
-                                     tooltip = "kafkaPortTextBox.tooltip"> </tiny-textbox>
-                        </div>
-                        <div style="float:left;margin-right:50px;">
                             <div class="span1 input_label1" style="margin-left:0px;width: 45px;">
                                 {{i18n.chkFlow_term_kafka_topic}}
                             </div>
@@ -89,16 +80,16 @@
                                      validate = "kafkaTopicTextBox.validate"
                                      tooltip = "kafkaTopicTextBox.tooltip"> </tiny-textbox>
                         </div>
-                        <div class="installVariableSubmit"style="float:left;">
-                            <tiny-button id="installVariableBtn.id"
-                                         text="installVariableBtn.text"
-                                         disable="installVariableBtn.disable"
-                                         click="installVariableBtnOK()"></tiny-button>
+                        <div class="deployVariableConfigBtn"style="float:right;margin-right: 150px">
+                            <tiny-button id="deployVariableConfigBtn.id"
+                                         text="deployVariableConfigBtn.text"
+                                         disable="deployVariableConfigBtn.disable"
+                                         click="deployVariableConfigBtnOK()"></tiny-button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="installOrUninstall" style="overflow:auto;">
+            <div class="installOrUninstall">
                 <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_install_uninstall}}</div>
                 <div class="level2Content">
                     <div class="install_btn" style="float:left; margin-right:40px;">

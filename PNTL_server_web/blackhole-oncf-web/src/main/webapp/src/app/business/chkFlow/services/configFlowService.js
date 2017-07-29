@@ -47,8 +47,8 @@ define([], function () {
             return promise;
         };
 
-        this.postVariableConfig = function(data){
-            var uri = rest_prefix + "/chkflow/pntlVariableConf";
+        this.postAgentVariableConfig = function(data){
+            var uri = rest_prefix + "/chkflow/pntlAgentVariableConf";
             var promise = camel.post({
                 "url": {
                     "s": uri
@@ -58,8 +58,8 @@ define([], function () {
             });
             return promise;
         };
-        this.postAkSk = function(data){
-            var uri = rest_prefix + "/chkflow/pntlAkSkConf";
+        this.postDeployVariableConf = function(data){
+            var uri = rest_prefix + "/chkflow/pntlDeployVariableConf";
             var promise = camel.post({
                 "url": {
                     "s": uri

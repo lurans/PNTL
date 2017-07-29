@@ -415,11 +415,11 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
-    @Path("/pntlVariableConf")
+    @Path("/pntlAgentVariableConf")
     @POST
-    public Response setPntlConfig(PntlConfig config){
+    public Response setPntlAgentConfig(PntlConfig config){
         /*先保存在文件，后下发到agent*/
-        Result<String> result = pntlConfigService.setPntlConfig(config);
+        Result<String> result = pntlConfigService.setPntlAgentConfig(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -432,10 +432,10 @@ public class RouterApi {
         return ResponseUtil.succ();
     }
 
-    @Path("/pntlAkSkConf")
+    @Path("/pntlDeployVariableConf")
     @POST
-    public Response setPntlAkSkConf(PntlConfig config){
-        Result<String> result = pntlConfigService.setPntlAkSkConfig(config);
+    public Response setPntlDeployConf(PntlConfig config){
+        Result<String> result = pntlConfigService.setPntlDeployConfig(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }

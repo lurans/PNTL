@@ -8,8 +8,6 @@ public class CommonInfo {
 
     private static String kafkaIp;
 
-    private static int kafkaPort;
-
     private static String topic;
 
     public static int getReportPeriod() {
@@ -35,14 +33,6 @@ public class CommonInfo {
 
     public static void setKafkaIp(String kafkaIp) {
         CommonInfo.kafkaIp = kafkaIp;
-    }
-
-    public static int getKafkaPort() {
-        return kafkaPort;
-    }
-
-    public static void setKafkaPort(int kafkaPort) {
-        CommonInfo.kafkaPort = kafkaPort;
     }
 
     public static String getTopic() {
