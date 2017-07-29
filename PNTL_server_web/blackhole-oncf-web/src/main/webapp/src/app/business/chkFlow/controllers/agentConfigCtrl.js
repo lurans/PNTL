@@ -238,9 +238,22 @@ define(["language/chkFlow",
                         $scope.dscpTextBox.value = responseData.dscp;
                         $scope.lossPkgTimeOutTextBox.value = responseData.lossPkg_timeout;
                         $scope.lossPkgNumTextBox.value = responseData.lossPkg_num;
+
+                        if($scope.status != "first"){
+                            commonException.showMsg(i18n.chkFlow_term_reset_ok);
+                        } else{
+                            $scope.status = "notFirst";
+                        }
+
                         $scope.variableResetBtn.disable = false;
                     },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
+                        if($scope.status != "first"){
+                            commonException.showMsg(i18n.chkFlow_term_reset_err,"error");
+                        } else{
+                            commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
+                            $scope.status = "notFirst";
+                        }
+
                         $scope.variableResetBtn.disable = false;
                     });
                 };
@@ -312,6 +325,7 @@ define(["language/chkFlow",
                 };
 
                 function init(){
+                    $scope.status = "first";
                     getVariableConfig();
                 }
                 init();

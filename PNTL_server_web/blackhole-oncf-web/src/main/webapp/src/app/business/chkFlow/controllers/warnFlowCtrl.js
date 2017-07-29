@@ -86,17 +86,17 @@ define(["language/chkFlow",
                         if($scope.status != "first")
                         {
                             commonException.showMsg(i18n.chkFlow_term_submit_ok);
-                        }else {
-                            $scope.status = "noFirst";
+                        } else {
+                            $scope.status = "notFirst";
                         }
                         $scope.search.disable = false;
                     },function(responseData){
                         if($scope.status != "first")
                         {
                             commonException.showMsg(i18n.chkFlow_term_submit_err, "error");
-                        }else {
+                        } else {
                             commonException.showMsg(i18n.chkFlow_term_init_submit_err, "error");
-                            $scope.status = "noFirst";
+                            $scope.status = "notFirst";
                         }
                         $scope.search.disable = false;
                     });

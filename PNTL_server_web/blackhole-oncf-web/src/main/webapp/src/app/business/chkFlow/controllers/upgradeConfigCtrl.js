@@ -55,7 +55,8 @@ define(["language/chkFlow",
 
                 $scope.singleFileUpload = {
                     "id" : "singleFileUpload_id",
-                    "id1" : "radioGroup_id",
+                    "radioGroupId" : "radioGroup_id",
+                    "submitId" :"submit_id",
                     "text" : i18n.chkFlow_term_submit,
                     "disable" : false,
                     "maxSize":2*1024*1024,//文件大小小于 2M
@@ -147,6 +148,7 @@ define(["language/chkFlow",
                             var installConfirmWin = new tinyWidget.Window(installConfirmWindow);
                             installConfirmWin.show();
                         }else {
+                            commonException.showMsg(i18n.chkFlow_term_no_file_selected, "error");
                             $scope.singleFileUpload.disable = false;
                         }
 
