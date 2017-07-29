@@ -102,8 +102,8 @@ define(["language/chkFlow",
                             "errorDetail": i18n.chkFlow_term_sk_err,
                         }]
                 };
-                $scope.ipTextBox = {
-                    "id": "ipTextBoxId",
+                $scope.repoIpTextBox = {
+                    "id": "repoIpTextBoxId",
                     "value": "",
                     "type" : "ipv4",
                     "tooltip":i18n.chkFlow_term_ip_tooltip,
@@ -115,8 +115,52 @@ define(["language/chkFlow",
                             "validFn" : "ipv4",
                         }]
                 };
+                $scope.kafkaTopicTextBox = {
+                    "id": "kafkaTopicTextBoxId",
+                    "value": "",
+                    "tooltip":i18n.chkFlow_term_topic_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "required"
+                        },
+                        {
+                            "validFn" : "maxSize",
+                            "params" : 20
+                        },
+                        {
+                            "validFn" : "regularCheck",
+                            "params" : "/^[a-zA-Z0-9_]+$/",
+                            "errorDetail": i18n.chkFlow_term_sk_err,
+                        }]
+                };
+                $scope.kafkaPortTextBox = {
+                    "id": "kafkaPortTextBoxId",
+                    "value": "",
+                    "tooltip":i18n.chkFlow_term_kafka_port_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "required"
+                        },
+                        {
+                            "validFn" : "rangeValue",
+                            "params" : [0,65535]
+                        }]
+                };
+                $scope.kafkaIpTextBox = {
+                    "id": "kafkaIpTextBoxId",
+                    "value": "",
+                    "type" : "ipv4",
+                    "tooltip":i18n.chkFlow_term_ip_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "required"
+                        },
+                        {
+                            "validFn" : "ipv4"
+                        }]
+                };
 
-                $scope.akSkBtn = {
+                $scope.installVariableBtn = {
                     "id":"akSkBtnId",
                     "text":i18n.chkFlow_term_submit,
                     "disable":false
@@ -135,7 +179,7 @@ define(["language/chkFlow",
                 function getParaFromInput(){
                     var ak = $scope.akTextBox.value;
                     var sk = $scope.skTextBox.value;
-                    var ip = $scope.ipTextBox.value;
+                    var ip = $scope.repoIpTextBox.value;
 
                     var para = {
                         "ak":ak,
@@ -149,7 +193,7 @@ define(["language/chkFlow",
                     promise.then(function(responseData){
                         $scope.akTextBox.value = responseData.ak;
                         $scope.skTextBox.value = responseData.sk;
-                        $scope.ipTextBox.value = responseData.repo_url;
+                        $scope.repoIpTextBox.value = responseData.repo_url;
                     },function(responseData){
                         //showERRORMsg
                         commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
@@ -190,7 +234,7 @@ define(["language/chkFlow",
                     });
                 };
 
-                $scope.akSkBtnOK = function () {
+                $scope.installVariableBtnOK = function () {
                     $scope.akSkBtn.disable = true;
                     if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){
                         divTip.option("content",i18n.chkFlow_term_input_valid);
