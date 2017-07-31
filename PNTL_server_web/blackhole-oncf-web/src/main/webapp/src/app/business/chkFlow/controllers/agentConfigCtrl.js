@@ -24,9 +24,10 @@ define(["language/chkFlow",
                     "reportIntervalTime": i18n.chkFlow_term_report_interval_time_name,
                     "packetsNum" : i18n.chkFlow_term_probe_packets_number_name,
                     "timeDelay" : i18n.chkFlow_term_probe_max_time_delay_name,
-                    "packetsLoss" : i18n.chkFlow_term_probe_max_loss_rate_name,
+                    "packetsLossRate" : i18n.chkFlow_term_probe_max_loss_rate_name,
                     "dscp":i18n.chkFlow_term_dscp_name,
                     "lossPkgTimeOut":i18n.chkFlow_term_loss_pkg_timeout_name,
+                    "lossPkgNum":i18n.chkFlow_term_max_loss_pkg_num_name
                 };
                
                 $scope.probeRoundTextBox = {
@@ -42,7 +43,7 @@ define(["language/chkFlow",
                         },
                         {
                             "validFn" : "rangeValue",
-                            "params" : [60,1800]
+                            "params" : [1,120]
                         }]
                 };
                 $scope.probePortTextBox = {
@@ -74,7 +75,7 @@ define(["language/chkFlow",
                         },
                         {
                             "validFn" : "rangeValue",
-                            "params" : [60,1800]
+                            "params" : [5,300]
                         }]
                 };
                 $scope.packetsNumTextBox = {
@@ -105,12 +106,12 @@ define(["language/chkFlow",
                             "validFn" : "number"
                         },
                         {
-                            "validFn" : "minValue",
-                            "params" : 1
+                            "validFn" : "rangeValue",
+                            "params" : [1,2000]
                         }]
                 };
-                $scope.packetsLossTextBox = {
-                    "id": "packetsLossTextBoxId",
+                $scope.packetsLossRateTextBox = {
+                    "id": "packetsLossRateTextBoxId",
                     "value": "",
                     "tooltip":i18n.chkFlow_term_packets_num_tooltip,
                     "validate": [
@@ -152,8 +153,24 @@ define(["language/chkFlow",
                             "validFn" : "number"
                         },
                         {
-                            "validFn" : "minValue",
-                            "params" : 1
+                            "validFn" : "rangeValue",
+                            "params" : [1,5]
+                        }]
+                };
+                $scope.lossPkgNumTextBox = {
+                    "id": "lossPkgNumTextBoxId",
+                    "value": "",
+                    "tooltip":i18n.chkFlow_term_lossPkg_num_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "required"
+                        },
+                        {
+                            "validFn" : "number"
+                        },
+                        {
+                            "validFn" : "rangeValue",
+                            "params" : [1,10]
                         }]
                 };
 
@@ -184,12 +201,14 @@ define(["language/chkFlow",
                     var reportRound = $scope.reportRoundTextBox.value;
                     var packetsNum = $scope.packetsNumTextBox.value;
                     var timeDelay = $scope.timeDelayTextBox.value;
-                    var packetsLoss = $scope.packetsLossTextBox.value;
+                    var pkgLossRate = $scope.packetsLossRateTextBox.value;
                     var dscp = $scope.dscpTextBox.value;
                     var lossPkgTimeOut = $scope.lossPkgTimeOutTextBox.value;
+                    var lossPkgNum = $scope.lossPkgNumTextBox.value;
+
                     var probeRoundNumber = parseInt(probeRound);
                     var reportRoundNumber = parseInt(reportRound);
-                    if(probeRoundNumber>reportRoundNumber){
+                    if(probeRoundNumber >= reportRoundNumber){
                         var para1 = "";
                         $scope.variableSubmitBtn.disable = false;
                         return para1;
@@ -199,9 +218,10 @@ define(["language/chkFlow",
                             "report_period":reportRound,
                             "pkg_count":packetsNum,
                             "delay_threshold":timeDelay,
-                            "lossRate_threshold":packetsLoss,
+                            "lossRate_threshold":pkgLossRate,
                             "dscp":dscp,
-                            "lossPkg_timeout":lossPkgTimeOut
+                            "lossPkg_timeout":lossPkgTimeOut,
+                            "lossPkg_num":lossPkgNum
                         };
                         return para;
                     }
@@ -214,17 +234,31 @@ define(["language/chkFlow",
                         $scope.reportRoundTextBox.value = responseData.report_period;
                         $scope.packetsNumTextBox.value = responseData.pkg_count;
                         $scope.timeDelayTextBox.value = responseData.delay_threshold;
-                        $scope.packetsLossTextBox.value = responseData.lossRate_threshold;
+                        $scope.packetsLossRateTextBox.value = responseData.lossRate_threshold;
                         $scope.dscpTextBox.value = responseData.dscp;
                         $scope.lossPkgTimeOutTextBox.value = responseData.lossPkg_timeout;
+                        $scope.lossPkgNumTextBox.value = responseData.lossPkg_num;
+
+                        if($scope.status != "first"){
+                            commonException.showMsg(i18n.chkFlow_term_reset_ok);
+                        } else{
+                            $scope.status = "notFirst";
+                        }
+
                         $scope.variableResetBtn.disable = false;
                     },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
+                        if($scope.status != "first"){
+                            commonException.showMsg(i18n.chkFlow_term_reset_err,"error");
+                        } else{
+                            commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
+                            $scope.status = "notFirst";
+                        }
+
                         $scope.variableResetBtn.disable = false;
                     });
                 };
                 var postVariableConfig = function(para){
-                    var promise = configFlowServ.postVariableConfig(para);
+                    var promise = configFlowServ.postAgentVariableConfig(para);
                     promise.then(function(responseData){
                         commonException.showMsg(i18n.chkFlow_term_config_ok);
                         $scope.variableSubmitBtn.disable = false;
@@ -291,6 +325,7 @@ define(["language/chkFlow",
                 };
 
                 function init(){
+                    $scope.status = "first";
                     getVariableConfig();
                 }
                 init();

@@ -34,6 +34,8 @@ public class PntlConfig implements Serializable{
     private String dscp;
     @JsonProperty("lossPkg_timeout")
     private String lossPkgTimeout;
+    @JsonProperty("lossPkg_num")
+    private String lossPkgNum;
 
     @JsonProperty("ak")
     private String ak;
@@ -48,6 +50,11 @@ public class PntlConfig implements Serializable{
     private String eulerRepoUrl;
     private String suseRepoUrl;
     private String installScriptRepoUrl;
+
+    @JsonProperty("kafka_url")
+    private String kafkaUrl;
+    @JsonProperty("kafka_topic")
+    private String kafkaTopic;
 
     public String getEulerRepoUrl() {
         return eulerRepoUrl;
@@ -79,6 +86,22 @@ public class PntlConfig implements Serializable{
 
     public void setRepoUrl(String repoUrl) {
         this.repoUrl = repoUrl;
+    }
+
+    public String getKafkaUrl() {
+        return kafkaUrl;
+    }
+
+    public void setKafkaUrl(String kafkaUrl) {
+        this.kafkaUrl = kafkaUrl;
+    }
+
+    public String getKafkaTopic() {
+        return kafkaTopic;
+    }
+
+    public void setKafkaTopic(String kafkaTopic) {
+        this.kafkaTopic = kafkaTopic;
     }
 
     public String getProbePeriod() {
@@ -145,6 +168,14 @@ public class PntlConfig implements Serializable{
         this.lossPkgTimeout = lossPkgTimeout;
     }
 
+    public String getLossPkgNum() {
+        return lossPkgNum;
+    }
+
+    public void setLossPkgNum (String lossPkgNum) {
+        this.lossPkgNum = lossPkgNum;
+    }
+
     public String getAk() {
         return ak;
     }
@@ -188,6 +219,9 @@ public class PntlConfig implements Serializable{
         this.eulerRepoUrl = MapUtils.getAsStr(data, "eulerRepoUrl");
         this.suseRepoUrl = MapUtils.getAsStr(data, "suseRepoUrl");
         this.installScriptRepoUrl = MapUtils.getAsStr(data, "installScriptRepoUrl");
+        this.kafkaUrl = MapUtils.getAsStr(data, "kafka_url");
+        this.kafkaTopic = MapUtils.getAsStr(data, "kafka_topic");
+        this.lossPkgNum = MapUtils.getAsStr(data,"lossPkg_num");
     }
 
     private boolean containsEmptyField() {
@@ -211,6 +245,7 @@ public class PntlConfig implements Serializable{
         data.put("lossRate_threshold", lossRateThreshold);
         data.put("dscp", dscp);
         data.put("lossPkg_timeout", lossPkgTimeout);
+        data.put("lossPkg_num", lossPkgNum);
         data.put("ak", ak);
         data.put("sk", sk);
         data.put("basicToken", basicToken);
@@ -218,6 +253,8 @@ public class PntlConfig implements Serializable{
         data.put("eulerRepoUrl", eulerRepoUrl);
         data.put("suseRepoUrl", suseRepoUrl);
         data.put("installScriptRepoUrl", installScriptRepoUrl);
+        data.put("kafka_url", kafkaUrl);
+        data.put("kafka_topic", kafkaTopic);
 
         return data;
     }

@@ -54,11 +54,11 @@
                             {{i18n.chkFlow_term_max_time_delay_detail}}
                             <span>)</span>
                         </tiny-item>
-                        <tiny-item label="variable.packetsLoss">
-                            <tiny-textbox id="packetsLossTextBox.id"
-                                          value="packetsLossTextBox.value"
-                                          validate = "packetsLossTextBox.validate"
-                                          tooltip = "packetsLossTextBox.tooltip"></tiny-textbox>
+                        <tiny-item label="variable.packetsLossRate">
+                            <tiny-textbox id="packetsLossRateTextBox.id"
+                                          value="packetsLossRateTextBox.value"
+                                          validate = "packetsLossRateTextBox.validate"
+                                          tooltip = "packetsLossRateTextBox.tooltip"></tiny-textbox>
                             <span>&nbsp;(</span>
                             {{i18n.chkFlow_term_max_loss_rate_detail}}
                             <span>)</span>
@@ -78,9 +78,18 @@
                             {{i18n.chkFlow_term_lossPkg_timeout_detail}}
                             <span>)</span>
                         </tiny-item>
+                        <tiny-item label="variable.lossPkgNum">
+                            <tiny-textbox id="lossPkgNumTextBox.id"
+                                          value="lossPkgNumTextBox.value"
+                                          validate = "lossPkgNumTextBox.validate"
+                                          tooltip = "lossPkgNumTextBox.tooltip"></tiny-textbox>
+                            <span>&nbsp;(</span>
+                            {{i18n.chkFlow_term_probe_port_count_detail}}
+                            <span>)</span>
+                        </tiny-item>
                     </tiny-formfield>
                     <div class="agentVariableBtn" style="overflow:auto;">
-                        <div class="reset_btn" style="margin-top: 20px;margin-right:40px;margin-left:400px;float:left">
+                        <div class="reset_btn" style="margin-top: 20px;margin-right:40px;margin-left:40px;float:left">
                             <tiny-button id="variableResetBtn.id"
                                          text="variableResetBtn.text"
                                          disable="variableResetBtn.disable"
@@ -95,10 +104,10 @@
                     </div>
                 </div>
             </div>
-            <div class="startOrStop" style="overflow:auto;">
+            <div class="startOrStop">
                 <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_start_stop}}</div>
                 <div class="level2Content">
-                    <div class="probeStart_btn" style="float:left;margin-right:40px;">
+                    <div class="probeStart_btn" style="float:left;margin-right:40px;margin-left:40px;">
                         <tiny-button id="probeStartBtn.id"
                                      text="probeStartBtn.text"
                                      disable="probeStartBtn.disable"

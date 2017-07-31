@@ -7,6 +7,7 @@ define(["language/chkFlow",
         var upgradeConfigCtrl = ["$scope","$rootScope", "$state", "$sce", "$compile", "$timeout", "configFlowServ",
             function($scope, $rootScope, $state, $sce, $compile, $timeout, configFlowServ) {
                 $scope.i18n = i18n;
+
                 $scope.installFileUpload = {
                     "id":"installFileUpload_id",
                     "inputValue":"",
@@ -51,9 +52,13 @@ define(["language/chkFlow",
                         })
                     }
                 };
+
                 $scope.singleFileUpload = {
                     "id" : "singleFileUpload_id",
-                    "id1" : "radioGroup_id",
+                    "radioGroupId" : "radioGroup_id",
+                    "submitId" :"submit_id",
+                    "text" : i18n.chkFlow_term_submit,
+                    "disable" : false,
                     "maxSize":2*1024*1024,//文件大小小于 2M
                     "action" : "/rest/chkflow/updateAgents", //文件上传地址路径
                     "fileObjName":"X-File",
@@ -65,13 +70,13 @@ define(["language/chkFlow",
                     "completeDefa" : function(event, result) {
                         var succStr="{'result':'success'}";
                         if(-1 != result.indexOf(succStr)){
+                            configFlowServ.hide();
+                            $scope.singleFileUpload.disable = false;
                             commonException.showMsg(i18n.chkFlow_term_ip_upgrade_success);
-                            $scope.singleFileUpload.disable = false;
-                            configFlowServ.hide();
                         }else {
-                            commonException.showMsg(i18n.chkFlow_term_ip_upgrade_fail, "error");
-                            $scope.singleFileUpload.disable = false;
                             configFlowServ.hide();
+                            $scope.singleFileUpload.disable = false;
+                            commonException.showMsg(i18n.chkFlow_term_ip_upgrade_fail, "error");
                         }
                     },
                     "selectError" : function(event,file,errorMsg) {
@@ -111,8 +116,6 @@ define(["language/chkFlow",
                     "spacing" : {
                         "width" : "60px"
                     },
-                    "text" : i18n.chkFlow_term_submit,
-                    "disable":"false",
                     "submitClick" : function() {
                         $scope.singleFileUpload.disable = true;
                         if(typeof($scope.file) != "undefined"){
@@ -141,18 +144,16 @@ define(["language/chkFlow",
                                         $scope.singleFileUpload.disable = false;
                                     }
                                 }]
-                            }
+                            };
                             var installConfirmWin = new tinyWidget.Window(installConfirmWindow);
                             installConfirmWin.show();
                         }else {
+                            commonException.showMsg(i18n.chkFlow_term_no_file_selected, "error");
                             $scope.singleFileUpload.disable = false;
                         }
 
                     }
-
                 };
-
-                //$('#add').removeAttribute('display');
             }
         ];
         var module = angular.module('common.config');
