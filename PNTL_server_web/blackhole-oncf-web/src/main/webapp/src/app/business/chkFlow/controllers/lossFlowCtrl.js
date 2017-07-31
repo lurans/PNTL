@@ -130,7 +130,8 @@ define(["language/chkFlow",
                             .style("top", (d3.event.pageY - 10 - packets_loss_chart_pos.y + 80) + "px")
                             .select("#LPvalue")
                             .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x] +" packets_loss:"
-                                + d.z + "%");
+                                + d.z + "%" + " send_loss_rate:" + d.send_loss_rate + " send_pkgs:" + d.send_pkgs
+                                + " recv_loss_rate:" + d.recv_loss_rate + " recv_pkgs:" + d.recv_pkgs);
                         d3.select("#LPtooltip").classed("hidden", false);
                     }
                     function mouseout() {
@@ -186,7 +187,16 @@ define(["language/chkFlow",
                     lossDataJson.forEach(function(ip,i){
                         $scope.ipList[i]=ip['ip'];
                         $scope.ipSeq[ip['ip']]=i;
-                        $scope.lossMatrix[i] = d3.range(len).map(function(j) { return {x: j, y: i, z: 0}; });
+                        $scope.lossMatrix[i] = d3.range(len).map(function(j) { return {
+                            x: j,
+                            y: i,
+                            z: 0,
+                            send_loss_rate: "",
+                            send_pkgs: "",
+                            recv_loss_rate: "",
+                            recv_pkgs: ""
+                            };
+                        });
                     });
                 }
                 function getLossLinkInfo(linkDataInfo)
@@ -197,8 +207,13 @@ define(["language/chkFlow",
                         var dstIp = link['dst_ip'];
                         if(srcIp in $scope.ipSeq && dstIp in $scope.ipSeq)
                         {
-                            $scope.lossMatrix[$scope.ipSeq[srcIp]][$scope.ipSeq[dstIp]].z=
-                            d3.max([parseFloat(link['send_loss_rate']),parseFloat(link['recv_loss_rate'])]);
+                            var i = $scope.ipSeq[srcIp];
+                            var j = $scope.ipSeq[dstIp];
+                            $scope.lossMatrix[i][j].z = d3.max([parseFloat(link['send_loss_rate']),parseFloat(link['recv_loss_rate'])]);
+                            $scope.lossMatrix[i][j].send_loss_rate = link["send_loss_rate"];
+                            $scope.lossMatrix[i][j].send_pkgs = link["send_pkgs"];
+                            $scope.lossMatrix[i][j].recv_loss_rate = link["recv_loss_rate"];
+                            $scope.lossMatrix[i][j].recv_pkgs = link["recv_pkgs"];
                         }
                     });
                 }
