@@ -533,6 +533,17 @@ public class RouterApi {
         return ResponseUtil.succ();
     }
 
+    @Path("/warningListsLength")
+    @POST
+    public Response getWarnListLength(PntlWarning.PntlWarnInfo param){
+        Result<Object> result = PntlWarning.getWarnListLength(param);
+        if (result.isSuccess()) {
+            return ResponseUtil.succ(result.getModel());
+        } else {
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+    }
+
     @Path("/warningList")
     @POST
     public Response getWarningList(PntlWarning.PntlWarnInfo param){
