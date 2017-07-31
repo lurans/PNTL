@@ -559,8 +559,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
         CommonInfo.setRepoUrl(pntlConfig.getModel().getRepoUrl());
         CommonInfo.setReportPeriod(Integer.valueOf(pntlConfig.getModel().getReportPeriod()));
-        CommonInfo.setKafkaIp(pntlConfig.getModel().getKafkaIp());
-        CommonInfo.setTopic(pntlConfig.getModel().getTopic());
+        CommonInfo.setKafkaIp(pntlConfig.getModel().getKafkaUrl());
+        CommonInfo.setTopic(pntlConfig.getModel().getKafkaTopic());
         /*恢复仓库地址到内存*/
         Pntl.setDownloadUrl(pntlConfig.getModel().getEulerRepoUrl());
         Pntl.setDownloadUrl(pntlConfig.getModel().getSuseRepoUrl());

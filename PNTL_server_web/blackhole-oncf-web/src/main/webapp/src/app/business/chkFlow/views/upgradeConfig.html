@@ -29,10 +29,10 @@
 </div>
 <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_install_file_upload2}}</div>
 <div class="installFileUpload level2Content" style="overflow: hidden; zoom:1;">
-    <tiny-radiogroup values="singleFileUpload.values"
+    <tiny-radiogroup id = "singleFileUpload.radioGroupId"
+                     values="singleFileUpload.values"
                      layout = "singleFileUpload.layout"
-                     spacing="singleFileUpload.spacing"
-                     id = "singleFileUpload.id1" ></tiny-radiogroup></br></br>
+                     spacing="singleFileUpload.spacing" ></tiny-radiogroup></br></br>
     <div style="float:left; margin-right:50px;">
         <tiny-fileupload id = "singleFileUpload.id"
                          action="singleFileUpload.action"
@@ -45,13 +45,14 @@
                          select-error = "singleFileUpload.selectError"
                          enable-detail = "singleFileUpload.enableDetail"
                          before-submit = "singleFileUpload.beforeSubmit"
-                         complete="singleFileUpload.completeDefa">
-        </tiny-fileupload>
+                         complete="singleFileUpload.completeDefa"
+                         input-value="singleFileUpload.inputValue"></tiny-fileupload>
     </div>
     <div style="float:left;">
-        <tiny-button text = "singleFileUpload.text"
-                      disable="singleFileUpload.disable"
-                      click = "singleFileUpload.submitClick()"></tiny-button>
+        <tiny-button id = "singleFileUpload.submitId"
+                     text = "singleFileUpload.text"
+                     disable="singleFileUpload.disable"
+                     click = "singleFileUpload.submitClick()"></tiny-button>
     </div>
 </div>
 

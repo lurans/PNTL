@@ -102,25 +102,51 @@ public class PntlConfigService {
         return result;
     }
 
-    private boolean checkAkSkValid(String ak, String sk){
-        if (StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk)){
+    private boolean checkIpValid(String kafkaUrl, String repoUrl){
+        Pattern pattern = Pattern
+            .compile("^((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]"
+                    + "|[*])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]|[*])$");
+
+        if (!StringUtils.isEmpty(kafkaUrl) && !pattern.matcher(kafkaUrl).matches()) {
             return false;
         }
 
-        Pattern pattern = Pattern
-                .compile("[a-zA-Z0-9_]+");
-        if (!pattern.matcher(ak).matches() || !pattern.matcher(sk).matches()){
+        if (!StringUtils.isEmpty(repoUrl) && !pattern.matcher(repoUrl).matches()) {
             return false;
         }
 
         return true;
     }
 
-    public Result<String> setPntlAkSkConfig(PntlConfig pntlConfig) {
+    private boolean checkAkSkTopicValid(String ak, String sk, String kafkaTopic){
+        if (StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk) || StringUtils.isEmpty(kafkaTopic)){
+            return false;
+        }
+
+        if(ak.length() > 30 || sk.length() > 30|| kafkaTopic.length() > 20){
+            return false;
+        }
+
+        Pattern pattern = Pattern
+                .compile("[a-zA-Z0-9_]+");
+        if (!pattern.matcher(ak).matches()
+                || !pattern.matcher(sk).matches()
+                || !pattern.matcher(kafkaTopic).matches()){
+            return false;
+        }
+
+        return true;
+    }
+
+    public Result<String> setPntlDeployConfig(PntlConfig pntlConfig) {
         //Get PntlConfig
         Result<String> result = new Result<String>();
-        if (!checkAkSkValid(pntlConfig.getAk(), pntlConfig.getSk())){
-            result.addError("", "ak or sk is invalid");
+        if (!checkAkSkTopicValid(pntlConfig.getAk(), pntlConfig.getSk(), pntlConfig.getKafkaTopic())){
+            result.addError("", "ak, sk or topic is invalid");
+            return result;
+        }
+        if(!checkIpValid(pntlConfig.getKafkaUrl(),pntlConfig.getRepoUrl())){
+            result.addError("", "repoUrl or kafkaUrl is invalid");
             return result;
         }
 
@@ -129,15 +155,16 @@ public class PntlConfigService {
             dataObj.put("ak", pntlConfig.getAk());
             dataObj.put("sk", pntlConfig.getSk());
             dataObj.put("repo_url", pntlConfig.getRepoUrl());
-            pntlConfig.setByMap(dataObj);
-            validPntlConfig(pntlConfig);
-            pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
-            //保存在文件
-            pntlConfig.setRepoUrl(pntlConfig.getRepoUrl());
+            dataObj.put("kafka_url", pntlConfig.getKafkaUrl());
+            dataObj.put("kafka_topic", pntlConfig.getKafkaTopic());
 
+            pntlConfig.setByMap(dataObj);
+            pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
+
+            //保存在文件
             Map<String, Object> data = pntlConfig.convertToMap();
             YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
-        }catch (ApplicationException | InvalidParamException e) {
+        }catch (ApplicationException e) {
             String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
             result.addError("", e.prefix() + errMsg);
@@ -148,26 +175,33 @@ public class PntlConfigService {
         }
         //保存在内存公共信息
         CommonInfo.setRepoUrl(pntlConfig.getRepoUrl());
+        CommonInfo.setKafkaIp(pntlConfig.getKafkaUrl());
+        CommonInfo.setTopic(pntlConfig.getKafkaTopic());
 
         LOGGER.info("Update pntlConfig success");
 
         return result;
     }
 
-    public Result<String> setPntlConfig(PntlConfig pntlConfig) {
+    public Result<String> setPntlAgentConfig(PntlConfig pntlConfig) {
         Result<String> result = new Result<String>();
         try {
             Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
-            pntlConfig.setAk(dataObj.get("ak").toString());
-            pntlConfig.setSk(dataObj.get("sk").toString());
-            pntlConfig.setBasicToken(dataObj.get("basicToken").toString());
-            pntlConfig.setEulerRepoUrl(dataObj.get("eulerRepoUrl").toString());
-            pntlConfig.setSuseRepoUrl(dataObj.get("suseRepoUrl").toString());
-            pntlConfig.setRepoUrl(dataObj.get("repo_url").toString());
-            pntlConfig.setInstallScriptRepoUrl(dataObj.get("installScriptRepoUrl").toString());
+            dataObj.put("probe_period", pntlConfig.getProbePeriod());
+            dataObj.put("port_count", pntlConfig.getPortCount());
+            dataObj.put("report_period", pntlConfig.getReportPeriod());
+            dataObj.put("pkg_count", pntlConfig.getPkgCount());
+            dataObj.put("delay_threshold", pntlConfig.getDelayThreshold());
+            dataObj.put("lossRate_threshold", pntlConfig.getLossRateThreshold());
+            dataObj.put("dscp", pntlConfig.getDscp());
+            dataObj.put("lossPkg_timeout", pntlConfig.getLossPkgTimeout());
+            dataObj.put("lossPkg_num", pntlConfig.getLossPkgNum());
 
             validPntlConfig(pntlConfig);
+
+            pntlConfig.setByMap(dataObj);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
+
             Map<String, Object> data = pntlConfig.convertToMap();
             YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
         } catch (ApplicationException | InvalidParamException e) {
@@ -194,7 +228,7 @@ public class PntlConfigService {
 
         try {
             int probe_period = Integer.valueOf(pntlConfig.getProbePeriod());
-            if (probe_period < 60 || probe_period > 1800) {
+            if (probe_period < 1 || probe_period > 120) {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "probe period is invalid");
             }
 
@@ -203,7 +237,7 @@ public class PntlConfigService {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "port count is invalid");
             }
             int report_period = Integer.valueOf(pntlConfig.getReportPeriod());
-            if (report_period < 60 || report_period > 1800){
+            if (report_period < 5 || report_period > 300){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "report period is invalid");
             }
 
@@ -212,25 +246,34 @@ public class PntlConfigService {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "report period shoud be bigger then probe period");
             }
 
-            int pkg_count = Integer.valueOf(pntlConfig.getPkgCount());
-            if (pkg_count !=0 && pkg_count != 100){
+            int large_pkg_count = Integer.valueOf(pntlConfig.getPkgCount());
+            if (large_pkg_count != 0 && large_pkg_count != 100){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "package count is invalid");
             }
+
             int delay_threshold = Integer.valueOf(pntlConfig.getDelayThreshold());
-            if (delay_threshold < 0){
+            if (delay_threshold < 1 || delay_threshold > 2000){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "delay threshold is invalid");
             }
+
             int lossRate_threshold = Integer.valueOf(pntlConfig.getLossRateThreshold());
-            if (lossRate_threshold <= 0 || lossRate_threshold > 100){
+            if (lossRate_threshold < 1 || lossRate_threshold > 100){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "lossRate threshold is invalid");
             }
+
             int dscp = Integer.valueOf(pntlConfig.getDscp());
             if (dscp < 0 || dscp > 63){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "dscp is invalid");
             }
+
             int lossPkg_timeout = Integer.valueOf(pntlConfig.getLossPkgTimeout());
-            if (lossPkg_timeout < 0){
+            if (lossPkg_timeout < 1 || lossPkg_timeout > 5){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "loss package timeout is invalid");
+            }
+
+            int lossPkg_num = Integer.valueOf(pntlConfig.getLossPkgNum());
+            if (lossPkg_num < 1 || lossPkg_num > 10){
+                throw new InvalidParamException(ExceptionType.CLIENT_ERR, "loss package num is invalid");
             }
         } catch (Exception e){
             throw new Exception();

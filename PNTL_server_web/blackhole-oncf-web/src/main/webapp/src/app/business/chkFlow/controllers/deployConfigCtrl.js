@@ -11,7 +11,7 @@ define(["language/chkFlow",
 
                 var divTip = new tinyWidget.Tip({
                     content : "",
-                    element : ("#akSkBtnId"),
+                    element : ("#deployVariableConfigBtnId"),
                     position : "right",
                     width: 300,
                     id : "searchTip",
@@ -102,8 +102,8 @@ define(["language/chkFlow",
                             "errorDetail": i18n.chkFlow_term_sk_err,
                         }]
                 };
-                $scope.ipTextBox = {
-                    "id": "ipTextBoxId",
+                $scope.repoIpTextBox = {
+                    "id": "repoIpTextBoxId",
                     "value": "",
                     "type" : "ipv4",
                     "tooltip":i18n.chkFlow_term_ip_tooltip,
@@ -115,9 +115,40 @@ define(["language/chkFlow",
                             "validFn" : "ipv4",
                         }]
                 };
+                $scope.kafkaTopicTextBox = {
+                    "id": "kafkaTopicTextBoxId",
+                    "value": "",
+                    "tooltip":i18n.chkFlow_term_topic_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "required"
+                        },
+                        {
+                            "validFn" : "maxSize",
+                            "params" : 20
+                        },
+                        {
+                            "validFn" : "regularCheck",
+                            "params" : "/^[a-zA-Z0-9_]+$/",
+                            "errorDetail": i18n.chkFlow_term_sk_err,
+                        }]
+                };
+                $scope.kafkaIpTextBox = {
+                    "id": "kafkaIpTextBoxId",
+                    "value": "",
+                    "type" : "ipv4",
+                    "tooltip":i18n.chkFlow_term_ip_tooltip,
+                    "validate": [
+                        {
+                            "validFn" : "required"
+                        },
+                        {
+                            "validFn" : "ipv4"
+                        }]
+                };
 
-                $scope.akSkBtn = {
-                    "id":"akSkBtnId",
+                $scope.deployVariableConfigBtn = {
+                    "id":"deployVariableConfigBtnId",
                     "text":i18n.chkFlow_term_submit,
                     "disable":false
                 };
@@ -135,12 +166,16 @@ define(["language/chkFlow",
                 function getParaFromInput(){
                     var ak = $scope.akTextBox.value;
                     var sk = $scope.skTextBox.value;
-                    var ip = $scope.ipTextBox.value;
+                    var ip = $scope.repoIpTextBox.value;
+                    var kafka_ip = $scope.kafkaIpTextBox.value;
+                    var kafka_topic = $scope.kafkaTopicTextBox.value;
 
                     var para = {
                         "ak":ak,
                         "sk":sk,
-                        "repo_url":ip
+                        "repo_url":ip,
+                        "kafka_url":kafka_ip,
+                        "kafka_topic":kafka_topic
                     };
                     return para;
                 };
@@ -149,21 +184,23 @@ define(["language/chkFlow",
                     promise.then(function(responseData){
                         $scope.akTextBox.value = responseData.ak;
                         $scope.skTextBox.value = responseData.sk;
-                        $scope.ipTextBox.value = responseData.repo_url;
+                        $scope.repoIpTextBox.value = responseData.repo_url;
+                        $scope.kafkaIpTextBox.value = responseData.kafka_url;
+                        $scope.kafkaTopicTextBox.value = responseData.kafka_topic;
                     },function(responseData){
                         //showERRORMsg
                         commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
                     });
                 };
-                var postDeployVariable = function (para) {
-                    var promise = configFlowServ.postAkSk(para);
+                var postDeployVariableConfig = function (para) {
+                    var promise = configFlowServ.postDeployVariableConf(para);
                     promise.then(function(responseData){
                         commonException.showMsg(i18n.chkFlow_term_config_ok);
-                        $scope.akSkBtn.disable = false;
+                        $scope.deployVariableConfigBtn.disable = false;
                     },function(responseData){
                         //showERRORMsg
                         commonException.showMsg(i18n.chkFlow_term_config_err, "error");
-                        $scope.akSkBtn.disable = false;
+                        $scope.deployVariableConfigBtn.disable = false;
                     });
                 };
                 var postInstall = function(para){
@@ -190,16 +227,16 @@ define(["language/chkFlow",
                     });
                 };
 
-                $scope.akSkBtnOK = function () {
-                    $scope.akSkBtn.disable = true;
+                $scope.deployVariableConfigBtnOK = function () {
+                    $scope.deployVariableConfigBtn.disable = true;
                     if (!window.tinyWidget.UnifyValid.FormValid((".level2Content"))){
                         divTip.option("content",i18n.chkFlow_term_input_valid);
                         divTip.show(1000);
-                        $scope.akSkBtn.disable = false;
+                        $scope.deployVariableConfigBtn.disable = false;
                         return;
                     }
                     var para = getParaFromInput();
-                    postDeployVariable(para);
+                    postDeployVariableConfig(para);
                 };
                 $scope.installBtnOK = function(){
                     $scope.installBtn.disable = true;

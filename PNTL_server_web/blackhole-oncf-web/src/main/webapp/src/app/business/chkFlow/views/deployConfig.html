@@ -26,12 +26,24 @@
                     </tiny-fileupload>
                 </div>
             </div>
-            <div class="akSkConfig">
+            <div class="deployVariableConfig">
                 <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_ak_sk}}</div>
                 <div class="level2Content">
-                    <div style="overflow:auto;margin-bottom:20px;">
+                    <div class="agentConfig" style="overflow:auto;margin-bottom:20px;">
+                        <div style="float:left;margin-right:50px;">
+                            <div class="span1 input_label1" style="margin-left:0px;width: 70px;">
+                                {{i18n.chkFlow_term_repo_ip}}
+                            </div>
+                            <tiny-ip id="repoIpTextBox.id"
+                                     type="repoIpTextBox.type"
+                                     value="repoIpTextBox.value"
+                                     validate = "repoIpTextBox.validate"
+                                     tooltip = "repoIpTextBox.tooltip"> </tiny-ip>
+                        </div>
                         <div style="float:left; margin-right:50px;">
-                            <label>{{i18n.chkFlow_term_ak_name}}</label>
+                            <div class="span1 input_label1" style="margin-left:0px;width: 45px;">
+                                {{i18n.chkFlow_term_ak_name}}
+                            </div>
                             <tiny-textbox id="akTextBox.id"
                                           value="akTextBox.value"
                                           validate = "akTextBox.validate"
@@ -39,31 +51,45 @@
                             </tiny-textbox>
                         </div>
                         <div style="float:left; margin-right:50px;">
-                            <label>{{i18n.chkFlow_term_sk_name}}</label>
+                            <div class="span1 input_label1" style="margin-left:0px;width: 45px;">
+                                {{i18n.chkFlow_term_sk_name}}
+                            </div>
                             <tiny-textbox id="skTextBox.id"
                                           value="skTextBox.value"
                                           validate = "skTextBox.validate"
                                           tooltip = "skTextBox.tooltip"></tiny-textbox>
                         </div>
+                    </div>
+                    <div class="kafkaConfig" style="overflow:auto;margin-bottom:20px;">
                         <div style="float:left;margin-right:50px;">
-                            <label>{{i18n.chkFlow_term_ip_name}}</label>
-                            <tiny-ip id="ipTextBox.id"
-                                     type="ipTextBox.type"
-                                     value="ipTextBox.value"
-                                     validate = "ipTextBox.validate"
-                                     tooltip = "ipTextBox.tooltip"
-                            > </tiny-ip>
+                            <div class="span1 input_label1" style="margin-left:0px;width: 70px;">
+                                {{i18n.chkFlow_term_kafka_ip}}
+                            </div>
+                            <tiny-ip id="kafkaIpTextBox.id"
+                                     type="kafkaIpTextBox.type"
+                                     value="kafkaIpTextBox.value"
+                                     validate = "kafkaIpTextBox.validate"
+                                     tooltip = "kafkaIpTextBox.tooltip"> </tiny-ip>
                         </div>
-                        <div class="akSk"style="float:left;">
-                            <tiny-button id="akSkBtn.id"
-                                         text="akSkBtn.text"
-                                         disable="akSkBtn.disable"
-                                         click="akSkBtnOK()"></tiny-button>
+                        <div style="float:left;margin-right:50px;">
+                            <div class="span1 input_label1" style="margin-left:0px;width: 45px;">
+                                {{i18n.chkFlow_term_kafka_topic}}
+                            </div>
+                            <tiny-textbox id="kafkaTopicTextBox.id"
+                                     value="kafkaTopicTextBox.value"
+                                     validate = "kafkaTopicTextBox.validate"
+                                     tooltip = "kafkaTopicTextBox.tooltip"> </tiny-textbox>
+                        </div>
+                        <div class="deployVariableConfigBtn"style="float:right;margin-right: 150px">
+                            <tiny-button id="deployVariableConfigBtn.id"
+                                         text="deployVariableConfigBtn.text"
+                                         disable="deployVariableConfigBtn.disable"
+                                         click="deployVariableConfigBtnOK()"></tiny-button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="installOrUninstall" style="overflow:auto;">
+            <div class="installOrUninstall">
                 <div class="level2Head"><span style="color:red">*</span>{{i18n.chkFlow_term_install_uninstall}}</div>
                 <div class="level2Content">
                     <div class="install_btn" style="float:left; margin-right:40px;">

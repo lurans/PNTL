@@ -83,10 +83,21 @@ define(["language/chkFlow",
                         }
                         $scope.table.data = responseData;
                         $scope.table.totalRecords = responseData.length;
-                        commonException.showMsg(i18n.chkFlow_term_submit_ok);
+                        if($scope.status != "first")
+                        {
+                            commonException.showMsg(i18n.chkFlow_term_submit_ok);
+                        } else {
+                            $scope.status = "notFirst";
+                        }
                         $scope.search.disable = false;
                     },function(responseData){
-                        commonException.showMsg(i18n.chkFlow_term_submit_err, "error");
+                        if($scope.status != "first")
+                        {
+                            commonException.showMsg(i18n.chkFlow_term_submit_err, "error");
+                        } else {
+                            commonException.showMsg(i18n.chkFlow_term_init_submit_err, "error");
+                            $scope.status = "notFirst";
+                        }
                         $scope.search.disable = false;
                     });
                 };
@@ -211,7 +222,7 @@ define(["language/chkFlow",
                         "end_time":"",
                         "type":""
                     };
-
+                    $scope.status = "first";
                     postData(nullPara);
                 };
                 init();
