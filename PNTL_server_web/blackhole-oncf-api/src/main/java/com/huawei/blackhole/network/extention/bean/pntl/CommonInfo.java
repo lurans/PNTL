@@ -6,6 +6,12 @@ public class CommonInfo {
 
     private static int reportPeriod;
 
+    private static String kafkaIp;
+
+    private static String topic;
+
+    private static String serverStart;
+
     public static int getReportPeriod() {
         return reportPeriod;
     }
@@ -21,5 +27,29 @@ public class CommonInfo {
     public static void setRepoUrl(String repoUrl)
     {
         CommonInfo.repoUrl = repoUrl;
+    }
+
+    public static String getKafkaIp() {
+        return kafkaIp;
+    }
+
+    public static void setKafkaIp(String kafkaIp) {
+        CommonInfo.kafkaIp = kafkaIp;
+    }
+
+    public static String getTopic() {
+        return topic;
+    }
+
+    public static void setTopic(String topic) {
+        CommonInfo.topic = topic;
+    }
+
+    public static String getServerStart() {
+        return serverStart;
+    }
+
+    public static void setServerStart(String serverStart) {
+        CommonInfo.serverStart = serverStart;
     }
 }

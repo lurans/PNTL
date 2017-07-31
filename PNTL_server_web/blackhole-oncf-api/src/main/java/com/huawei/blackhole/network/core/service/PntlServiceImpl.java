@@ -1,6 +1,7 @@
 package com.huawei.blackhole.network.core.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
@@ -16,12 +17,15 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
-import com.huawei.*;
+import com.huawei.blackhole.network.extention.service.pntl.PntlWarnService;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -35,6 +39,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     @javax.annotation.Resource(name = "pntlConfigService")
     private PntlConfigService pntlConfigService;
+
+    @javax.annotation.Resource(name = "pntlWarnService")
+    private PntlWarnService pntlWarnService;
 
     /**
      * 首次启动
@@ -81,10 +88,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             return result;
         }
 
-        for (PntlHostContext host : hostList){
-            SocketClientService socketClient = new SocketClientService(host.getAgentIp(),
-                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_PINGLIST);
-            socketClient.start();
+        result = sendMsgToAgents();
+        if (!result.isSuccess()){
+            LOG.error("notfiyAllAgentsToGetPingList failed");
         }
         return result;
     }
@@ -124,7 +130,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
      * @param vbondIp
      * @return
      */
-    public Result<String> saveAgentIp(String agentIp, String vbondIp){
+    public Result<String> saveVbondIp(String agentIp, String vbondIp){
         Result<String> result = new Result<>();
 
         result = checkAgentVbondIpValid(agentIp, vbondIp);
@@ -192,18 +198,16 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return result;
     }
 
-    public Result<String> setAgentConf(PntlConfig config){
+    public Result<String> notifyAgentConf(PntlConfig config){
         Result<String> result = new Result<>();
         if (hostList == null){
             result.addError("", "host is null");
             return result;
         }
 
-        for (PntlHostContext host : hostList) {
-            String agentIp = host.getAgentIp();
-            SocketClientService socketClient = new SocketClientService(agentIp,
-                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_CONF);
-            socketClient.start();
+        result = sendMsgToAgents();
+        if (!result.isSuccess()){
+            LOG.error("notifyAgentConf failed");
         }
         return result;
     }
@@ -236,11 +240,10 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
             return result;
         }
-        for (PntlHostContext host : hostList) {
-            String agentIp = host.getAgentIp();
-            SocketClientService socketClient = new SocketClientService(agentIp,
-                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_TIME_INTERVAL);
-            socketClient.start();
+
+        result = sendMsgToAgents();
+        if (!result.isSuccess()){
+            LOG.error("setProbeInterval failed");
         }
         return result;
     }
@@ -312,14 +315,21 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
     }
 
-    private void sendFilesToAgentsTask(List<PntlHostContext> hosts){
+    private void sendFilesToAgentsTask(List<PntlHostContext> hosts, int funFlags){
         Runnable scriptSendTask = new Runnable() {
             @Override
             public void run() {
                 Result<String> result = new Result<String>();
                 try {
                     String token = identityWrapperService.getPntlAccessToken();
-                    result = pntlRequest.sendFilesToAgents(hosts, token);
+                    switch (funFlags) {
+                        case 0:
+                            result = pntlRequest.sendInstallFilesToAgents(hosts, token);
+                        case 1:
+                            result = pntlRequest.sendPntlConfigToAgents(hosts, token);
+                        default:
+                            break;
+                    }
                 } catch (ClientException e){
                     String errMsg = "Send files to agents failed: " + e.getMessage();
                     LOG.error(errMsg);
@@ -374,7 +384,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         /*初始话agent状态，去除上次安装结果*/
         resetAgentStatus(hosts);
-        sendFilesToAgentsTask(hosts);
+        sendFilesToAgentsTask(hosts, 1);
 
         result = waitMoment();
         if (!result.isSuccess()){
@@ -424,20 +434,116 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
         };
         resultService.execute(monitorPntlWarnTask);
+
+        Runnable monitorKafkaTask = new Runnable() {
+            @Override
+            public void run() {
+                monitorKafka();
+            }
+        };
+        resultService.execute(monitorKafkaTask);
+    }
+
+    private void handleLossRateMsg(Object obj)  throws IOException{
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonStr = objectMapper.writeValueAsString(obj);
+        LossRateAgent lossRate = objectMapper.readValue(jsonStr, LossRateAgent.class);
+        Result<String> result = pntlWarnService.saveLossRateData(lossRate);
+        if (!result.isSuccess()){
+            LOG.error("save lossRate failed");
+        }
+    }
+
+    private void handleDelayInfoMsg(Object obj)  throws IOException{
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonStr = objectMapper.writeValueAsString(obj);
+        DelayInfoAgent delay = objectMapper.readValue(jsonStr, DelayInfoAgent.class);
+        Result<String> result = pntlWarnService.saveDelayInfoData(delay);
+        if (!result.isSuccess()){
+            LOG.error("save delay failed");
+        }
+    }
+
+    private void handleAgentIpMsg(Object obj) throws IOException{
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonStr = objectMapper.writeValueAsString(obj);
+        AgentIp ip = objectMapper.readValue(jsonStr, AgentIp.class);
+        Result<String> result = saveVbondIp(ip.getAgentIp(), ip.getVbondIp());
+        if (!result.isSuccess()){
+            LOG.error("save vbond ip failed");
+        }
+    }
+
+    private void handleKafkaMsg(KafkaRsp.Data data) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String jsonstr = objectMapper.writeValueAsString(data);
+        KafkaRsp.Data value = objectMapper.readValue(jsonstr, KafkaRsp.Data.class);
+        Object obj = value.getValue();
+        System.out.println(objectMapper.writeValueAsString(obj));
+        JsonNode objNode = objectMapper.readTree(jsonstr).get("value");
+        if (objNode.findValue("packet-sent") != null){
+            handleLossRateMsg(obj);
+        } else if (objNode.findValue("statistics") != null){
+            handleDelayInfoMsg(obj);
+        } else if (objNode.findValue("vbond_ip") != null){
+            handleAgentIpMsg(obj);
+        }
     }
 
     /**
+     * 实时监控kafka消息
+     */
+    private void monitorKafka(){
+        //noinspection InfiniteLoopStatement
+        while (true){
+            KafkaRsp msg = pntlRequest.getKafkaMsg();
+            if (null == msg){
+                continue;
+            }
+
+            for (KafkaRsp.Data data : msg.getData()) {
+                try {
+                    handleKafkaMsg(data);
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private Result<String> sendMsgToAgents(){
+        Result<String> result = new Result<>();
+
+        //1. 写信息到文件
+        result = pntlConfigService.writeInfoToAgentConf(PntlInfo.AGENT_CONF);
+        if (!result.isSuccess()){
+            LOG.error(result.getErrorMessage());
+            return result;
+        }
+
+        //2.上传文件到仓库
+        result = pntlConfigService.uploadFilesToDFS(PntlInfo.AGENT_CONF);
+        if (!result.isSuccess()){
+            LOG.error("upload files to dfs failed," + result.getErrorMessage());
+            return result;
+        }
+
+        //3.将文件从仓库分发到agents
+        sendFilesToAgentsTask(hostList, 0);
+        return result;
+    }
+    /**
      * 通知agent，表示server已启动
      */
-    private void notifyAgent(){
-        if (hostList == null || hostList.isEmpty()){
-            return;
+    private void notifyAgentServerStart(){
+        CommonInfo.setServerStart("1");
+        Result<String> result = sendMsgToAgents();
+        if (!result.isSuccess()){
+            LOG.error("notifyAgentServerStart failed");
         }
-        for (PntlHostContext host : hostList){
-            SocketClientService socketClient = new SocketClientService(host.getAgentIp(),
-                    PntlInfo.SOCKET_PORT, PntlInfo.AGENT_VBONDIP);
-            socketClient.start();
-        }
+        //通知后，恢复标记,避免反复通知使agent不断上报VbondIp
+        CommonInfo.setServerStart("0");
     }
 
     private Result<String> initPntlConfig(){
@@ -453,6 +559,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
         CommonInfo.setRepoUrl(pntlConfig.getModel().getRepoUrl());
         CommonInfo.setReportPeriod(Integer.valueOf(pntlConfig.getModel().getReportPeriod()));
+        CommonInfo.setKafkaIp(pntlConfig.getModel().getKafkaIp());
+        CommonInfo.setTopic(pntlConfig.getModel().getTopic());
         /*恢复仓库地址到内存*/
         Pntl.setDownloadUrl(pntlConfig.getModel().getEulerRepoUrl());
         Pntl.setDownloadUrl(pntlConfig.getModel().getSuseRepoUrl());
@@ -485,7 +593,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
         startMonitor();
 
-        notifyAgent();
+        notifyAgentServerStart();
         LOG.info("Init host list and pntlConfig success");
 
         return  result;
@@ -938,6 +1046,23 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             result.addError("", errMsg);
             return result;
         }
+        return result;
+    }
+
+    public Result<Map<String, List<String>>> getPingList(){
+        Result<Map<String, List<String>>> result = new Result<>();
+        Map<String, List<String>> list = new HashMap<>();
+        if (hostList == null || hostList.isEmpty()){
+            result.addError("", "hostlist is null");
+            return result;
+        }
+        for(PntlHostContext host : hostList){
+            if (host.getPingMeshList() != null) {
+                list.putAll(host.getPingMeshList());
+            }
+        }
+
+        result.setModel(list);
         return result;
     }
 }

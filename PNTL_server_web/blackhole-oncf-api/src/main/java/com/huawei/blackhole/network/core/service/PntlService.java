@@ -8,6 +8,7 @@ import com.huawei.blackhole.network.extention.bean.pntl.AgentFlowsJson;
 import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
 
 import java.util.List;
+import java.util.Map;
 
 public interface PntlService {
     Result<String> deployAgent();
@@ -24,9 +25,10 @@ public interface PntlService {
 
     Result<String> initHostList();
 
-    Result<String> saveAgentIp(String agentIp, String vbondIp);
-
     Result<String> updateAgents(String type);
 
-    Result<String> setAgentConf(PntlConfig config);
+    Result<String> notifyAgentConf(PntlConfig config);
+
+    Result<Map<String, List<String>>> getPingList();
+    Result<String> saveVbondIp(String agentIp, String vbondIp);//test
 }

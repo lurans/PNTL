@@ -353,33 +353,17 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
-    @Path("/lossRate")
+    //test
+    @Path("/agentIp")
     @POST
-    public Response recvLossRate(LossRateAgent data){
-        LOGGER.info("receive lossRate from agent");
-        Result<String> result = new Result<String>();
-
-        result = pntlWarnService.saveLossRateData(data);
+    public Response recvAgentIp(AgentIp ip){
+        Result<String> result = pntlService.saveVbondIp(ip.getAgentIp(), ip.getVbondIp());
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
-
         return ResponseUtil.succ();
-    }
+   }
 
-    @Path("/delayInfo")
-    @POST
-    public Response recvDelayInfo(DelayInfoAgent data){
-        LOGGER.info("receive delayInfo from agent");
-        Result<String> result = new Result<String>();
-
-        result = pntlWarnService.saveDelayInfoData(data);
-        if (!result.isSuccess()){
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
-        }
-
-        return ResponseUtil.succ();
-    }
 
     @Path("/lossRate")
     @GET
@@ -424,7 +408,7 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
-        result = pntlService.setAgentConf(config);
+        result = pntlService.notifyAgentConf(config);
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -484,16 +468,6 @@ public class RouterApi {
     @POST
     public Response startAgents(){
         Result<String> result = pntlService.startAgents();
-        if (!result.isSuccess()){
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
-        }
-        return ResponseUtil.succ();
-    }
-
-    @Path("/agentIp")
-    @POST
-    public Response recvAgentIp(AgentIp ip){
-        Result<String> result = pntlService.saveAgentIp(ip.getAgentIp(), ip.getVbondIp());
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }

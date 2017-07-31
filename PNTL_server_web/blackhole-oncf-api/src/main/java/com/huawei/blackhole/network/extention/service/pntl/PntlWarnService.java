@@ -46,9 +46,6 @@ public class PntlWarnService {
                 return result;
             }
             LossRate.saveInfo(flow);
-            if (needTracerouteLossRate(flow)){
-            //    new Pntl().startTraceroute(flow.getSip(), flow.getDip());
-            }
         }
         return result;
     }
@@ -73,30 +70,7 @@ public class PntlWarnService {
                 return result;
             }
             DelayInfo.saveInfo(flow);
-            if (needTracerouteDelay(flow)){
-            //    new Pntl().startTraceroute(flow.getSip(), flow.getDip());
-            }
         }
         return result;
     }
-
-    private boolean needTracerouteDelay(DelayInfoAgent.Flow flow){
-        Long t1 = Long.valueOf(flow.getTimes().getT1());
-        Long t2 = Long.valueOf(flow.getTimes().getT2());
-        Long t3 = Long.valueOf(flow.getTimes().getT3());
-        Long t4 = Long.valueOf(flow.getTimes().getT4());
-
-        if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0){
-            return true;
-        }
-        ///TODO:是否还有其他条件
-        return false;
-    }
-
-    private boolean needTracerouteLossRate(LossRateAgent.Flow flow){
-        float rate = Float.parseFloat(flow.getPacketDrops()) / Float.parseFloat(flow.getPacketSent());
-        rate *= 100;
-        return rate >= 50;
-    }
-
 }
