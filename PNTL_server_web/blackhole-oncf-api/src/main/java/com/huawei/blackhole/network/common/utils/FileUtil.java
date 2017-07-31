@@ -157,6 +157,14 @@ public class FileUtil {
         return FileUtil.class.getResource("/").getPath().replace("%20", " ");
     }
 
+    public static String getPath(String confFile) {
+        String directory = getResourcePath();
+        final String separator = System.lineSeparator();
+        if (separator.equals("\\") && directory.startsWith("/")) {
+            directory = directory.substring(1);
+        }
+        return directory + confFile;
+    }
     /**
      * 获取WEB-INF的绝对路径
      *

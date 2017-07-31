@@ -45,9 +45,30 @@ public class PntlConfig implements Serializable{
     @JsonProperty("repo_url")
     private String repoUrl;
 
+    @JsonProperty("kafka_ip")
+    private String kafkaIp;
+    @JsonProperty("topic")
+    private String topic;
+
     private String eulerRepoUrl;
     private String suseRepoUrl;
     private String installScriptRepoUrl;
+
+    public String getKafkaIp() {
+        return kafkaIp;
+    }
+
+    public void setKafkaIp(String kafkaIp) {
+        this.kafkaIp = kafkaIp;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
 
     public String getEulerRepoUrl() {
         return eulerRepoUrl;
@@ -188,6 +209,8 @@ public class PntlConfig implements Serializable{
         this.eulerRepoUrl = MapUtils.getAsStr(data, "eulerRepoUrl");
         this.suseRepoUrl = MapUtils.getAsStr(data, "suseRepoUrl");
         this.installScriptRepoUrl = MapUtils.getAsStr(data, "installScriptRepoUrl");
+        this.kafkaIp = MapUtils.getAsStr(data, "kafka_ip");
+        this.topic = MapUtils.getAsStr(data, "topic");
     }
 
     private boolean containsEmptyField() {
@@ -198,6 +221,7 @@ public class PntlConfig implements Serializable{
                 || StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk) || StringUtils.isEmpty(repoUrl);
 
     }
+
     public Map<String, Object> convertToMap() throws ApplicationException {
         if (containsEmptyField()) {
             throw new ApplicationException(ExceptionType.CLIENT_ERR, "not enough infomation provided");
@@ -218,6 +242,8 @@ public class PntlConfig implements Serializable{
         data.put("eulerRepoUrl", eulerRepoUrl);
         data.put("suseRepoUrl", suseRepoUrl);
         data.put("installScriptRepoUrl", installScriptRepoUrl);
+        data.put("kafka_ip", kafkaIp);
+        data.put("topic", topic);
 
         return data;
     }

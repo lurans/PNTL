@@ -1,5 +1,6 @@
 package com.huawei.blackhole.network.extention.service.pntl;
 
+import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.exception.ConfigLostException;
@@ -11,6 +12,7 @@ import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.extention.bean.pntl.*;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +31,7 @@ public class Pntl {
     private static final String FILETYPE_SCRIPT = "SCRIPT";
     private static final String FILETYPE_AGENT = "AGENT";
     private static final String PNTL_PATH = "/root";
-    private static final String PNTL_UNINSTALL_PATH = "/opt/huawei/ServerAntAgent";
+    private static final String PNTL_INSTALL_PATH = "/opt/huawei/ServerAntAgent";
     private static final String FILE_RIGHT = "644";
 
     private static final Map<String, String> AGENT_FILENAME = new HashMap<String, String>(){
@@ -61,6 +63,8 @@ public class Pntl {
             DownloadUrl.put(PntlInfo.OS_SUSE, downloadUrl);
         } else if (downloadUrl.endsWith(".sh")){
             DownloadUrl.put(FILETYPE_SCRIPT, downloadUrl);
+        } else if (downloadUrl.contains(PntlInfo.AGENT_CONF)){
+            DownloadUrl.put(PntlInfo.AGENT_CONF, downloadUrl);
         }
     }
 
@@ -124,12 +128,58 @@ public class Pntl {
     }
 
     /**
+     * 将参数配置文件发送到agent
+     * @param pntlHostList
+     * @param token
+     * @return
+     * @throws ClientException
+     */
+    public Result<String> sendPntlConfigToAgents(List<PntlHostContext> pntlHostList, String token)
+            throws ClientException {
+        Result<String> result = new Result<>();
+        RestResp resp = null;
+
+        String url = PntlInfo.URL_IP + PntlInfo.SCRIPT_SEND_URL_SUFFIX;
+        Map<String, String> header = new HashMap<>();
+        setCommonHeaderForAgent(header, token);
+        ScriptSendJson body = new ScriptSendJson();
+        body.setPath(PNTL_INSTALL_PATH);
+        body.setMode(FILE_RIGHT);
+        body.setFilename(PntlInfo.PNTL_CONF);
+        body.setRepoUrl(getDownloadUrl(PntlInfo.AGENT_CONF));
+
+        List<String> snList = new ArrayList<>();
+        for(PntlHostContext host : pntlHostList) {
+            if (!StringUtils.isEmpty(host.getAgentSN())) {
+                snList.add(host.getAgentSN());
+            }
+        }
+        body.setAgentSNList(snList);
+        try {
+            resp = RestClientExt.post(url, null, body, header);
+            int code = (Integer)resp.getRespBody().get("code");
+            if (code != 0){
+                /* agent返回失败，1000部分成功，2000全部失败，其他非0值，调用接口失败 */
+                String errMsg = "code is" + code;
+                if (code != 1000 && code != 2000){
+                    errMsg = resp.getRespBody().get("reason").toString();
+                }
+                result.addError("", "send file to agent failed " + errMsg);
+            }
+        } catch (ClientException | JSONException e){
+            LOG.error("Send pntlConfig to agent failed:" + e.getMessage());
+            result.addError("", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
      *  发送ants agent和脚本
      * @param pntlHostList
      * @return
      * @throws ClientException
      */
-    public Result<String> sendFilesToAgents(List<PntlHostContext> pntlHostList, String token)
+    public Result<String> sendInstallFilesToAgents(List<PntlHostContext> pntlHostList, String token)
             throws ClientException {
         Result<String> result = new Result<>();
         LOG.info("send files to agents");
@@ -266,7 +316,7 @@ public class Pntl {
                 snList.add(host.getAgentSN());
             }
         }
-        final String command = "cd" + " " + PNTL_UNINSTALL_PATH + ";sh -x UninstallService.sh";
+        final String command = "cd" + " " + PNTL_INSTALL_PATH + ";sh -x UninstallService.sh";
         return sendCommandToAgents(snList, token, command, "sync");
     }
 
@@ -310,41 +360,30 @@ public class Pntl {
         return agentSn;
     }
 
-    public void startTraceroute(String srcIp, String dstIp){
-        RestResp resp = null;
-        String srcAgentSn = null;
-        String dstAgentSn = null;
-        if (srcIp == null || dstIp == null){
-            return;
+    /**
+     * 从kafka获得消息
+     * @return
+     */
+    public KafkaRsp getKafkaMsg(){
+        String kafkaIp = CommonInfo.getKafkaIp();
+        String topic = CommonInfo.getTopic();
+
+        if (StringUtils.isEmpty(kafkaIp) || StringUtils.isEmpty(topic)){
+            return null;
         }
-        try {
-            srcAgentSn = getAgentSnByIp(srcIp);
-            dstAgentSn = getAgentSnByIp(srcIp);
-        } catch (ClientException e){
-            LOG.error(e.getMessage());
-            return;
-        }
-        if (srcAgentSn == null || dstAgentSn == null){
-            return;
-        }
-        List<String> snList = new ArrayList<>();
-        snList.add(srcAgentSn);
-        String token = null;
-        try {
-            token = new Keystone().getPntlAccessToken();
-        }catch (ClientException e){
-            LOG.error("Get token fail " + e.getMessage());
-            return;
-        }
-        final String command = "cd /opt/huawei/ServerAntAgent & python tracetool.py";
-        try {
-            resp = sendCommandToAgents(snList, token, command, "async");
-            if (resp.getStatusCode().isError()){
-                LOG.error("Execute:" + command + "fail");
+        KafkaRsp resp = null;
+        String url = Constants.HTTP_PREFIX + kafkaIp + "/mq/" + topic + "/pntl";
+        try{
+            resp = RestClientExt.get(url, null, KafkaRsp.class, null);
+            if (resp.getCode() != 200){
+                return null;
             }
-        } catch(ClientException e){
-            LOG.error("Execute:" + command + "fail " + e.getMessage());
+        }catch (ClientException e){
+            String errMsg = "get kafka message failed " + e.getMessage();
+            LOG.error(errMsg);
+            return null;
         }
+        return resp;
     }
 
 }

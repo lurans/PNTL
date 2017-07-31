@@ -27,3 +27,8 @@ eulerRepoUrl: http://8.15.4.10/dfs/download/root/ServerAntAgentForEuler.tar.gz
 suseRepoUrl: http://8.15.4.10/dfs/download/root/ServerAntAgentForSles.tar.gz
 
 installScriptRepoUrl: http://8.15.4.10/dfs/download/root/install_pntl.sh
+
+agentConfUrl:
+
+kafka_ip: 8.15.4.108:8000
+topic: pntl

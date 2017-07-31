@@ -15,6 +15,7 @@ import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.core.service.PntlService;
+import com.huawei.blackhole.network.extention.bean.pntl.AgentConfig;
 import com.huawei.blackhole.network.extention.bean.pntl.CommonInfo;
 import com.huawei.blackhole.network.extention.service.openstack.Keystone;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -356,6 +358,8 @@ public class PntlConfigService {
             saveElemToPntlConfigFile("suseRepoUrl", repoUrl);
         } else if (filename.equalsIgnoreCase(PntlInfo.AGENT_INSTALL_FILENAME)){
             saveElemToPntlConfigFile("installScriptRepoUrl", repoUrl);
+        } else if (filename.equalsIgnoreCase(PntlInfo.AGENT_CONF)){
+            saveElemToPntlConfigFile("agentConfUrl", repoUrl);
         }
     }
 
@@ -379,6 +383,74 @@ public class PntlConfigService {
         return result;
     }
 
+    private String getToken(){
+        String token = null;
+        try {
+            token = identityWrapperService.getPntlAccessToken();
+        } catch (ClientException e) {
+            String errMsg = "get token failed:" + e.getMessage();
+            LOGGER.error("", errMsg);
+            return null;
+        }
+        return token;
+    }
+
+    /**
+     * 上传文件到DFS仓库
+     * @param filename
+     * @return
+     */
+    public Result<String> uploadFilesToDFS(String filename){
+        Result<String> result = new Result<>();
+        if (StringUtils.isEmpty(filename)){
+            result.addError("", "filename is null, cannot upload files to DFS");
+            return result;
+        }
+
+        File f = new File(getFileName(filename));
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.addBinaryBody("attachment", f);
+        builder.addTextBody("type", "0");
+        builder.addTextBody("uploader", PntlInfo.OPS_USERNAME);
+        builder.addTextBody("space", PntlInfo.PTNL_UPLOADER_SPACE);
+        builder.addTextBody("override", "true");
+        builder.addTextBody("description", "");
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        HttpEntity entity = builder.build();
+
+        RestResp resp = null;
+        String url = Constants.HTTPS_PREFIX + CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
+        Map<String, String> header = new HashMap<>();
+
+        String token = getToken();
+        if (StringUtils.isEmpty(token)){
+            result.addError("", "Get token failed");
+            return result;
+        }
+
+        Pntl.setCommonHeaderForAgent(header, token);
+        try{
+            resp = RestClientExt.post(url, entity, header);
+            if (resp.getStatusCode().isError()){
+                result.addError("", "upload file to dfs failed:" + resp.getStatusCode());
+            } else {
+                if (resp.getRespBody().getInt("code") == 0){
+                    String downloadUrl = resp.getRespBody().getJSONObject("data").getString("downloadUrl");
+                   /* 保存到内存 */
+                    Pntl.setDownloadUrl(downloadUrl);
+                   /* 保存到文件 */
+                    saveDownloadUrlToFile(filename, downloadUrl);
+                } else {
+                    result.addError("", resp.getRespBody().getString("reason"));
+                }
+            }
+        } catch (ClientException e){
+            result.addError("", "upload file to dfs failed:" + e.getMessage());
+        }
+        return result;
+    }
+
     public Result<String> uploadAgentPkgFile(Attachment attachment) {
         Result<String> result = new Result<String>();
         try {
@@ -397,50 +469,41 @@ public class PntlConfigService {
             LOGGER.error(errMsg);
             return  result;
         }
-        String token = null;
-        try {
-            token = identityWrapperService.getPntlAccessToken();
-        } catch (ClientException e) {
-            String errMsg = "get token failed:" + e.getMessage();
-            LOGGER.error("", errMsg);
-            result.addError("", errMsg);
+
+        return uploadFilesToDFS(attachment.getDataHandler().getName());
+    }
+
+    public Result<String> writeInfoToAgentConf(String filename){
+        Result<String> result = new Result<>();
+        Result<PntlConfig> pntlConf = getPntlConfig();
+        if (!pntlConf.isSuccess()){
+            result.addError("", pntlConf.getErrorMessage());
             return result;
         }
-        String url = Constants.HTTPS_PREFIX + CommonInfo.getRepoUrl() + PntlInfo.DFS_URL_SUFFIX;
-        Map<String, String> header = new HashMap<>();
 
-        Pntl.setCommonHeaderForAgent(header, token);
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        File f = new File(getFileName(attachment.getDataHandler().getName()));
+        AgentConfig agentConfig = new AgentConfig();
+        agentConfig.setDelayThreshold(pntlConf.getModel().getDelayThreshold());
+        agentConfig.setDscp(pntlConf.getModel().getDscp());
+        agentConfig.setKafkaIp(pntlConf.getModel().getKafkaIp());
+        agentConfig.setLossPkgTimeout(pntlConf.getModel().getLossPkgTimeout());
+        agentConfig.setPkgCount(pntlConf.getModel().getPkgCount());
+        agentConfig.setPortCount(pntlConf.getModel().getPortCount());
+        agentConfig.setProbePeriod(pntlConf.getModel().getProbePeriod());
+        agentConfig.setReportPeriod(pntlConf.getModel().getReportPeriod());
+        agentConfig.setTopic(pntlConf.getModel().getTopic());
+        //server启动，通知agent，用于上报vbondIp
+        agentConfig.setVbondIpFlag(CommonInfo.getServerStart());
+        Result<Map<String, List<String>>> pingList = pntlService.getPingList();
+        agentConfig.setPingList(pingList.getModel());
 
-        builder.addBinaryBody("attachment", f);
-        builder.addTextBody("type", "0");
-        builder.addTextBody("uploader", PntlInfo.OPS_USERNAME);
-        builder.addTextBody("space", PntlInfo.PTNL_UPLOADER_SPACE);
-        builder.addTextBody("override", "true");
-        builder.addTextBody("description", "");
-        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        HttpEntity entity = builder.build();
-
-        RestResp resp = null;
-        try{
-            resp = RestClientExt.post(url, entity, header);
-            if (resp.getStatusCode().isError()){
-                result.addError("", "upload file to dfs failed:" + resp.getStatusCode());
-            } else {
-               if (resp.getRespBody().getInt("code") == 0){
-                   String downloadUrl = resp.getRespBody().getJSONObject("data").getString("downloadUrl");
-                   /* 保存到内存 */
-                   Pntl.setDownloadUrl(downloadUrl);
-                   /* 保存到文件 */
-                   saveDownloadUrlToFile(attachment.getDataHandler().getName(), downloadUrl);
-               } else {
-                   result.addError("", resp.getRespBody().getString("reason"));
-               }
-            }
-        } catch (ClientException e){
-            result.addError("", "upload file to dfs failed:" + e.getMessage());
+        try {
+            FileUtil.write(FileUtil.getPath(PntlInfo.AGENT_CONF) , agentConfig.toString());
+        } catch (IOException e){
+            String errMsg = "write " + PntlInfo.AGENT_CONF + "failed:" + e.getMessage();
+            LOGGER.error(errMsg);
+            result.addError("", errMsg);
         }
+
         return result;
     }
 }
