@@ -179,7 +179,7 @@ public class AgentConfig implements Serializable{
                 + "\"kafka_ip\":\"" + kafkaIp + "\","
                 + "\"topic\":\"" + topic + "\","
                 + "\"vbondIp_flag\":\"" + vbondIpFlag + "\","
-                + "\"pingList\":[" + pingListToString(pingList)
-                + "]}";
+                + "\"pingList\":" + pingListToString(pingList)
+                + "}";
     }
 }
