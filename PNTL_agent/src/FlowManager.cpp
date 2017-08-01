@@ -1091,8 +1091,8 @@ INT32 FlowManager_C::ThreadHandler()
     uiLastQueryConfigCounter = counter;
     uiLastReportIpCounter = counter;
     uiLastQuerytTimeCounter = counter;
-	uiLastCheckTimeCounter = counter;
-	uiLastReportTimeCounter = counter;
+    uiLastCheckTimeCounter = counter;
+    uiLastReportTimeCounter = counter;
     UINT32 uiQueryPingListFailCounter = 0;
     UINT32 uiQueryConfFailCounter = 0;
     UINT32 uiReportIpFailCounter = 0;
@@ -1147,10 +1147,10 @@ INT32 FlowManager_C::ThreadHandler()
                 uiLastReportIpCounter = counter;
                 uiReportIpFailCounter += 1;
             }
-			else 
-			{
-			    SHOULD_REPORT_IP = 0;
-			}
+            else
+            {
+                SHOULD_REPORT_IP = 0;
+            }
         }
 
         if (PROBE_INTERVAL != 9999)

@@ -85,7 +85,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 
         uiData = ptDataTmp.get<UINT32>("ReportPeriod");
         pcCfg->SetReportPeriod(uiData);
-        
+
         uiData = ptDataTmp.get<UINT32>("QueryPeriod");
         pcCfg->SetQueryPeriod(uiData);
 
@@ -94,7 +94,7 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 
         uiData = ptDataTmp.get<UINT32>("DetectTimeoutPeriod");
         pcCfg->SetDetectTimeout(uiData);
-        
+
         uiData = ptDataTmp.get<UINT32>("DetectDropThresh");
         pcCfg->SetDetectDropThresh(uiData);
 
@@ -607,7 +607,7 @@ INT32 GetFlowInfoFromConfigFile(string dip, ServerFlowKey_S * pstNewServerFlowKe
     {
         string strTemp;
         UINT32 uiDataTemp = 0;
-        
+
         // 初始化
         sal_memset(pstNewServerFlowKey, 0, sizeof(ServerFlowKey_S));
 
@@ -728,7 +728,7 @@ INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManag
 {
     INT32 iRet = AGENT_OK;
     string strTemp;
-	UINT32 data;
+    UINT32 data;
     // boost::property_tree对象, 用于存储json格式数据.
     ptree ptDataRoot, ptDataTmp;
 
@@ -740,93 +740,93 @@ INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManag
         read_json(ssStringData, ptDataRoot);
 
         data = ptDataRoot.get<UINT32>("probe_period");
-		if (data)
-		{ 
-			pcFlowManager->pcAgentCfg->SetDetectPeriod(data);
-			JSON_PARSER_INFO("Current probe_period is [%u].", pcFlowManager->pcAgentCfg->GetDetectPeriod());
-		}
-		else
-		{
-		    JSON_PARSER_INFO("probe_period is [%u], will stop detect now. ", data);
-			pcFlowManager->FlowManagerAction();
-		}
+        if (data)
+        {
+            pcFlowManager->pcAgentCfg->SetDetectPeriod(data);
+            JSON_PARSER_INFO("Current probe_period is [%u].", pcFlowManager->pcAgentCfg->GetDetectPeriod());
+        }
+        else
+        {
+            JSON_PARSER_INFO("probe_period is [%u], will stop detect now. ", data);
+            pcFlowManager->FlowManagerAction();
+        }
 
         data = ptDataRoot.get<UINT32>("port_count");
-		pcFlowManager->pcAgentCfg->SetPortCount(data);
-		JSON_PARSER_INFO("Current port_count is [%u].", pcFlowManager->pcAgentCfg->GetPortCount());
-		
-		data = ptDataRoot.get<UINT32>("report_period");
-		pcFlowManager->pcAgentCfg->SetReportPeriod(data);
-		JSON_PARSER_INFO("Current report_period is [%u].", pcFlowManager->pcAgentCfg->GetReportPeriod());
-		
-		data = ptDataRoot.get<UINT32>("pkg_count");
-		pcFlowManager->pcAgentCfg->SetBigPkgRate(data);
-		JSON_PARSER_INFO("Current pkg_count is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgRate());
-		
-		data = ptDataRoot.get<UINT32>("delay_threshold");
-		pcFlowManager->pcAgentCfg->SetMaxDelay(data);
-		JSON_PARSER_INFO("Current delay_threshold is [%u].", pcFlowManager->pcAgentCfg->GetMaxDelay());
-		
-		data = ptDataRoot.get<UINT32>("dscp");
-		pcFlowManager->pcAgentCfg->SetDscp(data);
-		JSON_PARSER_INFO("Current dscp is [%u].", pcFlowManager->pcAgentCfg->getDscp());
-		
-		data = ptDataRoot.get<UINT32>("lossPkg_timeout");
-		pcFlowManager->pcAgentCfg->SetDetectTimeout(data);
-		JSON_PARSER_INFO("Current lossPkg_timeout is [%u].", pcFlowManager->pcAgentCfg->GetDetectTimeout());
-		
-		strTemp = ptDataRoot.get<string>("kafka_ip");
-		pcFlowManager->pcAgentCfg->SetKafkaIp(strTemp);
-		JSON_PARSER_INFO("Current kafka_ip is [%s].", pcFlowManager->pcAgentCfg->GetKafkaIp().c_str());
-		
-		strTemp = ptDataRoot.get<string>("topic");
-		pcFlowManager->pcAgentCfg->SetTopic(strTemp);
-		JSON_PARSER_INFO("Current topic is [%s].", pcFlowManager->pcAgentCfg->GetTopic().c_str());
-			
-		data = ptDataRoot.get<UINT32>("vbondIp_flag");
-		if (data)
-		{
-		    JSON_PARSER_INFO("Set vbondIp_flag to [%u], will report agent ip in next interval.", data);
-		    SHOULD_REPORT_IP = 1;
-		}
-		JSON_PARSER_INFO("Current vbondIp_flag is [%u].", data);
-			
-		data = ptDataRoot.get<UINT32>("dropPkgThresh");
-		pcFlowManager->pcAgentCfg->SetDetectDropThresh(data);
-		JSON_PARSER_INFO("Current dropPkgThresh is [%u].", pcFlowManager->pcAgentCfg->GetDetectDropThresh());
+        pcFlowManager->pcAgentCfg->SetPortCount(data);
+        JSON_PARSER_INFO("Current port_count is [%u].", pcFlowManager->pcAgentCfg->GetPortCount());
+
+        data = ptDataRoot.get<UINT32>("report_period");
+        pcFlowManager->pcAgentCfg->SetReportPeriod(data);
+        JSON_PARSER_INFO("Current report_period is [%u].", pcFlowManager->pcAgentCfg->GetReportPeriod());
+
+        data = ptDataRoot.get<UINT32>("pkg_count");
+        pcFlowManager->pcAgentCfg->SetBigPkgRate(data);
+        JSON_PARSER_INFO("Current pkg_count is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgRate());
+
+        data = ptDataRoot.get<UINT32>("delay_threshold");
+        pcFlowManager->pcAgentCfg->SetMaxDelay(data);
+        JSON_PARSER_INFO("Current delay_threshold is [%u].", pcFlowManager->pcAgentCfg->GetMaxDelay());
+
+        data = ptDataRoot.get<UINT32>("dscp");
+        pcFlowManager->pcAgentCfg->SetDscp(data);
+        JSON_PARSER_INFO("Current dscp is [%u].", pcFlowManager->pcAgentCfg->getDscp());
+
+        data = ptDataRoot.get<UINT32>("lossPkg_timeout");
+        pcFlowManager->pcAgentCfg->SetDetectTimeout(data);
+        JSON_PARSER_INFO("Current lossPkg_timeout is [%u].", pcFlowManager->pcAgentCfg->GetDetectTimeout());
+
+        strTemp = ptDataRoot.get<string>("kafka_ip");
+        pcFlowManager->pcAgentCfg->SetKafkaIp(strTemp);
+        JSON_PARSER_INFO("Current kafka_ip is [%s].", pcFlowManager->pcAgentCfg->GetKafkaIp().c_str());
+
+        strTemp = ptDataRoot.get<string>("topic");
+        pcFlowManager->pcAgentCfg->SetTopic(strTemp);
+        JSON_PARSER_INFO("Current topic is [%s].", pcFlowManager->pcAgentCfg->GetTopic().c_str());
+
+        data = ptDataRoot.get<UINT32>("vbondIp_flag");
+        if (data)
+        {
+            JSON_PARSER_INFO("Set vbondIp_flag to [%u], will report agent ip in next interval.", data);
+            SHOULD_REPORT_IP = 1;
+        }
+        JSON_PARSER_INFO("Current vbondIp_flag is [%u].", data);
+
+        data = ptDataRoot.get<UINT32>("dropPkgThresh");
+        pcFlowManager->pcAgentCfg->SetDetectDropThresh(data);
+        JSON_PARSER_INFO("Current dropPkgThresh is [%u].", pcFlowManager->pcAgentCfg->GetDetectDropThresh());
 
         ptDataTmp.clear();
-		ptDataTmp = ptDataRoot.get_child("pingList");
-		bool flag = false;
-		for (ptree::iterator itFlow = ptDataTmp.begin(); itFlow != ptDataTmp.end(); itFlow++)
+        ptDataTmp = ptDataRoot.get_child("pingList");
+        bool flag = false;
+        for (ptree::iterator itFlow = ptDataTmp.begin(); itFlow != ptDataTmp.end(); itFlow++)
         {
             strTemp = itFlow->first.data(); // first为空, boost格式
             if (0 == sal_strcmp(strTemp.c_str(), sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP())))
             {
                 ptDataTmp =  itFlow->second;
                 flag = true;
-				break;
+                break;
             }
-			else
-			{
-				continue;
-			}
-			
+            else
+            {
+                continue;
+            }
+
         }
 
-		if (!flag)
-		{
-		    JSON_PARSER_ERROR("Can not find agent pingList config by ip [%s].", sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP()));
-			return AGENT_E_PARA;
-		}
-		pcFlowManager->ServerClearFlowTable();
-		iRet = IssueFlowFromConfigFile(ptDataTmp, pcFlowManager);
-		if (iRet)
+        if (!flag)
+        {
+            JSON_PARSER_ERROR("Can not find agent pingList config by ip [%s].", sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP()));
+            return AGENT_E_PARA;
+        }
+        pcFlowManager->ServerClearFlowTable();
+        iRet = IssueFlowFromConfigFile(ptDataTmp, pcFlowManager);
+        if (iRet)
         {
             JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]. Flow info[%s]", iRet, pcJsonData);
             return iRet;
         }
-		pcFlowManager->RefreshAgentTable();
+        pcFlowManager->RefreshAgentTable();
     }
     catch (exception const & e)
     {
