@@ -229,7 +229,9 @@ public class PntlConfig implements Serializable{
                 || StringUtils.isEmpty(probePeriod) || StringUtils.isEmpty(pkgCount)
                 || StringUtils.isEmpty(portCount) || StringUtils.isEmpty(reportPeriod)
                 || StringUtils.isEmpty(dscp) || StringUtils.isEmpty(lossPkgTimeout)
-                || StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk) || StringUtils.isEmpty(repoUrl);
+                || StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk) || StringUtils.isEmpty(repoUrl)
+                || StringUtils.isEmpty(topic) || StringUtils.isEmpty(dropPkgThresh)
+                || StringUtils.isEmpty(kafkaIp);
 
     }
 
@@ -256,6 +258,7 @@ public class PntlConfig implements Serializable{
         data.put("installScriptRepoUrl", installScriptRepoUrl);
         data.put("kafka_ip", kafkaIp);
         data.put("topic", topic);
+        data.put("dropPkgThresh", dropPkgThresh);
 
         return data;
     }

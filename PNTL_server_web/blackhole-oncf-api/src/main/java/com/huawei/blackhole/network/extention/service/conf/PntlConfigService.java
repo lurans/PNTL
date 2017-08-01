@@ -538,7 +538,7 @@ public class PntlConfigService {
         agentConfig.setVbondIpFlag(CommonInfo.getServerStart());
         Result<Map<String, List<String>>> pingList = pntlService.getPingList();
         agentConfig.setPingList(pingList.getModel());
-
+        System.out.println("vbondIp_flag:" + agentConfig.getVbondIpFlag());
         try {
             FileUtil.write(FileUtil.getPath(PntlInfo.AGENT_CONF) , agentConfig.toString());
         } catch (IOException e){
