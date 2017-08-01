@@ -26,9 +26,10 @@ enum
 #define AGENT_FALSE                         0
 #define REPORT_LOSSPKT_URL  "/rest/chkflow/lossRate"
 #define REPORT_LATENCY_URL "/rest/chkflow/delayInfo"
+#define KAFKA_TOPIC_URL  "/mq/pntl"
 
 // Whether agent begin to query pingList
-extern UINT32 SHOULD_PROBE;
+extern UINT32 SHOULD_DETECT_REPORT;
 
 // 100, all big pkgs, 0, all small pkgs
 extern UINT32 BIG_PKG_RATE;
@@ -36,21 +37,6 @@ extern UINT32 BIG_PKG_RATE;
 extern UINT32 PROBE_INTERVAL;
 
 extern UINT32 SHOULD_REPORT_IP;
-
-extern UINT32 SHOULD_QUERY_CONF;
-
-/* Consts for server action */
-// Stop probe(0) or change probe interval (non-0)
-const CHAR ServerAntsAgentAction = '0';
-
-// Report Agent Ip
-const CHAR ServerAntsAgentIp  = '1';
-
-// Query Agent Config
-const CHAR ServerAntsAgentConf = '2';
-
-// Query PingList
-const CHAR ServerAntsAgentPingList = '3';
 
 const UINT32 BIG_PACKAGE_SIZE = 1000;
 const UINT32 NORMAL_PACKAGE_SIZE = 40;

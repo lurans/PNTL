@@ -20,7 +20,9 @@ typedef enum tagAgentModule
     AGENT_MODULE_MSG_CLIENT,        // MSG_CLIENT Ä£¿é
     AGENT_MODULE_JSON_PARSER,       // JSON_PARSER Ä£¿é(AgentJsonAPI)
     AGENT_MODULE_SAVE_REPORTDATA,
+    AGENT_MODULE_FILE_NOTIFIER,
     AGENT_MODULE_MAX
+    
 } AgentModule_E;
 
 typedef enum tagAgentLogType
@@ -118,7 +120,7 @@ do                                                                              
 #define JSON_PARSER_INFO(...)       MODULE_INFO(JSON_PARSER,   __VA_ARGS__)
 #define SAVE_LOSS_INFO(...)         MODULE_LOSS(SAVE_REPORTDATA,__VA_ARGS__)
 #define SAVE_LATENCY_INFO(...)      MODULE_LATENCY(SAVE_REPORTDATA, __VA_ARGS__)
-
+#define FILE_NOTIFIER_INFO(...)     MODULE_INFO(FILE_NOTIFIER, __VA_ARGS__)
 
 #define SAL_WARNING(...)               MODULE_WARNING(SAL,   __VA_ARGS__)
 #define TIMER_WARNING(...)             MODULE_WARNING(TIMER,   __VA_ARGS__)
@@ -133,6 +135,7 @@ do                                                                              
 #define MSG_SERVER_WARNING(...)        MODULE_WARNING(MSG_SERVER,   __VA_ARGS__)
 #define MSG_CLIENT_WARNING(...)        MODULE_WARNING(MSG_CLIENT,   __VA_ARGS__)
 #define JSON_PARSER_WARNING(...)       MODULE_WARNING(JSON_PARSER,   __VA_ARGS__)
+#define FILE_NOTIFIER_WARNING(...)     MODULE_WARNING(FILE_NOTIFIER, __VA_ARGS__)
 
 #define SAL_ERROR(...)               MODULE_ERROR(SAL,   __VA_ARGS__)
 #define TIMER_ERROR(...)             MODULE_ERROR(TIMER,   __VA_ARGS__)
@@ -147,5 +150,6 @@ do                                                                              
 #define MSG_SERVER_ERROR(...)        MODULE_ERROR(MSG_SERVER,   __VA_ARGS__)
 #define MSG_CLIENT_ERROR(...)        MODULE_ERROR(MSG_CLIENT,   __VA_ARGS__)
 #define JSON_PARSER_ERROR(...)       MODULE_ERROR(JSON_PARSER,   __VA_ARGS__)
+#define FILE_NOTIFIER_ERROR(...)     MODULE_ERROR(FILE_NOTIFIER, __VA_ARGS__)
 
 #endif

@@ -2,6 +2,7 @@
 #define __SRC_ThreadClass_H__
 
 #include <pthread.h>
+#include "Sal.h"
 
 typedef struct tagThreadControl
 {
