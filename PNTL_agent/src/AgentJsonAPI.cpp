@@ -816,8 +816,8 @@ INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManag
 
         if (!flag)
         {
-            JSON_PARSER_ERROR("Can not find agent pingList config by ip [%s].", sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP()));
-            return AGENT_E_PARA;
+            JSON_PARSER_ERROR("Can not find agent pingList config by ip [%s]. Maybe first start.", sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP()));
+            return AGENT_OK;
         }
         pcFlowManager->ServerClearFlowTable();
         iRet = IssueFlowFromConfigFile(ptDataTmp, pcFlowManager);
