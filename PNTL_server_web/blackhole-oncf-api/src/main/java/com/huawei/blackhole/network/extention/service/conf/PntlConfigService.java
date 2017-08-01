@@ -378,8 +378,7 @@ public class PntlConfigService {
         }
 
         String name = file.getDataHandler().getName();
-        if (!name.equalsIgnoreCase(PntlInfo.AGENT_EULER) && !name.equalsIgnoreCase(PntlInfo.AGENT_SUSE)
-                && !name.equalsIgnoreCase(PntlInfo.AGENT_INSTALL_FILENAME)){
+        if (!name.equalsIgnoreCase(PntlInfo.AGENT_EULER) && !name.equalsIgnoreCase(PntlInfo.AGENT_SUSE)){
             throw new InvalidFormatException(ExceptionType.CLIENT_ERR, "invalid filename:" + name);
         }
 
