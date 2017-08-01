@@ -34,8 +34,6 @@ public class PntlConfig implements Serializable{
     private String dscp;
     @JsonProperty("lossPkg_timeout")
     private String lossPkgTimeout;
-    @JsonProperty("lossPkg_num")
-    private String lossPkgNum;
 
     @JsonProperty("ak")
     private String ak;
@@ -178,14 +176,6 @@ public class PntlConfig implements Serializable{
         this.lossPkgTimeout = lossPkgTimeout;
     }
 
-    public String getLossPkgNum() {
-        return lossPkgNum;
-    }
-
-    public void setLossPkgNum (String lossPkgNum) {
-        this.lossPkgNum = lossPkgNum;
-    }
-
     public String getAk() {
         return ak;
     }
@@ -231,7 +221,7 @@ public class PntlConfig implements Serializable{
         this.installScriptRepoUrl = MapUtils.getAsStr(data, "installScriptRepoUrl");
         this.kafkaIp = MapUtils.getAsStr(data, "kafka_ip");
         this.topic = MapUtils.getAsStr(data, "topic");
-        this.lossPkgNum = MapUtils.getAsStr(data,"lossPkg_num");
+        this.dropPkgThresh = MapUtils.getAsStr(data,"dropPkgThresh");
     }
 
     private boolean containsEmptyField() {
@@ -256,7 +246,7 @@ public class PntlConfig implements Serializable{
         data.put("lossRate_threshold", lossRateThreshold);
         data.put("dscp", dscp);
         data.put("lossPkg_timeout", lossPkgTimeout);
-        data.put("lossPkg_num", lossPkgNum);
+        data.put("dropPkgThresh", dropPkgThresh);
         data.put("ak", ak);
         data.put("sk", sk);
         data.put("basicToken", basicToken);
