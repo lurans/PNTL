@@ -37,6 +37,8 @@ public class AgentConfig implements Serializable{
     private String topic;
     @JsonProperty("vbondIp_flag")
     private String vbondIpFlag;
+    @JsonProperty("dropPkgThresh")
+    private String dropPkgThresh;
     @JsonProperty("pingList")
     private Map<String, List<String>> pingList;
 
@@ -120,26 +122,20 @@ public class AgentConfig implements Serializable{
         this.vbondIpFlag = vbondIpFlag;
     }
 
+    public String getDropPkgThresh() {
+        return dropPkgThresh;
+    }
+
+    public void setDropPkgThresh(String dropPkgThresh) {
+        this.dropPkgThresh = dropPkgThresh;
+    }
+
     public Map<String, List<String>> getPingList() {
         return pingList;
     }
 
     public void setPingList(Map<String, List<String>> pingList) {
         this.pingList = pingList;
-    }
-
-    private String ipListToString(List<String> ipList){
-        StringBuilder str = new StringBuilder();
-        if (ipList == null || ipList.isEmpty()){
-            return str.toString();
-        }
-        for (String ip : ipList){
-            if (str.length() == 0){
-                str.append(",");
-            }
-            str.append("\"").append(ip).append("\"");
-        }
-        return str.toString();
     }
 
     private String pingListToString(Map<String, List<String>> pingList){
@@ -151,19 +147,6 @@ public class AgentConfig implements Serializable{
             e.printStackTrace();
         }
         return jsonStr;
-//        StringBuilder str = new StringBuilder();
-//        if (pingList == null || pingList.isEmpty()){
-//            return str.toString();
-//        }
-//
-//        for (String key : pingList.keySet()) {
-//            List<String> list = pingList.get(key);
-//            if (str.length() == 0){
-//                str.append(",");
-//            }
-//            str.append("{" + "\"").append(key).append("\":").append("[").append(ipListToString(list)).append("]").append("}");
-//        }
-//        return str.toString();
     }
 
     @Override
@@ -179,6 +162,7 @@ public class AgentConfig implements Serializable{
                 + "\"kafka_ip\":\"" + kafkaIp + "\","
                 + "\"topic\":\"" + topic + "\","
                 + "\"vbondIp_flag\":\"" + vbondIpFlag + "\","
+                + "\"dropPkgThresh\":\"" + dropPkgThresh + "\","
                 + "\"pingList\":" + pingListToString(pingList)
                 + "}";
     }

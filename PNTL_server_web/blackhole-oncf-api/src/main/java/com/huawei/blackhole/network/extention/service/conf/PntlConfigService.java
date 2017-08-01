@@ -534,6 +534,7 @@ public class PntlConfigService {
         agentConfig.setProbePeriod(pntlConf.getModel().getProbePeriod());
         agentConfig.setReportPeriod(pntlConf.getModel().getReportPeriod());
         agentConfig.setTopic(pntlConf.getModel().getTopic());
+        agentConfig.setDropPkgThresh(pntlConf.getModel().getDropPkgThresh());
         //server启动，通知agent，用于上报vbondIp
         agentConfig.setVbondIpFlag(CommonInfo.getServerStart());
         Result<Map<String, List<String>>> pingList = pntlService.getPingList();
