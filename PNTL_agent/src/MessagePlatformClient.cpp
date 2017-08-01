@@ -37,10 +37,6 @@ size_t ReceiveResponce(void *ptr, size_t size, size_t nmemb, stringstream *pssRe
     return size * nmemb;
 }
 
-const CHAR* SERVER_CERT_PATH = "/opt/huawei/ServerAntAgent/server_cert.pem";
-const CHAR* AGENT_CERT_PATH = "/opt/huawei/ServerAntAgent/server.pem";
-const CHAR* AGENT_KEY_PATH = "/opt/huawei/ServerAntAgent/server.key";
-const CHAR* PEM_KEY_TYPE = "pem";
 const CHAR* ACCEPT_TYPE = "Accept:application/json";
 const CHAR* CONTENT_TYPE = "Content-Type:application/json";
 
@@ -79,17 +75,6 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
         headers = curl_slist_append(headers, ACCEPT_TYPE);
         headers = curl_slist_append(headers, CONTENT_TYPE);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-        // 设置服务端证书，用户认证服务端
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        curl_easy_setopt(curl,CURLOPT_CAINFO, SERVER_CERT_PATH);
-
-        // 设置客户端证书和私钥
-        curl_easy_setopt(curl,CURLOPT_SSLCERT,AGENT_CERT_PATH);
-        curl_easy_setopt(curl,CURLOPT_SSLCERTTYPE, PEM_KEY_TYPE);
-        curl_easy_setopt(curl,CURLOPT_SSLKEY,AGENT_KEY_PATH);
-        curl_easy_setopt(curl,CURLOPT_SSLKEYTYPE, PEM_KEY_TYPE);
 
         // 设定超时时间, 避免因为SERVER无响应而挂死.
         res = curl_easy_setopt(curl, CURLOPT_TIMEOUT, AGENT_REQUEST_TIMEOUT);
@@ -183,14 +168,14 @@ INT32 HttpPostData(stringstream * pssUrl, stringstream * pssPostData, stringstre
     return iRet;
 }
 
-const string HTTPS_PREFIX = "https://";
+const string HTTP_PREFIX = "http://";
 const string COLON = ":";
 const string PINGLIST_URL = "/rest/chkflow/pingList";
 const string AGENT_IP_URL = "/rest/chkflow/agentIp";
 const string AGENT_CONFIG_URL = "/rest/chkflow/pntlServerInfo";
 
 // 向ServerAnrServer请求新的probe列表
-INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
+INT32 HandleProbeListFromConfig(FlowManager_C* pcFlowManager)
 {
     INT32 iRet = AGENT_OK;
 
@@ -208,7 +193,7 @@ INT32 RequestProbeListFromServer(FlowManager_C* pcFlowManager)
     pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
 
     ssUrl.clear();
-    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << PINGLIST_URL;
+    ssUrl << HTTP_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << PINGLIST_URL;
 
     MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
     // 生成post数据
@@ -257,13 +242,8 @@ INT32 ReportDataToServer(ServerAntAgentCfg_C *pcAgentCfg, stringstream * pstrRep
     stringstream ssResponceData;
     const char * pcJsonData = NULL;
 
-    // 生成 URL
-    UINT32 uiServerIP = 0;
-    UINT32 uiServerPort = 0;
-
-    pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
     ssUrl.clear();
-    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << strUrl;
+    ssUrl << HTTP_PREFIX << pcAgentCfg->GetKafkaIp() << strUrl;
 
     ssResponceData.clear();
     ssResponceData.str("");
@@ -302,7 +282,7 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
     pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
 
     ssUrl.clear();
-    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_IP_URL;
+    ssUrl << HTTP_PREFIX << pcAgentCfg->GetKafkaIp() << KAFKA_TOPIC_URL;
     MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
 
 
@@ -332,53 +312,5 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
 
     // 处理response数据
     MSG_CLIENT_INFO("Responce [%s]", strResponceData.c_str());
-    return iRet;
-}
-
-// 向ServerAnrServer请求新的配置
-INT32 RequestConfigFromServer(FlowManager_C* pcFlowManager)
-{
-    INT32 iRet = AGENT_OK;
-
-    // 用于提交的URL地址
-    stringstream ssUrl;
-    // 保存需要post的数据,json格式字符串, 由json模块生成.
-    stringstream ssPostData;
-    // 保存post的response(查询结果),json格式字符串, 后续交给json模块处理.
-    stringstream ssResponceData;
-    char * pcJsonData = NULL;
-
-    // 生成 URL
-    UINT32 uiServerIP = 0;
-    UINT32 uiServerPort = 0;
-    pcFlowManager->pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
-
-    ssUrl.clear();
-    ssUrl << HTTPS_PREFIX << sal_inet_ntoa(uiServerIP) << COLON << uiServerPort << AGENT_CONFIG_URL;
-
-    // 生成post数据
-    ssPostData.clear();
-    ssPostData.str("{}");
-
-    ssResponceData.clear();
-    ssResponceData.str("");
-    iRet = HttpPostData(&ssUrl, &ssPostData, &ssResponceData);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Http Post Data failed[%d]", iRet);
-        return iRet;
-    }
-
-    // 字符串格式转换.
-    string strResponceData = ssResponceData.str();
-    pcJsonData = (char *)strResponceData.c_str();
-
-    // 处理response数据
-    iRet = ProcessServerConfigFlowFromServer( pcJsonData, pcFlowManager);
-    if (iRet)
-    {
-        MSG_CLIENT_ERROR("Process Server config Flow From Server failed[%d]", iRet);
-        return iRet;
-    }
     return iRet;
 }

@@ -1,7 +1,11 @@
 
 #ifndef __SRC_AgentJsonAPI_H__
 #define __SRC_AgentJsonAPI_H__
+#include <boost/property_tree/json_parser.hpp>
 
+using namespace std;
+// 使用boost的property_tree扩展库处理json格式数据.
+using namespace boost::property_tree;
 #include <sstream>
 #include "FlowManager.h"
 
@@ -32,5 +36,9 @@ extern INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C*
 extern void SaveLossRateToFile(AgentFlowTableEntry_S * pstAgentFlowEntry);
 
 extern INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager);
+
+extern INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManager);
+
+extern INT32 GetFlowInfoFromConfigFile(string dip, ServerFlowKey_S * pstNewServerFlowKey, ServerAntAgentCfg_C* pcAgentCfg);
 
 #endif

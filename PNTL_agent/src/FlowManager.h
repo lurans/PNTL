@@ -161,7 +161,6 @@ private:
     sal_mutex_t stServerFlowTableLock;                  // 操作工作流表和修改uiWorkingServerFlowTable时需要互斥.
 
     // Server流表处理
-    INT32 ServerClearFlowTable();   // 清空特定流表
     INT32 ServerFlowTablePreAdd(
         ServerFlowKey_S * pstNewServerFlowKey,
         ServerFlowTableEntry_S * pstNewServerFlowEntry);    // 向ServerFlowTable中添加Entry前的预处理, 包括入参检查及参数初始化
@@ -215,8 +214,10 @@ public:
 
     INT32 ServerWorkingFlowTableAdd(ServerFlowKey_S *pstServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
 
-    INT32 FlowManagerAction(INT32 interval);	    // 根据参数启停FlowManager
+    void FlowManagerAction();	    // 根据参数启停FlowManager
     void SetPkgFlag();
+	void RefreshAgentTable();
+	INT32 ServerClearFlowTable();   // 清空特定流表
 };
 
 #endif

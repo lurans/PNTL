@@ -473,7 +473,7 @@ INT32 FlowManager_C::DetectCheck(UINT32 uiCounter)
                  ? uiCounter - uiLastCheckTimeCounter
                  : uiCounter + ((UINT32)(-1) - uiLastCheckTimeCounter + 1);
 
-    if ( uiTimeCost >= pcAgentCfg->GetDetectPeriod())
+    if (SHOULD_DETECT_REPORT && uiTimeCost >= pcAgentCfg->GetDetectPeriod())
     {
         uiLastCheckTimeCounter = uiCounter;
         uiNeedCheckResult = AGENT_ENABLE;
@@ -781,7 +781,7 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
     }
 
 
-    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LOSSPKT_URL);
+    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, KAFKA_TOPIC_URL);
     if (iRet)
     {
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
@@ -813,7 +813,6 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
 
     if (AGENT_FILTER_DELAY == iRet)
     {
-        FLOW_MANAGER_INFO("Current flow's delay time is less than threshold, return [%d]", iRet);
         return AGENT_FILTER_DELAY;
     }
     else if (iRet)
@@ -823,7 +822,7 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
     }
     strReportData = ssReportData.str();
 
-    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LATENCY_URL);
+    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, KAFKA_TOPIC_URL);
     if (iRet)
     {
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
@@ -1003,7 +1002,7 @@ INT32 FlowManager_C::ReportCheck(UINT32 uiCounter)
                  ? uiCounter - uiLastReportTimeCounter
                  : uiCounter + ((UINT32)(-1) - uiLastReportTimeCounter + 1);
 
-    if ( uiTimeCost >= pcAgentCfg->GetReportPeriod())
+    if (SHOULD_DETECT_REPORT && uiTimeCost >= pcAgentCfg->GetReportPeriod())
     {
         uiLastReportTimeCounter = uiCounter;
         return AGENT_ENABLE;
@@ -1066,23 +1065,8 @@ INT32 FlowManager_C::QueryReportCheck(UINT32* flag, UINT32 uiCounter, UINT32 las
     }
 }
 
-// 启动从Server刷新配置流程.
-INT32 FlowManager_C::DoQuery()
+void FlowManager_C::RefreshAgentTable()
 {
-    INT32 iRet = AGENT_OK;
-
-    FLOW_MANAGER_INFO("Start Query Server Now");
-
-    // 清空Server配置流表
-    ServerClearFlowTable();
-
-    iRet = RequestProbeListFromServer(this);
-    if (AGENT_OK != iRet)
-    {
-        FLOW_MANAGER_WARNING("RequestProbeListFromServer[%d]", iRet);
-        return iRet;
-    }
-
     // 清空Agent配置表
     AgentClearFlowTable();
 
@@ -1096,11 +1080,7 @@ INT32 FlowManager_C::DoQuery()
     }
 
     FLOW_MANAGER_INFO("Query Server Finished");
-
-    return iRet;
 }
-
-
 
 // Thread回调函数.
 // PreStopHandler()执行后, ThreadHandler()需要在GetCurrentInterval() us内主动退出.
@@ -1159,42 +1139,6 @@ INT32 FlowManager_C::ThreadHandler()
             }
         }
 
-        // 当前周期是否该查询Server配置
-        if (QueryReportCheck(&SHOULD_PROBE, counter, uiLastQuerytTimeCounter, &uiQueryPingListFailCounter))
-        {
-            // 启动查询Server配置流程.
-            iRet = DoQuery();
-            if (iRet)
-            {
-                FLOW_MANAGER_WARNING("Do Query failed[%d]", iRet);
-                uiLastQuerytTimeCounter = counter;
-                uiQueryPingListFailCounter += 1;
-            }
-			else
-			{
-			    SHOULD_PROBE = 0;
-			}
-        }
-
-        if (QueryReportCheck(&SHOULD_QUERY_CONF, counter, uiLastQueryConfigCounter, &uiQueryConfFailCounter))
-        {
-            iRet = DoQueryConfig();
-            if (AGENT_E_PARA == iRet)
-            {
-                FLOW_MANAGER_WARNING("Config param error[%d]", iRet);
-                SHOULD_QUERY_CONF = 0;
-            }
-            else if (iRet)
-            {
-                uiLastQueryConfigCounter = counter;
-                uiQueryConfFailCounter += 1;
-            }
-			else
-			{
-			    SHOULD_QUERY_CONF = 0;
-			}    
-        }
-
         if (QueryReportCheck(&SHOULD_REPORT_IP, counter, uiLastReportIpCounter, &uiReportIpFailCounter))
         {
             iRet = ReportAgentIPToServer(this->pcAgentCfg);
@@ -1241,46 +1185,9 @@ INT32 FlowManager_C::PreStopHandler()
     return AGENT_OK;
 }
 
-INT32 FlowManager_C::FlowManagerAction(INT32 interval)
+void FlowManager_C::FlowManagerAction()
 {
-    INT32 iRet = AGENT_OK;
-
-    if (0 > interval)
-    {
-        FLOW_MANAGER_ERROR("Interval value[%d] is out of range, return.", interval);
-        return AGENT_E_ERROR;
-    }
-
-    UINT32 oldInterval = GetCurrentInterval();
-    UINT32 newInterval;
-    stringstream ss;
-    ss << interval;
-    ss >> newInterval;
-    switch(oldInterval)
-    {
-        case 0:
-            if (newInterval)
-            {
-                // 启动FlowManager
-                SetNewInterval(newInterval);
-                FLOW_MANAGER_INFO("Set CurrentInterval to [%d] success.", newInterval);
-                StartThread();
-                FLOW_MANAGER_INFO("Start flowmanager thread success");
-            }
-            else
-            {
-                // 已经停止，无需再次停止，直接返回
-                FLOW_MANAGER_INFO("CurrentInterval is alread 0, return.");
-            }
-            break;
-        default:
-            // 设置新的间隔时间
-            SetNewInterval(newInterval);
-            FLOW_MANAGER_INFO("Set CurrentInterval from [%d] to [%d] success.", oldInterval, newInterval);
-            break;
-    }
-
-    return iRet;
+    SetNewInterval(0);
 }
 
 void FlowManager_C::SetPkgFlag()
@@ -1291,17 +1198,5 @@ void FlowManager_C::SetPkgFlag()
     {
         pAgentFlowEntry->stFlowKey.uiIsBigPkg = !pAgentFlowEntry->stFlowKey.uiIsBigPkg;
     }
-}
-
-INT32 FlowManager_C::DoQueryConfig()
-{
-    INT32 iRet = AGENT_OK;
-    iRet = RequestConfigFromServer(this);
-    if (AGENT_OK != iRet)
-    {
-        FLOW_MANAGER_ERROR("RequestConfigFromServer[%d]", iRet);
-        return iRet;
-    }
-    return iRet;
 }
 

@@ -201,7 +201,6 @@ private:
     INT32 ThreadHandler();                            // 任务主处理函数
     INT32 PreStopHandler();                           // StopThread触发, 通知ThreadHandler主动退出.
     INT32 PreStartHandler();                          // StartThread触发, 通知ThreadHandler即将被调用.
-    INT32 RecvServerMsg();
 
     UINT32 uiHandlerDefaultInterval;          // Handler状态刷新默认周期, 单位为us
     INT32 RxUpdateSession

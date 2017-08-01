@@ -7,6 +7,7 @@ using namespace std;
 #include "GetLocalCfg.h"
 #include "ServerAntAgentCfg.h"
 #include "MessagePlatform.h"
+#include "FileNotifier.h"
 #include "FlowManager.h"
 #include "MessagePlatformClient.h"
 #include "AgentCommon.h"
@@ -24,6 +25,14 @@ void destroyFlowManagerObj(FlowManager_C * pcFlowManager)
     if (NULL != pcFlowManager)
     {
         delete pcFlowManager;
+    }
+}
+
+void destroyFileNotifier(FileNotifier_C* pcFileNotifier)
+{
+    if (NULL != pcFileNotifier)
+    {
+        delete pcFileNotifier;
     }
 }
 
@@ -65,6 +74,27 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
+    FileNotifier_C* pcFileNotifier = new FileNotifier_C;
+	iRet = pcFileNotifier -> Init(pcFlowManager);
+	if (iRet)
+	{
+	    INIT_ERROR("Init filenotifier error[%d].", iRet);
+		destroyFileNotifier(pcFileNotifier);
+		destroyFlowManagerObj(pcFlowManager);
+        destroyServerCfgObj(pcCfg);
+		return iRet;
+	}
+	
+	INIT_INFO("--------  Get agentConfig.cfg -------- ");
+	iRet = GetLocalAgentConfig(pcFlowManager);
+    if (AGENT_OK != iRet)
+    {
+        destroyFlowManagerObj(pcFlowManager);
+        destroyServerCfgObj(pcCfg);
+        INIT_ERROR("GetLocalAgentConfig failed [%d]", iRet);
+        return iRet;
+    }
+
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
 
@@ -78,19 +108,10 @@ INT32 ServerAntAgent()
             sleep(5 * reportCount);
             INIT_ERROR("Retry to report Agent ip to Server, time [%u]", ++reportCount);
         }
-    }
-    while (iRet);
-
-    reportCount = 1;
-    do
-    {
-        iRet = RequestConfigFromServer(pcFlowManager);
-        if (AGENT_OK != iRet)
-        {
-            INIT_ERROR("Request Agent config from Server fail[%d]", iRet);
-            sleep(5 * reportCount);
-            INIT_ERROR("Retry to request Agent config from Server, time [%u]", ++reportCount);
-        }
+		else 
+		{
+		    SHOULD_DETECT_REPORT = 1;
+		}
     }
     while (iRet);
 
@@ -111,11 +132,10 @@ INT32 ServerAntAgent()
 }
 
 UINT32 BIG_PKG_RATE = 0;
-UINT32 SHOULD_PROBE = 0;
-
-UINT32 SHOULD_QUERY_CONF = 0;
 
 UINT32 SHOULD_REPORT_IP = 0;
+
+UINT32 SHOULD_DETECT_REPORT = 0;
 
 UINT32 PROBE_INTERVAL = 9999;
 

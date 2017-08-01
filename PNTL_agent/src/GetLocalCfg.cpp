@@ -14,6 +14,8 @@ using namespace std;
 #define SERVER_ANT_CFG_FILE_NAME "ServerAntAgent.cfg"
 #define SERVER_ANT_CFG_FILE_PATH "/etc/ServerAntAgent/"
 
+const string AGENT_CONFIG_FILE_NAME = "agentConfig.cfg";
+const string AGENT_CONFIG_FILE_PATH = "/opt/huawei/ServerAntAgent";
 
 string GetJsonDataFromFile(string sFileName, string sFilePath)
 {
@@ -73,45 +75,26 @@ INT32 GetLocalCfg(ServerAntAgentCfg_C * pcCfg)
     return AGENT_OK;
 }
 
-void RecoverLossPktData(ServerAntAgentCfg_C *pcAgentCfg)
+INT32 GetLocalAgentConfig(FlowManager_C * pcFlowManager)
 {
 
     INT32  iRet = AGENT_OK;
-    string sFilePath;
-    string content = "";
-    ifstream fileStream;
-    string line = "";
-    stringstream  ssReportData; // 車?車迆谷迆3谷json??那?谷?㊣“那y?Y
+    string strCfgJsonData;
+    stringstream ssCfgFileName;
 
-    sFilePath = GetLossLogFilePath();
-
-    fileStream.open(sFilePath.c_str(), ios::in);
-    if (fileStream.fail())
+    strCfgJsonData = GetJsonDataFromFile(AGENT_CONFIG_FILE_NAME, AGENT_CONFIG_FILE_PATH);
+    if ("" == strCfgJsonData)
     {
-        return;
+        return AGENT_E_ERROR;
     }
 
-    while (getline(fileStream, line))
+    iRet = ParseLocalAgentConfig(strCfgJsonData.c_str(), pcFlowManager);
+    if (iRet)
     {
-        ssReportData.clear();
-        ssReportData.str("");
-        ssReportData << line;
-
-        HTTP_DAEMON_INFO("RecoverLossPktData Read file content is:  [%s]", line.c_str());
-
-        iRet = ReportDataToServer(pcAgentCfg, &ssReportData, REPORT_LOSSPKT_URL);
-        if (AGENT_OK != iRet)
-        {
-            break;
-        }
-        sal_usleep(1);
+        INIT_ERROR("ParserLocalCfg failed[%d]", iRet);
+        return AGENT_E_ERROR;
     }
-    fileStream.close();
 
-    return;
+    return AGENT_OK;
 }
-
-
-
-
 

@@ -1,9 +1,3 @@
-#include <boost/property_tree/json_parser.hpp>
-
-using namespace std;
-// 使用boost的property_tree扩展库处理json格式数据.
-using namespace boost::property_tree;
-
 #include "Log.h"
 #include "AgentCommon.h"
 #include "AgentJsonAPI.h"
@@ -121,7 +115,6 @@ INT32 ParserLocalCfg(const char * pcJsonData, ServerAntAgentCfg_C * pcCfg)
 
     return iRet;
 }
-
 
 #define NormalFlowRequestSignature    "HuaweiDCAnts"
 #define NormalFlowRequestAction       "RequestServerProbeList"
@@ -565,6 +558,90 @@ INT32 IssueFlowFromJsonFlowArray(ptree ptFlowArray, FlowManager_C* pcFlowManager
     return iRet;
 }
 
+// 解析json格式的flow array, 并下发到FlowManager,
+INT32 IssueFlowFromConfigFile(ptree ptFlowArray, FlowManager_C* pcFlowManager)
+{
+    INT32 iRet = AGENT_OK;
+
+    // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
+    try
+    {
+        ServerFlowKey_S stNewServerFlowKey;
+        string dip;
+        // 遍历flow flow array, 完成解析和下发
+        for (ptree::iterator itFlow = ptFlowArray.begin(); itFlow != ptFlowArray.end(); itFlow++)
+        {
+            dip = itFlow->second.data(); // first为空, boost格式
+            sal_memset(&stNewServerFlowKey, 0, sizeof(stNewServerFlowKey));
+
+            iRet = GetFlowInfoFromConfigFile(dip, &stNewServerFlowKey, pcFlowManager->pcAgentCfg);
+            if (iRet)
+            {
+                JSON_PARSER_ERROR("Get Flow Info From Json failed [%d]", iRet);
+                return iRet;
+            }
+
+            // 普通流程添加到配置表, 待配置倒换后生效.
+            iRet = pcFlowManager->ServerWorkingFlowTableAdd(&stNewServerFlowKey);
+            if (AGENT_OK != iRet)
+            {
+                JSON_PARSER_ERROR("Add New ServerWorkingFlowTable failed [%d]", iRet);
+                return iRet;
+            }
+        }
+    }
+    catch (exception const & e)
+    {
+        JSON_PARSER_ERROR("Caught exception [%s] when IssueFlowFromJsonFlowArray.", e.what());
+        return AGENT_E_ERROR;
+    }
+
+    return iRet;
+}
+
+// 解析Server下发的json格式flow数据,转换成ServerFlowKey_S格式
+INT32 GetFlowInfoFromConfigFile(string dip, ServerFlowKey_S * pstNewServerFlowKey, ServerAntAgentCfg_C* pcAgentCfg)
+{
+    // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
+    try
+    {
+        string strTemp;
+        UINT32 uiDataTemp = 0;
+        
+        // 初始化
+        sal_memset(pstNewServerFlowKey, 0, sizeof(ServerFlowKey_S));
+
+        pstNewServerFlowKey->uiUrgentFlow = 0;
+        pstNewServerFlowKey->eProtocol = AGENT_DETECT_PROTOCOL_UDP;
+        pstNewServerFlowKey->uiSrcIP = pcAgentCfg->GetAgentIP();
+
+        pstNewServerFlowKey->uiDestIP = sal_inet_aton(dip.c_str());
+
+        pstNewServerFlowKey->uiDscp          = pcAgentCfg->getDscp();
+        pstNewServerFlowKey->uiSrcPortMin    = 32769;
+        pstNewServerFlowKey->uiSrcPortMax    = 32868;
+        pstNewServerFlowKey->uiSrcPortRange  = 5;
+
+        pstNewServerFlowKey->stServerTopo.uiSvid   = 0;
+        pstNewServerFlowKey->stServerTopo.uiDvid   = 0;
+        pstNewServerFlowKey->stServerTopo.uiLevel  = 1;
+    }
+    catch (exception const & e)
+    {
+        JSON_PARSER_ERROR("Caught exception [%s] when GetFlowInfoFromConfigFile.", e.what());
+        return AGENT_E_ERROR;
+    }
+
+    JSON_PARSER_INFO("Get Flow From Server: sip[%s], sport[%u]-[%u], range[%u], dscp[%d], Urgent[%d], Protocol[%d]",
+                     sal_inet_ntoa(pstNewServerFlowKey->uiSrcIP), pstNewServerFlowKey->uiSrcPortMin, pstNewServerFlowKey->uiSrcPortMax, pstNewServerFlowKey->uiSrcPortRange,
+                     pstNewServerFlowKey->uiDscp, pstNewServerFlowKey->uiUrgentFlow,  pstNewServerFlowKey->eProtocol);
+
+    JSON_PARSER_INFO("                      dip[%s], topy: Level[%u], Source id[%8u], Dest id[%8u]",
+                     sal_inet_ntoa(pstNewServerFlowKey->uiDestIP), pstNewServerFlowKey->stServerTopo.uiLevel,
+                     pstNewServerFlowKey->stServerTopo.uiSvid, pstNewServerFlowKey->stServerTopo.uiDvid);
+
+    return AGENT_OK;
+}
 /*
 ServerAntServer 回复的普通探测流格式
 回复数据, 无需key.
@@ -647,148 +724,108 @@ INT32 ProcessNormalFlowFromServer(char * pcJsonData, FlowManager_C* pcFlowManage
     return iRet;
 }
 
-/*
-	接收从Server端下发的轮询周期
-	为0的话，停止探测
-	格式为
-	{
-		"probe_interval":"0"
-	}
-*/
-INT32 ProcessActionFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
+INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManager)
 {
-    // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
-    stringstream ssStringData(pcJsonData);
-
+    INT32 iRet = AGENT_OK;
+    string strTemp;
+	UINT32 data;
     // boost::property_tree对象, 用于存储json格式数据.
-    ptree ptDataRoot;
-    UINT32 interval;
+    ptree ptDataRoot, ptDataTmp;
+
+    // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     try
     {
-        // 防止Json消息体不规范
+        // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
+        stringstream ssStringData(pcJsonData);
         read_json(ssStringData, ptDataRoot);
-        // 防止没有设值，传入空值
-        interval = ptDataRoot.get<UINT32>("probe_interval");
+
+        data = ptDataRoot.get<UINT32>("probe_period");
+		if (data)
+		{ 
+			pcFlowManager->pcAgentCfg->SetDetectPeriod(data);
+			JSON_PARSER_INFO("Current probe_period is [%u].", pcFlowManager->pcAgentCfg->GetDetectPeriod());
+		}
+		else
+		{
+		    JSON_PARSER_INFO("probe_period is [%u], will stop detect now. ", data);
+			pcFlowManager->FlowManagerAction();
+		}
+
+        data = ptDataRoot.get<UINT32>("port_count");
+		pcFlowManager->pcAgentCfg->SetPortCount(data);
+		JSON_PARSER_INFO("Current port_count is [%u].", pcFlowManager->pcAgentCfg->GetPortCount());
+		
+		data = ptDataRoot.get<UINT32>("report_period");
+		pcFlowManager->pcAgentCfg->SetReportPeriod(data);
+		JSON_PARSER_INFO("Current report_period is [%u].", pcFlowManager->pcAgentCfg->GetReportPeriod());
+		
+		data = ptDataRoot.get<UINT32>("pkg_count");
+		pcFlowManager->pcAgentCfg->SetBigPkgRate(data);
+		JSON_PARSER_INFO("Current pkg_count is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgRate());
+		
+		data = ptDataRoot.get<UINT32>("delay_threshold");
+		pcFlowManager->pcAgentCfg->SetMaxDelay(data);
+		JSON_PARSER_INFO("Current delay_threshold is [%u].", pcFlowManager->pcAgentCfg->GetMaxDelay());
+		
+		data = ptDataRoot.get<UINT32>("dscp");
+		pcFlowManager->pcAgentCfg->SetDscp(data);
+		JSON_PARSER_INFO("Current dscp is [%u].", pcFlowManager->pcAgentCfg->getDscp());
+		
+		data = ptDataRoot.get<UINT32>("lossPkg_timeout");
+		pcFlowManager->pcAgentCfg->SetDetectTimeout(data);
+		JSON_PARSER_INFO("Current lossPkg_timeout is [%u].", pcFlowManager->pcAgentCfg->GetDetectTimeout());
+		
+		strTemp = ptDataRoot.get<string>("kafka_ip");
+		pcFlowManager->pcAgentCfg->SetKafkaIp(strTemp);
+		JSON_PARSER_INFO("Current kafka_ip is [%s].", pcFlowManager->pcAgentCfg->GetKafkaIp().c_str());
+		
+		strTemp = ptDataRoot.get<string>("topic");
+		pcFlowManager->pcAgentCfg->SetTopic(strTemp);
+		JSON_PARSER_INFO("Current topic is [%s].", pcFlowManager->pcAgentCfg->GetTopic().c_str());
+			
+		data = ptDataRoot.get<UINT32>("vbondIp_flag");
+		if (data)
+		{
+		    JSON_PARSER_INFO("Set vbondIp_flag to [%u], will report agent ip in next interval.", data);
+		    SHOULD_REPORT_IP = 1;
+		}
+		JSON_PARSER_INFO("Current vbondIp_flag is [%u].", data);
+			
+		data = ptDataRoot.get<UINT32>("dropPkgThresh");
+		pcFlowManager->pcAgentCfg->SetDetectDropThresh(data);
+		JSON_PARSER_INFO("Current dropPkgThresh is [%u].", pcFlowManager->pcAgentCfg->GetDetectDropThresh());
+
+        ptDataTmp.clear();
+		ptDataTmp = ptDataRoot.get_child("pingList");
+		for (ptree::iterator itFlow = ptDataTmp.begin(); itFlow != ptDataTmp.end(); itFlow++)
+        {
+            strTemp = itFlow->first.data(); // first为空, boost格式
+            if (0 == sal_strcmp(strTemp.c_str(), sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP())))
+            {
+                ptDataTmp =  itFlow->second;
+                JSON_PARSER_INFO("str is [%s] equal agent ip is [%s]", strTemp.c_str(), sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP()));
+				break;
+            }
+			else
+			{
+			    JSON_PARSER_INFO("str is [%s] not equal agent ip is [%s]", strTemp.c_str(), sal_inet_ntoa(pcFlowManager->pcAgentCfg->GetAgentIP()));
+				continue;
+			}
+			
+        }
+		pcFlowManager->ServerClearFlowTable();
+		iRet = IssueFlowFromConfigFile(ptDataTmp, pcFlowManager);
+		if (iRet)
+        {
+            JSON_PARSER_ERROR("Issue Flow From Json Flow Array failed [%d]. Flow info[%s]", iRet, pcJsonData);
+            return iRet;
+        }
+		pcFlowManager->RefreshAgentTable();
     }
     catch (exception const & e)
     {
-        JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
+        JSON_PARSER_ERROR("Caught exception [%s] when ParseLocalAgentConfig. LocalConfig:[%s]", e.what(), pcJsonData);
         return AGENT_E_ERROR;
     }
-    INT32 iRet = pcFlowManager -> FlowManagerAction((INT32)interval);
     return iRet;
 }
-
-/*
-	接收从Server端下发的配置参数
-	格式为
-	{
-		"probe_period":"0",
-		"port_count" : "5",
-		"report_period" : "",
-		"delay_threshold":"",
-		"dscp":"",
-		"lossPkg_timeout":"",
-		"package_rate":""
-	}
-*/
-INT32 ProcessServerConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
-{
-    // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
-    stringstream ssStringData(pcJsonData);
-
-    // boost::property_tree对象, 用于存储json格式数据.
-    ptree ptDataRoot;
-    UINT32 interval;
-    INT32 iRet = AGENT_OK;
-    try
-    {
-        // 防止Json消息体不规范
-        read_json(ssStringData, ptDataRoot);
-
-        interval = ptDataRoot.get<UINT32>("probe_period");
-        pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
-        JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
-
-        interval = ptDataRoot.get<UINT32>("port_count");
-        pcFlowManager->pcAgentCfg->SetPortCount(interval);
-        JSON_PARSER_INFO("Current port count is %u", pcFlowManager->pcAgentCfg->GetPortCount());
-
-        interval = ptDataRoot.get<UINT32>("report_period");
-        pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
-        JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
-
-        interval = ptDataRoot.get<UINT32>("delay_threshold");
-        pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
-        JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
-
-        interval = ptDataRoot.get<UINT32>("dscp");
-        pcFlowManager->pcAgentCfg->SetDscp(interval);
-        JSON_PARSER_INFO("Current dscp is %u", pcFlowManager->pcAgentCfg->getDscp());
-
-        interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
-        pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
-        JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
-
-        interval = ptDataRoot.get<UINT32>("bigPkg_rate");
-        pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
-        JSON_PARSER_INFO("Current package rate is %u", pcFlowManager->pcAgentCfg->GetBigPkgRate());
-    }
-    catch (exception const & e)
-    {
-        JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
-        return AGENT_E_ERROR;
-    }
-    return AGENT_OK;
-}
-
-INT32 ProcessConfigFlowFromServer(const char * pcJsonData, FlowManager_C* pcFlowManager)
-{
-    // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
-    stringstream ssStringData(pcJsonData);
-
-    // boost::property_tree对象, 用于存储json格式数据.
-    ptree ptDataRoot;
-    UINT32 interval;
-    INT32 iRet = AGENT_OK;
-    try
-    {
-        // 防止Json消息体不规范
-        read_json(ssStringData, ptDataRoot);
-        interval = ptDataRoot.get<UINT32>("probe_period");
-        pcFlowManager->pcAgentCfg->SetDetectPeriod(interval);
-        JSON_PARSER_INFO("Current probe period is %u", pcFlowManager->pcAgentCfg->GetDetectPeriod());
-
-        interval = ptDataRoot.get<UINT32>("port_count");
-        pcFlowManager->pcAgentCfg->SetPortCount(interval);
-        JSON_PARSER_INFO("Current port count is %u", pcFlowManager->pcAgentCfg->GetPortCount());
-
-        interval = ptDataRoot.get<UINT32>("report_period");
-        pcFlowManager->pcAgentCfg->SetReportPeriod(interval);
-        JSON_PARSER_INFO("Current report period is %u", pcFlowManager->pcAgentCfg->GetReportPeriod());
-
-        interval = ptDataRoot.get<UINT32>("delay_threshold");
-        pcFlowManager->pcAgentCfg->SetMaxDelay(interval);
-        JSON_PARSER_INFO("Current delay threshold is %u", pcFlowManager->pcAgentCfg->GetMaxDelay());
-
-        interval = ptDataRoot.get<UINT32>("dscp");
-        pcFlowManager->pcAgentCfg->SetDscp(interval);
-        JSON_PARSER_INFO("Current dscp is %u", pcFlowManager->pcAgentCfg->getDscp());
-
-        interval = ptDataRoot.get<UINT32>("lossPkg_timeout");
-        pcFlowManager->pcAgentCfg->SetDetectTimeout(interval);
-        JSON_PARSER_INFO("Current lossPkg timeout is %u", pcFlowManager->pcAgentCfg->GetDetectTimeout());
-
-        interval = ptDataRoot.get<UINT32>("package_rate");
-        pcFlowManager->pcAgentCfg->SetBigPkgRate(interval);
-        JSON_PARSER_INFO("Current package rate is %u", pcFlowManager->pcAgentCfg->GetBigPkgRate());
-    }
-    catch (exception const & e)
-    {
-        JSON_PARSER_ERROR("Parse Json message[%s] error [%s].", pcJsonData, e.what());
-
-        return AGENT_E_ERROR;
-    }
-    return AGENT_OK;
-}
-

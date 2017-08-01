@@ -42,6 +42,9 @@ private:
 
     /* Detect 协议控制参数 */
     ServerAntAgentProtocolUDP_S stProtocolUDP; // UDP 探测报文全局设定,包括源端口范围及目的端口信息.
+    string kafkaIp;
+	string topic;
+	UINT32 dropPkgThresh;
 
     sal_mutex_t AgentCfgLock;               // 互斥锁保护
 
@@ -99,6 +102,25 @@ public:
 
     UINT32 GetMaxDelay();
     void SetMaxDelay(UINT32 newMaxDelay);
+
+	string GetKafkaIp()
+		{
+		return kafkaIp;
+		}
+	void SetKafkaIp(string newIp)
+		{
+		kafkaIp = newIp;
+		}
+
+	string GetTopic()
+		{
+		return topic;
+		}
+
+	void SetTopic(string newTopic)
+		{
+		topic = newTopic;
+		}
 };
 
 #endif
