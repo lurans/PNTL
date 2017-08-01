@@ -141,11 +141,11 @@ public class PntlConfigService {
     public Result<String> setPntlDeployConfig(PntlConfig pntlConfig) {
         //Get PntlConfig
         Result<String> result = new Result<String>();
-        if (!checkAkSkTopicValid(pntlConfig.getAk(), pntlConfig.getSk(), pntlConfig.getKafkaTopic())){
+        if (!checkAkSkTopicValid(pntlConfig.getAk(), pntlConfig.getSk(), pntlConfig.getTopic())){
             result.addError("", "ak, sk or topic is invalid");
             return result;
         }
-        if(!checkIpValid(pntlConfig.getKafkaUrl(),pntlConfig.getRepoUrl())){
+        if(!checkIpValid(pntlConfig.getKafkaIp(),pntlConfig.getRepoUrl())){
             result.addError("", "repoUrl or kafkaUrl is invalid");
             return result;
         }
@@ -155,8 +155,8 @@ public class PntlConfigService {
             dataObj.put("ak", pntlConfig.getAk());
             dataObj.put("sk", pntlConfig.getSk());
             dataObj.put("repo_url", pntlConfig.getRepoUrl());
-            dataObj.put("kafka_url", pntlConfig.getKafkaUrl());
-            dataObj.put("kafka_topic", pntlConfig.getKafkaTopic());
+            dataObj.put("kafka_ip", pntlConfig.getKafkaIp());
+            dataObj.put("topic", pntlConfig.getTopic());
 
             pntlConfig.setByMap(dataObj);
             pntlConfig.setBasicToken(genBasicToken(pntlConfig.getAk(), pntlConfig.getSk()));
@@ -175,8 +175,8 @@ public class PntlConfigService {
         }
         //保存在内存公共信息
         CommonInfo.setRepoUrl(pntlConfig.getRepoUrl());
-        CommonInfo.setKafkaIp(pntlConfig.getKafkaUrl());
-        CommonInfo.setTopic(pntlConfig.getKafkaTopic());
+        CommonInfo.setKafkaIp(pntlConfig.getKafkaIp());
+        CommonInfo.setTopic(pntlConfig.getTopic());
 
         LOGGER.info("Update pntlConfig success");
 

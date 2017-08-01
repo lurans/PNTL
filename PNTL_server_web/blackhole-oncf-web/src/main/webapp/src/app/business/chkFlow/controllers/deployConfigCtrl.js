@@ -168,14 +168,14 @@ define(["language/chkFlow",
                     var sk = $scope.skTextBox.value;
                     var ip = $scope.repoIpTextBox.value;
                     var kafka_ip = $scope.kafkaIpTextBox.value;
-                    var kafka_topic = $scope.kafkaTopicTextBox.value;
+                    var topic = $scope.kafkaTopicTextBox.value;
 
                     var para = {
                         "ak":ak,
                         "sk":sk,
                         "repo_url":ip,
-                        "kafka_url":kafka_ip,
-                        "kafka_topic":kafka_topic
+                        "kafka_ip":kafka_ip,
+                        "topic":topic
                     };
                     return para;
                 };
@@ -185,8 +185,8 @@ define(["language/chkFlow",
                         $scope.akTextBox.value = responseData.ak;
                         $scope.skTextBox.value = responseData.sk;
                         $scope.repoIpTextBox.value = responseData.repo_url;
-                        $scope.kafkaIpTextBox.value = responseData.kafka_url;
-                        $scope.kafkaTopicTextBox.value = responseData.kafka_topic;
+                        $scope.kafkaIpTextBox.value = responseData.kafka_ip;
+                        $scope.kafkaTopicTextBox.value = responseData.topic;
                     },function(responseData){
                         //showERRORMsg
                         commonException.showMsg(i18n.chkFlow_term_read_failed_config, "error");
