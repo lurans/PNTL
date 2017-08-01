@@ -126,7 +126,8 @@ define(["language/chkFlow",
                             .style("top", (d3.event.pageY - 10 - delay_time_chart_pos.y + 80) + "px")
                             .select("#DTvalue")
                             .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x] +" delay_time:"
-                                + d.z + "ms");
+                                + d.z + "ms" + " send_delay:" + d.send_delay + "ms" + " recv_delay:" + d.recv_delay + "ms"
+                                + " send_round_delay:" + d.send_round_delay + "ms" + " recv_round_delay:" + d.recv_round_delay + "ms");
                         d3.select("#DTtooltip").classed("hidden", false);
                     }
                     function mouseout() {
@@ -185,7 +186,17 @@ define(["language/chkFlow",
                     delayDataJson.forEach(function(ip,i){
                         $scope.ipList[i]=ip['ip'];
                         $scope.ipSeq[ip['ip']]=i;
-                        $scope.delayMatrix[i] = d3.range(len).map(function(j) { return {x: j, y: i, z: 0}; });
+                        $scope.delayMatrix[i] = d3.range(len).map(function(j) {
+                            return {
+                                x: j,
+                                y: i,
+                                z: 0,
+                                send_delay: "",
+                                recv_delay: "",
+                                send_round_delay: "",
+                                recv_round_delay: ""
+                            };
+                        });
                     });
                 }
                 function getDelayLinkInfo(linkDataInfo)
@@ -195,8 +206,14 @@ define(["language/chkFlow",
                         var dstIp = link['dst_ip'];
                         if(srcIp in $scope.ipSeq && dstIp in $scope.ipSeq)
                         {
+                            var i = $scope.ipSeq[srcIp];
+                            var j = $scope.ipSeq[dstIp];
                             var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_round_delay']);
-                            $scope.delayMatrix[$scope.ipSeq[srcIp]][$scope.ipSeq[dstIp]].z = sendRoundDelay < 0 ? -1 : sendRoundDelay;
+                            $scope.delayMatrix[i][j].z = sendRoundDelay < 0 ? -1 : sendRoundDelay;
+                            $scope.delayMatrix[i][j].send_delay = link["send_delay"];
+                            $scope.delayMatrix[i][j].recv_delay = link["recv_delay"];
+                            $scope.delayMatrix[i][j].send_round_delay = link["send_round_delay"];
+                            $scope.delayMatrix[i][j].recv_round_delay = link["recv_round_delay"];
                         }
                     });
                 }
