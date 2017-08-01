@@ -204,7 +204,7 @@ define(["language/chkFlow",
                     var pkgLossRate = $scope.packetsLossRateTextBox.value;
                     var dscp = $scope.dscpTextBox.value;
                     var lossPkgTimeOut = $scope.lossPkgTimeOutTextBox.value;
-                    var lossPkgNum = $scope.lossPkgNumTextBox.value;
+                    var dropPkgThresh = $scope.lossPkgNumTextBox.value;
 
                     var probeRoundNumber = parseInt(probeRound);
                     var reportRoundNumber = parseInt(reportRound);
@@ -221,7 +221,7 @@ define(["language/chkFlow",
                             "lossRate_threshold":pkgLossRate,
                             "dscp":dscp,
                             "lossPkg_timeout":lossPkgTimeOut,
-                            "lossPkg_num":lossPkgNum
+                            "dropPkgThresh":dropPkgThresh
                         };
                         return para;
                     }
@@ -237,7 +237,7 @@ define(["language/chkFlow",
                         $scope.packetsLossRateTextBox.value = responseData.lossRate_threshold;
                         $scope.dscpTextBox.value = responseData.dscp;
                         $scope.lossPkgTimeOutTextBox.value = responseData.lossPkg_timeout;
-                        $scope.lossPkgNumTextBox.value = responseData.lossPkg_num;
+                        $scope.lossPkgNumTextBox.value = responseData.dropPkgThresh;
 
                         if($scope.status != "first"){
                             commonException.showMsg(i18n.chkFlow_term_reset_ok);
