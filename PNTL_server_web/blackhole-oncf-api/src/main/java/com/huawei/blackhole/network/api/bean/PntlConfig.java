@@ -55,6 +55,16 @@ public class PntlConfig implements Serializable{
     private String kafkaIp;
     @JsonProperty("topic")
     private String topic;
+    @JsonProperty("dropPkgThresh")
+    private String dropPkgThresh;
+
+    public String getDropPkgThresh() {
+        return dropPkgThresh;
+    }
+
+    public void setDropPkgThresh(String dropPkgThresh) {
+        this.dropPkgThresh = dropPkgThresh;
+    }
 
     public String getEulerRepoUrl() {
         return eulerRepoUrl;
