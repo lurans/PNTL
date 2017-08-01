@@ -482,10 +482,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Object obj = value.getValue();
         System.out.println(objectMapper.writeValueAsString(obj));
         JsonNode objNode = objectMapper.readTree(jsonstr).get("value");
-        if (objNode.findValue("packet-sent") != null){
-            handleLossRateMsg(obj);
-        } else if (objNode.findValue("statistics") != null){
-            handleDelayInfoMsg(obj);
+        if (objNode.findValue("orgnizationSignature") != null){
+            String orgSig = objNode.findValue("orgnizationSignature").toString();
+            if (orgSig.contains("HuaweiDC3ServerAntsDropNotice")){
+                handleLossRateMsg(obj);
+            } else if (orgSig.contains("HuaweiDC3ServerAntsFull")){
+                handleDelayInfoMsg(obj);
+            }
         } else if (objNode.findValue("vbond_ip") != null){
             handleAgentIpMsg(obj);
         }
@@ -544,6 +547,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         //通知后，恢复标记,避免反复通知使agent不断上报VbondIp
         CommonInfo.setServerStart("0");
+        System.out.println("notify agent start, server start=" + CommonInfo.getServerStart());
     }
 
     private Result<String> initPntlConfig(){

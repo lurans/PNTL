@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,6 +124,13 @@ public class DelayInfo implements Serializable {
     public static void saveInfo(DelayInfoAgent.Flow flow){
         String srcIp = flow.getSip();
         String dstIp = flow.getDip();
+        if (StringUtils.isEmpty(srcIp) || StringUtils.isEmpty(dstIp)){
+            return;
+        }
+        if (StringUtils.isEmpty(flow.getTimes().getT1()) || StringUtils.isEmpty(flow.getTimes().getT2())
+                || StringUtils.isEmpty(flow.getTimes().getT3()) || StringUtils.isEmpty(flow.getTimes().getT4())){
+            return;
+        }
 
         DecimalFormat df = new DecimalFormat(Constants.DECIMAL_FORMAT);
         Double t1 = new Double(df.format(Double.parseDouble(flow.getTimes().getT1()) / 1000));

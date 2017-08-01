@@ -139,6 +139,9 @@ public class LossRate implements Serializable{
         if (StringUtils.isEmpty(srcIp) || StringUtils.isEmpty(dstIp)){
             return;
         }
+        if (StringUtils.isEmpty(flow.getPacketDrops()) || StringUtils.isEmpty(flow.getPacketSent())){
+            return;
+        }
 
         LossRateResult newData = new LossRateResult();
         float rate = Float.parseFloat(flow.getPacketDrops()) / Float.parseFloat(flow.getPacketSent());
