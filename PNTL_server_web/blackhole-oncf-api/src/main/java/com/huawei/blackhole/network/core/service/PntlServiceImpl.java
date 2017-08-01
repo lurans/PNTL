@@ -591,6 +591,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             return result;
         }
 
+        //自动将安装脚本上传到仓库
+        result = pntlConfigService.uploadFilesToDFS(PntlInfo.AGENT_INSTALL_FILENAME);
+        if (!result.isSuccess()){
+            LOG.error("upload install_pntl.sh to dfs failed," + result.getErrorMessage());
+            return result;
+        }
+
         startMonitor();
 
         notifyAgentServerStart();
