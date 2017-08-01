@@ -384,7 +384,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
         /*初始话agent状态，去除上次安装结果*/
         resetAgentStatus(hosts);
-        sendFilesToAgentsTask(hosts, 1);
+        sendFilesToAgentsTask(hosts, 0);
 
         result = waitMoment();
         if (!result.isSuccess()){
@@ -530,7 +530,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         }
 
         //3.将文件从仓库分发到agents
-        sendFilesToAgentsTask(hostList, 0);
+        sendFilesToAgentsTask(hostList, 1);
         return result;
     }
     /**
