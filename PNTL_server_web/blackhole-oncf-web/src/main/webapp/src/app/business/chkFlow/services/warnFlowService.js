@@ -25,7 +25,18 @@ define([], function () {
                 "timeout":60000
             });
             return promise;
-        }
+        };
+        this.getTableLength = function (data) {
+            var uri = rest_prefix + "/chkflow/warningListsLength";
+            var promise = camel.post({
+                "url": {
+                    "s": uri
+                },
+                "params":data,
+                "timeout":60000
+            });
+            return promise;
+        };
     };
 
     var warnFlowModule = angular.module('common.config');

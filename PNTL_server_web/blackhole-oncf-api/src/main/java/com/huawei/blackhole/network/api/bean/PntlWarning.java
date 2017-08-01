@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -36,6 +37,10 @@ public class PntlWarning implements Serializable{
 
     public static void setResult(List<PntlWarnInfo> result) {
         PntlWarning.result = result;
+    }
+
+    public static int getResultLength() {
+        return result.size();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -63,6 +68,12 @@ public class PntlWarning implements Serializable{
 
         @JsonProperty("type")
         private String type;
+
+        @JsonProperty("limit")
+        private int limit;
+
+        @JsonProperty("offset")
+        private int offset;
 
         public String getStarTime() {
             return starTime;
@@ -142,6 +153,22 @@ public class PntlWarning implements Serializable{
 
         public void setType() {
             this.type = type;
+        }
+
+        public int getLimit() {
+            return limit;
+        }
+
+        public void setLimit(int limit) {
+            this.limit = limit;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public void setOffset(int offset) {
+            this.offset = offset;
         }
     }
 
@@ -292,17 +319,40 @@ public class PntlWarning implements Serializable{
                 param.getSrcIp(), param.getDstIp());
     }
 
-    public static Result<Object> getWarnList(PntlWarnInfo param){
+    public static Result<Object> getWarnListLength(PntlWarnInfo param){
         Result<Object> result = new Result<>();
         if (isGetAllWaringList(param)){
-            result.setModel(PntlWarning.getResult());
+            result.setModel(PntlWarning.getResultLength());
         } else{
             if (!validParamCheck(param)){
                 result.addError("", "Input is invalid");
                 return result;
             }
 
-            result.setModel(getFilteredResults(param));
+            result.setModel(getFilteredResults(param).size());
+        }
+        return result;
+    }
+
+    public static Result<Object> getWarnList(PntlWarnInfo param){
+        Result<Object> result = new Result<>();
+        List<PntlWarnInfo> allResult = new LinkedList<PntlWarnInfo>();
+        if (isGetAllWaringList(param)){
+            allResult = PntlWarning.getResult();
+        } else{
+            if (!validParamCheck(param)){
+                result.addError("", "Input is invalid");
+                return result;
+            }
+
+            allResult = getFilteredResults(param);
+        }
+        int start = param.offset;
+        int end = start + param.limit;
+        if(end < allResult.size()){
+            result.setModel(allResult.subList(start,end));
+        } else {
+            result.setModel(allResult.subList(start,allResult.size()));
         }
         return result;
     }
