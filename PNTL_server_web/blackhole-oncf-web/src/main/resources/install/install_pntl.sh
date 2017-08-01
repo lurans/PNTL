@@ -9,7 +9,7 @@ function clear_env()
         cd $agent_path
         sh -x StopService.sh
     fi
-	rm -rf $agent_path
+	#rm -rf $agent_path
 }
 
 
@@ -32,18 +32,7 @@ function install_agent()
 	sh -x env.sh
 	sh -x $install_file
 	
-} 
-
-function install_script()
-{
-	local script_filename="pntl.py"
-	
-	cd $agent_path
-	cp -f $path/$script_filename $agent_path
-	chmod 777 $script_filename
-	
 }
 
 clear_env
 install_agent
-#install_script
