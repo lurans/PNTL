@@ -51,10 +51,10 @@ public class PntlConfig implements Serializable{
     private String suseRepoUrl;
     private String installScriptRepoUrl;
 
-    @JsonProperty("kafkaUrl")
-    private String kafkaUrl;
-    @JsonProperty("kafkaTopic")
-    private String kafkaTopic;
+    @JsonProperty("kafka_ip")
+    private String kafkaIp;
+    @JsonProperty("topic")
+    private String topic;
 
     public String getEulerRepoUrl() {
         return eulerRepoUrl;
@@ -88,20 +88,20 @@ public class PntlConfig implements Serializable{
         this.repoUrl = repoUrl;
     }
 
-    public String getKafkaUrl() {
-        return kafkaUrl;
+    public String getKafkaIp() {
+        return kafkaIp;
     }
 
-    public void setKafkaUrl(String kafkaUrl) {
-        this.kafkaUrl = kafkaUrl;
+    public void setKafkaIp(String kafkaIp) {
+        this.kafkaIp = kafkaIp;
     }
 
-    public String getKafkaTopic() {
-        return kafkaTopic;
+    public String getTopic() {
+        return topic;
     }
 
-    public void setKafkaTopic(String kafkaTopic) {
-        this.kafkaTopic = kafkaTopic;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public String getProbePeriod() {
@@ -219,8 +219,8 @@ public class PntlConfig implements Serializable{
         this.eulerRepoUrl = MapUtils.getAsStr(data, "eulerRepoUrl");
         this.suseRepoUrl = MapUtils.getAsStr(data, "suseRepoUrl");
         this.installScriptRepoUrl = MapUtils.getAsStr(data, "installScriptRepoUrl");
-        this.kafkaUrl = MapUtils.getAsStr(data, "kafka_url");
-        this.kafkaTopic = MapUtils.getAsStr(data, "kafka_topic");
+        this.kafkaIp = MapUtils.getAsStr(data, "kafka_ip");
+        this.topic = MapUtils.getAsStr(data, "topic");
         this.lossPkgNum = MapUtils.getAsStr(data,"lossPkg_num");
     }
 
@@ -254,8 +254,8 @@ public class PntlConfig implements Serializable{
         data.put("eulerRepoUrl", eulerRepoUrl);
         data.put("suseRepoUrl", suseRepoUrl);
         data.put("installScriptRepoUrl", installScriptRepoUrl);
-        data.put("kafka_url", kafkaUrl);
-        data.put("kafka_topic", kafkaTopic);
+        data.put("kafka_ip", kafkaIp);
+        data.put("topic", topic);
 
         return data;
     }
