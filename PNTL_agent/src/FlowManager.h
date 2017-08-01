@@ -216,8 +216,8 @@ public:
 
     void FlowManagerAction();	    // 根据参数启停FlowManager
     void SetPkgFlag();
-	void RefreshAgentTable();
-	INT32 ServerClearFlowTable();   // 清空特定流表
+    void RefreshAgentTable();
+    INT32 ServerClearFlowTable();   // 清空特定流表
 };
 
 #endif

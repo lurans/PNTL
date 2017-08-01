@@ -22,7 +22,7 @@ typedef enum tagAgentModule
     AGENT_MODULE_SAVE_REPORTDATA,
     AGENT_MODULE_FILE_NOTIFIER,
     AGENT_MODULE_MAX
-    
+
 } AgentModule_E;
 
 typedef enum tagAgentLogType

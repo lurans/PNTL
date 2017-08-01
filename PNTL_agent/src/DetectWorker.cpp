@@ -672,7 +672,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
             servaddr.sin_family = AF_INET;
             servaddr.sin_addr.s_addr = htonl(pNewSession->stFlowKey.uiDestIP);
             servaddr.sin_port = htons(pNewSession->stFlowKey.uiDestPort);
-           
+
             tos = (pNewSession->stFlowKey.uiDscp)<<2; //dscp左移2位, 变成tos
             // IP_TOS对于stream(TCP)socket不会修改ECN bit, 其他情况下会覆盖ip头中整个tos字段
             iRet = setsockopt(GetSocket(), SOL_IP, IP_TOS, &tos, sizeof(tos));

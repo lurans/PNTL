@@ -75,18 +75,18 @@ INT32 ServerAntAgent()
     }
 
     FileNotifier_C* pcFileNotifier = new FileNotifier_C;
-	iRet = pcFileNotifier -> Init(pcFlowManager);
-	if (iRet)
-	{
-	    INIT_ERROR("Init filenotifier error[%d].", iRet);
-		destroyFileNotifier(pcFileNotifier);
-		destroyFlowManagerObj(pcFlowManager);
+    iRet = pcFileNotifier -> Init(pcFlowManager);
+    if (iRet)
+    {
+        INIT_ERROR("Init filenotifier error[%d].", iRet);
+        destroyFileNotifier(pcFileNotifier);
+        destroyFlowManagerObj(pcFlowManager);
         destroyServerCfgObj(pcCfg);
-		return iRet;
-	}
-	
-	INIT_INFO("--------  Get agentConfig.cfg -------- ");
-	iRet = GetLocalAgentConfig(pcFlowManager);
+        return iRet;
+    }
+
+    INIT_INFO("--------  Get agentConfig.cfg -------- ");
+    iRet = GetLocalAgentConfig(pcFlowManager);
     if (AGENT_OK != iRet)
     {
         destroyFlowManagerObj(pcFlowManager);
@@ -108,10 +108,10 @@ INT32 ServerAntAgent()
             sleep(5 * reportCount);
             INIT_ERROR("Retry to report Agent ip to Server, time [%u]", ++reportCount);
         }
-		else 
-		{
-		    SHOULD_DETECT_REPORT = 1;
-		}
+        else
+        {
+            SHOULD_DETECT_REPORT = 1;
+        }
     }
     while (iRet);
 
