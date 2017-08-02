@@ -195,7 +195,7 @@ public class PntlConfigService {
             dataObj.put("lossRate_threshold", pntlConfig.getLossRateThreshold());
             dataObj.put("dscp", pntlConfig.getDscp());
             dataObj.put("lossPkg_timeout", pntlConfig.getLossPkgTimeout());
-            dataObj.put("dropPkgThreshold", pntlConfig.getDropPkgThresh());
+            dataObj.put("dropPkgThresh", pntlConfig.getDropPkgThresh());
 
             validPntlConfig(pntlConfig);
 
@@ -271,9 +271,9 @@ public class PntlConfigService {
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "loss package timeout is invalid");
             }
 
-            int dropPkgThreshold = Integer.valueOf(pntlConfig.getDropPkgThresh());
-            if (dropPkgThreshold < 1 || dropPkgThreshold > 10){
-                throw new InvalidParamException(ExceptionType.CLIENT_ERR, "loss package num is invalid");
+            int dropPkgThresh = Integer.valueOf(pntlConfig.getDropPkgThresh());
+            if (dropPkgThresh < 1 || dropPkgThresh > 10){
+                throw new InvalidParamException(ExceptionType.CLIENT_ERR, "drop package threshold is invalid");
             }
         } catch (Exception e){
             throw new Exception();
