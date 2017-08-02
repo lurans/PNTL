@@ -145,7 +145,7 @@ public class Pntl {
         ScriptSendJson body = new ScriptSendJson();
         body.setPath(PNTL_INSTALL_PATH);
         body.setMode(FILE_RIGHT);
-        body.setFilename(PntlInfo.PNTL_CONF);
+        body.setFilename(PntlInfo.AGENT_CONF);
         body.setRepoUrl(getDownloadUrl(PntlInfo.AGENT_CONF));
 
         List<String> snList = new ArrayList<>();
