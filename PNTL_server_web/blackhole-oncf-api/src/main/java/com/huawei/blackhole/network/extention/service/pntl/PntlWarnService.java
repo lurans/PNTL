@@ -4,16 +4,18 @@ import com.huawei.blackhole.network.api.bean.DelayInfo;
 import com.huawei.blackhole.network.api.bean.DelayInfoAgent;
 import com.huawei.blackhole.network.api.bean.LossRate;
 import com.huawei.blackhole.network.api.bean.LossRateAgent;
-import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
-import com.huawei.blackhole.network.extention.bean.pntl.IpListJson;
+import com.huawei.blackhole.network.core.service.PntlService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.annotation.Resource;
 import java.util.List;
 
 @Service("pntlWarnService")
 public class PntlWarnService {
+    @Resource(name = "pntlService")
+    private PntlService pntlService;
     public Result<Object> getLossRate() {
         Result<Object> result = new Result<>();
         result.setModel(LossRate.getResult());
@@ -41,8 +43,13 @@ public class PntlWarnService {
         }
 
         for (LossRateAgent.Flow flow : flows){
-            if (flow.getSip() == null || flow.getDip() == null){
+            if (StringUtils.isEmpty(flow.getSip()) || StringUtils.isEmpty(flow.getDip())){
                 result.setErrorMessage("src ip or dst ip is null");
+                return result;
+            }
+
+            if (!pntlService.checkIpIsExist(flow.getSip()) || !pntlService.checkIpIsExist(flow.getDip())){
+                result.setErrorMessage("src ip or dst ip is not existed in hostlist");
                 return result;
             }
             LossRate.saveInfo(flow);
@@ -65,8 +72,12 @@ public class PntlWarnService {
         }
 
         for (DelayInfoAgent.Flow flow : flows){
-            if (flow.getSip() == null || flow.getDip() == null){
+            if (StringUtils.isEmpty(flow.getSip()) || StringUtils.isEmpty(flow.getDip())){
                 result.setErrorMessage("src ip or dst ip is null");
+                return result;
+            }
+            if (!pntlService.checkIpIsExist(flow.getSip()) || !pntlService.checkIpIsExist(flow.getDip())){
+                result.setErrorMessage("src ip or dst ip is not existed in hostlist");
                 return result;
             }
             DelayInfo.saveInfo(flow);

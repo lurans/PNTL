@@ -1078,4 +1078,24 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         result.setModel(list);
         return result;
     }
+
+    /**
+     * 判断ip是否已配置
+     * @param ip
+     * @return
+     */
+    public boolean checkIpIsExist(String ip){
+        if (StringUtils.isEmpty(ip)){
+            return false;
+        }
+
+        boolean hasIp = false;
+        for (PntlHostContext host : hostList){
+            if (host.getVbondIp().equals(ip)){
+                hasIp = true;
+                break;
+            }
+        }
+        return hasIp;
+    }
 }
