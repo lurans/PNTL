@@ -1091,7 +1091,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
         boolean hasIp = false;
         for (PntlHostContext host : hostList){
-            if (host.getVbondIp().equals(ip)){
+            if (ip.equals(host.getVbondIp())){
                 hasIp = true;
                 break;
             }
