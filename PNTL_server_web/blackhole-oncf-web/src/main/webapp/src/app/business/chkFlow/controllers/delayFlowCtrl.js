@@ -49,6 +49,7 @@ define(["language/chkFlow",
                 {
                     var ipListLen=$scope.ipList.length;
                     var xEvent,yEvent,sEvent;
+                    var PRIORITY = 1000000;
 
                     var xEvent,yEvent,sEvent;
                     //定义SVG画布,在svg-g元素中操作
@@ -124,45 +125,46 @@ define(["language/chkFlow",
                         d3.select("#DTtooltip")
                             .style("left", (d3.event.pageX + 10 - delay_time_chart_pos.x - 80) + "px")
                             .style("top", (d3.event.pageY - 10 - delay_time_chart_pos.y + 80) + "px")
+                            .style("z-index",PRIORITY)
                             .select("#DTvalue")
-                            .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x] +" delay_time:"
-                                + d.z + "ms" + " send_delay:" + d.send_delay + "ms" + " recv_delay:" + d.recv_delay + "ms"
-                                + " send_round_delay:" + d.send_round_delay + "ms" + " recv_round_delay:" + d.recv_round_delay + "ms");
+                            .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x]
+                                + " send_delay:" + d.send_delay + "ms" + " recv_delay:" + d.recv_delay + "ms"
+                                + " send_round_delay:" + d.send_round_delay + "ms");
                         d3.select("#DTtooltip").classed("hidden", false);
                     }
                     function mouseout() {
                         d3.select(this).classed("cell-hover", false);
                         d3.select("#DTtooltip").classed("hidden", true);
                     }
-                    var legend = svg.selectAll(".legend")
-                        .data(delayTimeLevel)
-                        .enter().append("g")
-                        .attr("class", "legend");
-
-                    legend.append("rect")
-                        .attr("x", function (d, i) {
-                            return legendElementWidth * i;
-                        })
-                        .attr("y", height + 8)
-                        .attr("width", legendElementWidth)
-                        .attr("height", 8)
-                        .style("fill", function (d, i) {
-                            return colors[i];
-                        });
-
-                    legend.append("text")
-                        .attr("class", "mono")
-                        .text(function (d) {
-                            if(-1 == d)
-                                return i18n.chkFlow_term_disconnect;
-                            else
-                                return d+"ms";
-                        })
-                        .attr("width", legendElementWidth)
-                        .attr("x", function (d, i) {
-                            return legendElementWidth * i;
-                        })
-                        .attr("y", height + 32);
+                    // var legend = svg.selectAll(".legend")
+                    //     .data(delayTimeLevel)
+                    //     .enter().append("g")
+                    //     .attr("class", "legend");
+                    //
+                    // legend.append("rect")
+                    //     .attr("x", function (d, i) {
+                    //         return legendElementWidth * i;
+                    //     })
+                    //     .attr("y", height + 8)
+                    //     .attr("width", legendElementWidth)
+                    //     .attr("height", 8)
+                    //     .style("fill", function (d, i) {
+                    //         return colors[i];
+                    //     });
+                    //
+                    // legend.append("text")
+                    //     .attr("class", "mono")
+                    //     .text(function (d) {
+                    //         if(-1 == d)
+                    //             return i18n.chkFlow_term_disconnect;
+                    //         else
+                    //             return d+"ms";
+                    //     })
+                    //     .attr("width", legendElementWidth)
+                    //     .attr("x", function (d, i) {
+                    //         return legendElementWidth * i;
+                    //     })
+                    //     .attr("y", height + 32);
                     $scope.resetBtn = function()
                     {
                         d3.transition().duration(250).tween("zoom", function() {
@@ -236,8 +238,15 @@ define(["language/chkFlow",
                     };
                     var ipListPromise = delayFlowServ.postIpList(para);
                     ipListPromise.then(function(responseData){
-                        getIpInfo(responseData.result);
-                        getDelayLink();
+                        if(responseData.result == null||responseData.result == ""){
+                            $scope.noData = true;
+                            $scope.showData = false;
+                        }else {
+                            $scope.noData = false;
+                            $scope.showData = true;
+                            getIpInfo(responseData.result);
+                            getDelayLink();
+                        }
                     },function(responseData){
                         //showERRORMsg
                     });

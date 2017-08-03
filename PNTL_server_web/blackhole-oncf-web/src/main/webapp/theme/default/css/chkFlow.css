@@ -304,9 +304,30 @@ line {
 }
 #packets_loss_chart{
     text-align:center;
+    width: 800px;
+    height: 750px;
+}
+.location{
+    position: absolute;
+    width: 150px;
+    height: 30px;
+    left: 950px;
+    top: 132px;
+}
+.legend1{
+    position: absolute;
+    width: 155px;
+    height: 30px;
+    left: 950px;
+}
+.legend{
+    width: 80px;
+    height: 30px;
 }
 #delay_time_chart{
     text-align:center;
+    width: 800px;
+    height: 750px;
 }
 svg {
     padding: 10px;
