@@ -26,13 +26,13 @@ define([], function () {
             });
             return promise;
         };
-        this.getTableLength = function (data) {
-            var uri = rest_prefix + "/chkflow/warningListsLength";
-            var promise = camel.post({
+        this.getInitialTotalData = function (params) {
+            var uri = rest_prefix + "/chkflow/warningList";
+            var promise = camel.get({
                 "url": {
                     "s": uri
                 },
-                "params":data,
+                "params":params,
                 "timeout":60000
             });
             return promise;

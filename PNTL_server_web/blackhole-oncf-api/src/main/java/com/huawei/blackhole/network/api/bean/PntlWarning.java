@@ -39,57 +39,29 @@ public class PntlWarning implements Serializable{
         PntlWarning.result = result;
     }
 
-    public static int getResultLength() {
-        return result.size();
-    }
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static final class PntlWarnInfo implements Serializable{
         @JsonProperty("az_id")
         private String azId;
+
         @JsonProperty("pod_id")
         private String podId;
+
         @JsonProperty("src_ip")
         private String srcIp;
+
         @JsonProperty("dst_ip")
         private String dstIp;
+
         @JsonProperty("time")
         private String time;
+
         @JsonProperty("delay")
         private String delay;
+
         @JsonProperty("lossRate")
         private String lossRate;
-
-        @JsonProperty("start_time")
-        private String starTime;
-        @JsonProperty("end_time")
-        private String endTime;
-
-        @JsonProperty("type")
-        private String type;
-
-        @JsonProperty("limit")
-        private int limit;
-
-        @JsonProperty("offset")
-        private int offset;
-
-        public String getStarTime() {
-            return starTime;
-        }
-
-        public void setStarTime(String starTime) {
-            this.starTime = starTime;
-        }
-
-        public String getEndTime() {
-            return endTime;
-        }
-
-        public void setEndTime(String endTime) {
-            this.endTime = endTime;
-        }
 
         public String getAzId() {
             return azId;
@@ -146,30 +118,6 @@ public class PntlWarning implements Serializable{
         public void setLossRate(String lossRate) {
             this.lossRate = lossRate;
         }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType() {
-            this.type = type;
-        }
-
-        public int getLimit() {
-            return limit;
-        }
-
-        public void setLimit(int limit) {
-            this.limit = limit;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-
-        public void setOffset(int offset) {
-            this.offset = offset;
-        }
     }
 
     public static void saveWarnToWarningList(Object newData){
@@ -202,14 +150,17 @@ public class PntlWarning implements Serializable{
         }
     }
 
-    private static boolean isGetAllWaringList(PntlWarnInfo param){
-        return StringUtils.isEmpty(param.getAzId()) && StringUtils.isEmpty(param.getPodId())
-                && StringUtils.isEmpty(param.getSrcIp()) && StringUtils.isEmpty(param.getDstIp())
-                && StringUtils.isEmpty(param.getStarTime())&& StringUtils.isEmpty(param.getEndTime())
-                && StringUtils.isEmpty(param.getType());
+    private static boolean isGetAllWaringList(PntlWarningRequest param){
+        return (null == param.getAzId() ||  StringUtils.isEmpty(param.getAzId()))
+                && (null == param.getPodId() || StringUtils.isEmpty(param.getPodId()))
+                && (null == param.getSrcIp() || StringUtils.isEmpty(param.getSrcIp()))
+                && (null == param.getDstIp() || StringUtils.isEmpty(param.getDstIp()))
+                && (null == param.getStarTime() || StringUtils.isEmpty(param.getStarTime()))
+                && (null == param.getEndTime() || StringUtils.isEmpty(param.getEndTime()))
+                && (null == param.getType() || StringUtils.isEmpty(param.getType()));
     }
 
-    private static boolean validParamCheck(PntlWarnInfo param){
+    private static boolean validParamCheck(PntlWarningRequest param){
         Pattern pattern = Pattern
                 .compile("^((\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]"
                         + "|[*])\\.){3}(\\d|[1-9]\\d|1\\d\\d|2[0-4]\\d|25[0-5]|[*])$");
@@ -312,31 +263,16 @@ public class PntlWarning implements Serializable{
         return filteredResult;
     }
 
-    private static List<PntlWarnInfo> getFilteredResults(PntlWarnInfo param){
+    private static List<PntlWarnInfo> getFilteredResults(PntlWarningRequest param){
         ///TODO:AZ,POD暂时不做检索
         return getFilteredResultsByIps(getFilteredResultsByTime(getFilteredResultsByType(param.getType()),
                 param.getStarTime(), param.getEndTime()),
                 param.getSrcIp(), param.getDstIp());
     }
 
-    public static Result<Object> getWarnListLength(PntlWarnInfo param){
-        Result<Object> result = new Result<>();
-        if (isGetAllWaringList(param)){
-            result.setModel(PntlWarning.getResultLength());
-        } else{
-            if (!validParamCheck(param)){
-                result.addError("", "Input is invalid");
-                return result;
-            }
-
-            result.setModel(getFilteredResults(param).size());
-        }
-        return result;
-    }
-
-    public static Result<Object> getWarnList(PntlWarnInfo param){
-        Result<Object> result = new Result<>();
+    public static Result<Object> getWarnList(PntlWarningRequest param){
         List<PntlWarnInfo> allResult = new LinkedList<PntlWarnInfo>();
+        Result<Object> result = new Result<>();
         if (isGetAllWaringList(param)){
             allResult = PntlWarning.getResult();
         } else{
@@ -344,16 +280,23 @@ public class PntlWarning implements Serializable{
                 result.addError("", "Input is invalid");
                 return result;
             }
-
             allResult = getFilteredResults(param);
         }
-        int start = param.offset;
-        int end = start + param.limit;
-        if(end < allResult.size()){
-            result.setModel(allResult.subList(start,end));
+
+        int totalRecords = allResult.size();
+        PntlWarningResponse pntlWarningResponse = new PntlWarningResponse();
+        pntlWarningResponse.setTotalRecords(totalRecords);
+
+        int start = param.getOffset();
+        int end = start + param.getLimit();
+
+        if(end < totalRecords){
+            pntlWarningResponse.setResult(allResult.subList(start,end));
         } else {
-            result.setModel(allResult.subList(start,allResult.size()));
+            pntlWarningResponse.setResult(allResult.subList(start,totalRecords));
         }
+
+        result.setModel(pntlWarningResponse);
         return result;
     }
 

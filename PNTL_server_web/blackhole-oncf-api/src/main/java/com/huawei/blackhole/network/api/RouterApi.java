@@ -507,10 +507,13 @@ public class RouterApi {
         return ResponseUtil.succ();
     }
 
-    @Path("/warningListsLength")
-    @POST
-    public Response getWarnListLength(PntlWarning.PntlWarnInfo param){
-        Result<Object> result = PntlWarning.getWarnListLength(param);
+    @Path("/warningList")
+    @GET
+    public Response getWarningList(@Context HttpServletRequest request){
+        PntlWarningRequest param = new PntlWarningRequest();
+        param.setLimit(Integer.parseInt(request.getParameter("limit")));
+        param.setOffset(Integer.parseInt(request.getParameter("offset")));
+        Result<Object> result = PntlWarning.getWarnList(param);
         if (result.isSuccess()) {
             return ResponseUtil.succ(result.getModel());
         } else {
@@ -520,7 +523,7 @@ public class RouterApi {
 
     @Path("/warningList")
     @POST
-    public Response getWarningList(PntlWarning.PntlWarnInfo param){
+    public Response postWarningList(PntlWarningRequest param){
         Result<Object> result = PntlWarning.getWarnList(param);
         if (result.isSuccess()) {
             return ResponseUtil.succ(result.getModel());
