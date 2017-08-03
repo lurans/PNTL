@@ -55,6 +55,7 @@ define(["language/chkFlow",
                 {
                     var ipListLen=$scope.ipList.length;
                     var xEvent,yEvent,sEvent;
+                    var PRIORITY = 1000000;
 
                     //定义SVG画布,在svg-g元素中操作
                     var x = d3.scale.ordinal().rangeBands([0, width]),
@@ -128,9 +129,10 @@ define(["language/chkFlow",
                         d3.select("#LPtooltip")
                             .style("left", (d3.event.pageX + 10 - packets_loss_chart_pos.x - 80) + "px")
                             .style("top", (d3.event.pageY - 10 - packets_loss_chart_pos.y + 80) + "px")
+                            .style("z-index",PRIORITY)
                             .select("#LPvalue")
-                            .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x] +" packets_loss:"
-                                + d.z + "%" + " send_loss_rate:" + d.send_loss_rate + " send_pkgs:" + d.send_pkgs
+                            .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x]
+                                + " send_loss_rate:" + d.send_loss_rate + " send_pkgs:" + d.send_pkgs
                                 + " recv_loss_rate:" + d.recv_loss_rate + " recv_pkgs:" + d.recv_pkgs);
                         d3.select("#LPtooltip").classed("hidden", false);
                     }
@@ -143,27 +145,27 @@ define(["language/chkFlow",
                         .enter().append("g")
                         .attr("class", "legend");
 
-                    legend.append("rect")
-                        .attr("x", function (d, i) {
-                            return legendElementWidth * i;
-                        })
-                        .attr("y", height + 8)
-                        .attr("width", legendElementWidth)
-                        .attr("height", 8)
-                        .style("fill", function (d, i) {
-                            return colors[i];
-                        });
-
-                    legend.append("text")
-                        .attr("class", "mono")
-                        .text(function (d) {
-                            return d+"%";
-                        })
-                        .attr("width", legendElementWidth)
-                        .attr("x", function (d, i) {
-                            return legendElementWidth * i;
-                        })
-                        .attr("y", height + 32);
+                    // legend.append("rect")
+                    //     .attr("x", function (d, i) {
+                    //         return legendElementWidth * i;
+                    //     })
+                    //     .attr("y", height + 8)
+                    //     .attr("width", legendElementWidth)
+                    //     .attr("height", 8)
+                    //     .style("fill", function (d, i) {
+                    //         return colors[i];
+                    //     });
+                    //
+                    // legend.append("text")
+                    //     .attr("class", "mono")
+                    //     .text(function (d) {
+                    //         return d+"%";
+                    //     })
+                    //     .attr("width", legendElementWidth)
+                    //     .attr("x", function (d, i) {
+                    //         return legendElementWidth * i;
+                    //     })
+                    //     .attr("y", height + 32);
                     $scope.resetBtn = function()
                     {
                         d3.transition().duration(250).tween("zoom", function() {
@@ -237,8 +239,15 @@ define(["language/chkFlow",
                     };
                     var ipListPromise = lossFlowServ.postIpList(para);
                     ipListPromise.then(function(responseData){
-                        getIpInfo(responseData.result);
-                        getLossLink();
+                        if(responseData.result == null||responseData.result == ""){
+                            $scope.noData = true;
+                            $scope.showData = false;
+                        }else {
+                            $scope.noData = false;
+                            $scope.showData = true;
+                            getIpInfo(responseData.result);
+                            getLossLink();
+                        }
                     },function(responseData){
                         //showERRORMsg
 

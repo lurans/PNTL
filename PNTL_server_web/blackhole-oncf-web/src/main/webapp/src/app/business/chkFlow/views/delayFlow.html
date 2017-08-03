@@ -6,17 +6,22 @@
 <meta http-equiv="Cache" content="no-cache">
 <!--east and west direction network flow -->
 <div>
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span1" style="float:right; width: 160px; margin-left: 70px">
-                <tiny-button id="button.id"
-                             text='button.text'
-                             click="resetBtn()">
-                </tiny-button>
-            </div>
-        </div>
+    <!--<div class="container-fluid">-->
+        <!--<div class="row-fluid">-->
+            <!--<div class="span1" style="float:right; width: 160px; margin-left: 70px">-->
+                <!--<tiny-button id="button.id"-->
+                             <!--text='button.text'-->
+                             <!--click="resetBtn()">-->
+                <!--</tiny-button>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="dashboard_title"></div>-->
+    <div class="alertLabel">
+        <h2 style="color:#ff9955;">{{i18n.chkFlow_term_alert_label}}</h2>
+        <b>{{i18n.chkFlow_term_delay_alert_label}}</b>{{i18n.chkFlow_term_delay_alert_label1}}
     </div>
-    <div class="dashboard_title"></div>
+    <div ng-show="showData">
     <div class="panel-body" id="delay_time_chart_wrapper">
         <div class="canvas-wrapper">
             <div id="DTtooltip" class="hidden">
@@ -25,5 +30,37 @@
             <div id="delay_time_chart" style='overflow:auto;'></div>
         </div>
     </div>
+    <div class="legend1"style="top: 220px;">
+        <div class="legend" style="float: left;background-color: #750000;"></div><span style="float: right;padding-top: 5px">{{i18n.chkFlow_term_disconnect}}</span>
+    </div>
+    <div class="legend1"style="top: 280px;">
+        <div class="legend" style="float: left;background-color: #92DD92"></div><span style="float: right;padding-top: 5px">0ms~10ms</span>
+    </div>
+    <div class="legend1"style="top: 340px;">
+        <div class="legend" style="float: left;background-color: #60EE97"></div><span style="float: right;padding-top: 5px">10ms~20ms</span>
+    </div>
+    <div class="legend1"style="top: 400px;">
+        <div class="legend" style="float: left;background-color: #FFBB77"></div><span style="float: right;padding-top: 5px">20ms~50ms</span>
+    </div>
+    <div class="legend1"style="top: 460px;">
+        <div class="legend" style="float: left;background-color: #FF8000"></div><span style="float: right;padding-top: 5px">50ms~100ms</span>
+    </div>
+    <div class="legend1"style="top: 520px;">
+        <div class="legend" style="float: left;background-color: #FF2D2D"></div><span style="float: right;padding-top: 5px">>=100ms</span>
+    </div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span1 location" >
+                <tiny-button id="button.id"
+                             text='button.text'
+                             click="resetBtn()">
+                </tiny-button>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="width: 800px;height: 300px;padding-top: 50px;padding-left: 250px" ng-show="noData">
+    <p style="font-size: 14px;color: #999">{{i18n.chkFlow_term_show_label}}</p>
+</div>
 
 </div>
