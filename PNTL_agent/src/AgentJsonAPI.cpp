@@ -215,7 +215,7 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay)
 {
     INT64 max = pstAgentFlowEntry->stFlowDetectResult.lLatencyMax;
-    if (-1 != max && 0 != maxDelay && maxDelay > max)
+    if (-1 != max && 0 != maxDelay && maxDelay * 1000 > max)
     {
         JSON_PARSER_INFO("Max delay is [%d], less than threshold[%d], does not report.", max, maxDelay);
         return AGENT_FILTER_DELAY;
