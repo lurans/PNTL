@@ -31,4 +31,5 @@ public interface PntlService {
 
     Result<Map<String, List<String>>> getPingList();
     Result<String> saveVbondIp(String agentIp, String vbondIp);//test
+    boolean checkIpIsExist(String ip);
 }
