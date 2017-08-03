@@ -136,35 +136,6 @@ define(["language/chkFlow",
                         d3.select(this).classed("cell-hover", false);
                         d3.select("#DTtooltip").classed("hidden", true);
                     }
-                    // var legend = svg.selectAll(".legend")
-                    //     .data(delayTimeLevel)
-                    //     .enter().append("g")
-                    //     .attr("class", "legend");
-                    //
-                    // legend.append("rect")
-                    //     .attr("x", function (d, i) {
-                    //         return legendElementWidth * i;
-                    //     })
-                    //     .attr("y", height + 8)
-                    //     .attr("width", legendElementWidth)
-                    //     .attr("height", 8)
-                    //     .style("fill", function (d, i) {
-                    //         return colors[i];
-                    //     });
-                    //
-                    // legend.append("text")
-                    //     .attr("class", "mono")
-                    //     .text(function (d) {
-                    //         if(-1 == d)
-                    //             return i18n.chkFlow_term_disconnect;
-                    //         else
-                    //             return d+"ms";
-                    //     })
-                    //     .attr("width", legendElementWidth)
-                    //     .attr("x", function (d, i) {
-                    //         return legendElementWidth * i;
-                    //     })
-                    //     .attr("y", height + 32);
                     $scope.resetBtn = function()
                     {
                         d3.transition().duration(250).tween("zoom", function() {
