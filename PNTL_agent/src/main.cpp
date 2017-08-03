@@ -91,6 +91,7 @@ INT32 ServerAntAgent()
     {
         destroyFlowManagerObj(pcFlowManager);
         destroyServerCfgObj(pcCfg);
+        destroyFileNotifier(pcFileNotifier);
         INIT_ERROR("GetLocalAgentConfig failed [%d]", iRet);
         return iRet;
     }
@@ -125,7 +126,7 @@ INT32 ServerAntAgent()
 
     destroyFlowManagerObj(pcFlowManager);
     destroyServerCfgObj(pcCfg);
-
+    destroyFileNotifier(pcFileNotifier);
     INIT_INFO("-------- ServerAntAgent Exit Now --------");
 
     return AGENT_OK;

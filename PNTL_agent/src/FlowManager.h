@@ -58,7 +58,6 @@ typedef struct tagAgentFlowTableEntry
     DetectResult_S stFlowDetectResult;
 } AgentFlowTableEntry_S;
 
-
 typedef struct tagServerFlowKey
 {
     UINT32   uiUrgentFlow;        // 流优先级.
@@ -88,9 +87,13 @@ typedef struct tagServerFlowKey
                 &&(other.uiSrcPortRange == uiSrcPortRange)
                 &&(other.stServerTopo == stServerTopo)
            )
+        {
             return AGENT_TRUE;
+        }
         else
+        {
             return AGENT_FALSE;
+        }
     }
 
     bool operator != (const tagServerFlowKey & other) const
@@ -106,9 +109,13 @@ typedef struct tagServerFlowKey
                 ||(other.uiSrcPortRange != uiSrcPortRange)
                 ||(other.stServerTopo != stServerTopo)
            )
+        {
             return AGENT_TRUE;
+        }
         else
+        {
             return AGENT_FALSE;
+        }
     }
 } ServerFlowKey_S;
 
@@ -125,7 +132,6 @@ typedef struct tagServerFlowTableEntry
     // AgentFlow中当前enable的的流索引
     UINT32   uiAgentFlowWorkingIndexMin;
     UINT32   uiAgentFlowWorkingIndexMax;
-
 } ServerFlowTableEntry_S;
 
 
@@ -137,7 +143,6 @@ private:
     // 初始化后不再修改, 不用互斥
     DetectWorker_C * WorkerList_UDP;                 // UDP Target Worker, 用于接收探测报文并发送应答报文.
 
-
     // Agent 使用的流表.
     // 操作工作流表需互斥, 操作配置流表无需互斥. 当前单线程场景实际不会触发互斥.
     vector <AgentFlowTableEntry_S> AgentFlowTable;   // 两个流表, 一个为工作流表, 另一个为配置流表, 互相独立, 配置完成后提交倒换.
@@ -146,7 +151,6 @@ private:
 
     // Agent流表处理
     INT32 AgentClearFlowTable();// 清空特定流表
-    INT32 AgentCommitCfgFlowTable();                      // 将配置流表与工作流表倒换, 配置生效.由RefreshAgentFlowTable()触发.
     void AgentFlowTableAdd(ServerFlowTableEntry_S * pstServerFlowEntry);
 
     INT32 AgentRefreshFlowTable();                        // 刷新Agent流表, 由CommitServerCfgFlowTable()触发.
@@ -158,15 +162,11 @@ private:
     // 操作工作流表需互斥, 操作配置流表无需互斥. 当前单线程场景实际不会触发互斥.
     vector <ServerFlowTableEntry_S> ServerFlowTable; // 工作流表
     UINT32 uiServerWorkingFlowTable;              // 当前工作流表, 0或1, 另外一个为配置流表.
-    sal_mutex_t stServerFlowTableLock;                  // 操作工作流表和修改uiWorkingServerFlowTable时需要互斥.
 
     // Server流表处理
     INT32 ServerFlowTablePreAdd(
         ServerFlowKey_S * pstNewServerFlowKey,
         ServerFlowTableEntry_S * pstNewServerFlowEntry);    // 向ServerFlowTable中添加Entry前的预处理, 包括入参检查及参数初始化
-
-    INT32 ServerCommitCfgFlowTable();                         // 提交配置流表, 由DoQuery()触发.
-    // 将配置流表与工作流表倒换, 配置生效, 并将刷新Agent流表.
 
     // 业务处理流程
     UINT32 uiNeedCheckResult;                     // 是否有未收集探测结果的流?

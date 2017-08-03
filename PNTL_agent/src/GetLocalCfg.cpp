@@ -54,7 +54,6 @@ string GetJsonDataFromFile(string sFileName, string sFilePath)
 
 INT32 GetLocalCfg(ServerAntAgentCfg_C * pcCfg)
 {
-
     INT32  iRet = AGENT_OK;
     string strCfgJsonData;
     stringstream ssCfgFileName;

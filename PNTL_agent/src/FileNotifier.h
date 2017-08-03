@@ -1,5 +1,5 @@
-#ifndef __SRC_FILEUTILS_H__
-#define __SRC_FILEUTILS_H__
+#ifndef __SRC_FILENOTIFIER_H__
+#define __SRC_FILENOTIFIER_H__
 
 #include <stdio.h>
 #include <assert.h>

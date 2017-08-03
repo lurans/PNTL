@@ -24,8 +24,6 @@ enum
 
 #define AGENT_TRUE                          1
 #define AGENT_FALSE                         0
-#define REPORT_LOSSPKT_URL  "/rest/chkflow/lossRate"
-#define REPORT_LATENCY_URL "/rest/chkflow/delayInfo"
 #define KAFKA_TOPIC_URL  "/mq/pntl"
 
 // Whether agent begin to query pingList
