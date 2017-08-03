@@ -144,28 +144,6 @@ define(["language/chkFlow",
                         .data(lossThreshold)
                         .enter().append("g")
                         .attr("class", "legend");
-
-                    // legend.append("rect")
-                    //     .attr("x", function (d, i) {
-                    //         return legendElementWidth * i;
-                    //     })
-                    //     .attr("y", height + 8)
-                    //     .attr("width", legendElementWidth)
-                    //     .attr("height", 8)
-                    //     .style("fill", function (d, i) {
-                    //         return colors[i];
-                    //     });
-                    //
-                    // legend.append("text")
-                    //     .attr("class", "mono")
-                    //     .text(function (d) {
-                    //         return d+"%";
-                    //     })
-                    //     .attr("width", legendElementWidth)
-                    //     .attr("x", function (d, i) {
-                    //         return legendElementWidth * i;
-                    //     })
-                    //     .attr("y", height + 32);
                     $scope.resetBtn = function()
                     {
                         d3.transition().duration(250).tween("zoom", function() {
