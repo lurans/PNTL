@@ -14,34 +14,6 @@ define(["language/chkFlow",
                     id : "searchTip",
                     auto:false
                 });
-                $scope.search = {
-                    "id":"search_id",
-                    "text" : i18n.chkFlow_term_search_btn,
-                    "width":"50px",
-                    "disable":false,
-                    "iconsClass":{
-                        "left":"icoMoon-search"
-                    },
-                    "searchBtn":function () {
-                        $scope.search.disable = true;
-                        if (!window.tinyWidget.UnifyValid.FormValid((".container-fluid"))){
-                            divTip.option("content",i18n.chkFlow_term_input_valid);
-                            divTip.show(1000);
-                            $scope.search.disable = false;
-                            return;
-                        }
-                        var searchData = getValueFromInput();
-                        if(searchData == "")
-                        {
-                            $scope.search.disable = false;
-                        }else{
-                            searchData.offset = 0;
-                            searchData.limit = $scope.table.displayLength;
-                            getTableLength(searchData);
-                        }
-                    }
-
-                };
                 $scope.azTextBox = {
                     "id": "akTextBox_id",
                     "value": i18n.chkFlow_term_no_support,
@@ -111,17 +83,21 @@ define(["language/chkFlow",
                             "validFn" : "ipv4"
                         }]
                 };
+                $scope.search = {
+                    "id":"search_id",
+                    "text" : i18n.chkFlow_term_search_btn,
+                    "width":"50px",
+                    "disable":false,
+                    "iconsClass":{
+                        "left":"icoMoon-search"
+                    }
+                };
+
                 $scope.table = {
                     "id":"directivetableId",
                     data : [], //初始数据为空
                     totalRecords:0,
-                    displayLength:10,
-                    callback:function (evtObj) {
-                        var para = getValueFromInput();
-                        para.offset = (evtObj.currentPage -1) * $scope.table.displayLength;
-                        para.limit = $scope.table.displayLength;
-                        postData(para);
-                    },
+                    displayLength:1,
                     "columns" : [{
                         "sTitle" : i18n.chkFlow_term_DateTime,
                         "sWidth":"16%",
@@ -157,7 +133,33 @@ define(["language/chkFlow",
                         "mData":"value",
                         "bSortable":false
                     }
-                ]};
+                    ],
+                    callback:function (evtObj) {
+                        $scope.status = "notFirstBtnOk"
+                        var para = getValueFromInput();
+                        para.offset = (evtObj.currentPage -1) * $scope.table.displayLength;
+                        para.limit = $scope.table.displayLength;
+                        postSearchData(para);
+                    }};
+
+                $scope.searchBtnOK = function () {
+                    $scope.search.disable = true;
+                    $scope.status = "firstBtnOK";
+                    if (!window.tinyWidget.UnifyValid.FormValid((".container-fluid"))) {
+                        divTip.option("content", i18n.chkFlow_term_input_valid);
+                        divTip.show(1000);
+                        $scope.search.disable = false;
+                        return;
+                    }
+                    var searchData = getValueFromInput();
+                    if (searchData == "") {
+                        $scope.search.disable = false;
+                    } else {
+                        searchData.offset = 0;
+                        searchData.limit = $scope.table.displayLength;
+                        postSearchData(searchData);
+                    }
+                };
 
                 var getValueFromInput = function(){
                     var az = $scope.azTextBox.value;
@@ -196,39 +198,20 @@ define(["language/chkFlow",
                         return "";
                     }
                 };
-                var postData = function(para){
-                    var promise = warnFlowServ.postSearchData(para);
-                    promise.then(function(responseData){
-                        $scope.table.data = [];
-                        for (var i = 0;i<responseData.length;i++){
-                            if(responseData[i].delay != ""){
-                                responseData[i].value = responseData[i].delay + "ms";
-                                responseData[i].type = i18n.chkFlow_term_delayTime;
-                            }else if(responseData[i].lossRate != ""){
-                                responseData[i].value = responseData[i].lossRate;
-                                responseData[i].type = i18n.chkFlow_term_packetsLossRate;
-                            }
+
+                var setTableDataType = function(result,resultLength) {
+                    for (var i = 0;i<resultLength;i++){
+                        if(result[i].delay != ""){
+                            result[i].value = result[i].delay + "ms";
+                            result[i].type = i18n.chkFlow_term_delayTime;
+                        }else if(result[i].lossRate != ""){
+                            result[i].value = result[i].lossRate;
+                            result[i].type = i18n.chkFlow_term_packetsLossRate;
                         }
-                        $scope.table.data = responseData;
-                        if($scope.status != "first")
-                        {
-                            commonException.showMsg(i18n.chkFlow_term_submit_ok);
-                        } else {
-                            $scope.status = "notFirst";
-                        }
-                        $scope.search.disable = false;
-                    },function(responseData){
-                        if($scope.status != "first")
-                        {
-                            commonException.showMsg(i18n.chkFlow_term_submit_err, "error");
-                        } else {
-                            commonException.showMsg(i18n.chkFlow_term_init_submit_err, "error");
-                            $scope.status = "notFirst";
-                        }
-                        $scope.search.disable = false;
-                    });
+                    }
                 };
-                var getTableLength = function(para){
+
+                var postSearchData = function(para){
                     if(!para){
                         para = {
                             "az_id":"",
@@ -242,18 +225,62 @@ define(["language/chkFlow",
                             "offset" : 0
                         };
                     }
-                    var promise = warnFlowServ.getTableLength(para);
+
+                    $scope.table.totalRecords = 0;
+                    $scope.table.data = [];
+                    var result = [];
+
+                    var promise = warnFlowServ.postSearchData(para);
                     promise.then(function(responseData){
-                        $scope.table.totalRecords = parseInt(responseData);
-                        postData(para);
+                        $scope.table.totalRecords = parseInt(responseData.totalRecords);
+
+                        result = responseData.result;
+                        setTableDataType(result, result.length);
+                        $scope.table.data = result;
+
+                        if($scope.status == "firstBtnOK")
+                        {
+                            commonException.showMsg(i18n.chkFlow_term_submit_ok);
+                        } else {
+                            $scope.status = "notFirstBtnOK";
+                        }
+                        $scope.search.disable = false;
+                    },function(responseData){
+                        if($scope.status == "firstBtnOK")
+                        {
+                            commonException.showMsg(i18n.chkFlow_term_submit_err, "error");
+                        } else {
+                            commonException.showMsg(i18n.chkFlow_term_init_submit_err, "error");
+                            $scope.status = "notFirstBtnOK";
+                        }
+                        $scope.search.disable = false;
+                    });
+                };
+
+                var getInitialTotalData = function(){
+                    var params = {
+                        "limit" : $scope.table.displayLength,
+                        "offset" : 0
+                    };
+                    $scope.table.totalRecords = 0;
+                    $scope.table.data = [];
+                    var tableData = [];
+                    var length = 0;
+                    var promise = warnFlowServ.getInitialTotalData(params);
+                    promise.then(function(responseData){
+                        $scope.table.totalRecords = parseInt(responseData.totalRecords);
+                        tableData = responseData.result;
+                        length = responseData.result.length;
+                        setTableDataType(tableData, length);
+                        $scope.table.data = tableData;
                     },function (responseData) {
 
                     });
                 };
+
                 var init = function()
                 {
-                    $scope.status = "first";
-                    getTableLength();
+                    getInitialTotalData();
                 };
                 init();
             }];
