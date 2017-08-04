@@ -134,10 +134,10 @@ public class DelayInfo implements Serializable {
         }
 
         BigDecimal div = new BigDecimal(Double.toString(1000.000));
-        BigDecimal t1 = new BigDecimal(flow.getTimes().getT1()).setScale(3,BigDecimal.ROUND_HALF_UP).divide(div);
-        BigDecimal t2 = new BigDecimal(flow.getTimes().getT2()).setScale(3,BigDecimal.ROUND_HALF_UP).divide(div);
-        BigDecimal t3 = new BigDecimal(flow.getTimes().getT3()).setScale(3,BigDecimal.ROUND_HALF_UP).divide(div);
-        BigDecimal t4 = new BigDecimal(flow.getTimes().getT4()).setScale(3,BigDecimal.ROUND_HALF_UP).divide(div);
+        BigDecimal t1 = new BigDecimal(flow.getTimes().getT1()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
+        BigDecimal t2 = new BigDecimal(flow.getTimes().getT2()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
+        BigDecimal t3 = new BigDecimal(flow.getTimes().getT3()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
+        BigDecimal t4 = new BigDecimal(flow.getTimes().getT4()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
 
         boolean hasData = false;
 
