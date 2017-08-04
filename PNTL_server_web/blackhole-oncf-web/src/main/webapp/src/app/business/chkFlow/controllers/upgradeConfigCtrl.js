@@ -32,8 +32,8 @@ define(["language/chkFlow",
                         }
                     },
                     "select" :  function(event,file,selectFileQueue) {
-                        if(file.name != "ServerAntAgentForEuler.tar.gz"
-                            && file.name != "ServerAntAgentForSles.tar.gz"){
+                        if(file.name !== "ServerAntAgentForEuler.tar.gz"
+                            && file.name !== "ServerAntAgentForSles.tar.gz"){
                             alert(i18n.chkFlow_term_upload_err5);
                             return false;
                         }
@@ -68,15 +68,28 @@ define(["language/chkFlow",
                     "method": "post",
                     "fileType":".yml",
                     "completeDefa" : function(event, result) {
-                        var succStr="{'result':'success'}";
-                        if(-1 != result.indexOf(succStr)){
-                            configFlowServ.hide();
-                            $scope.singleFileUpload.disable = false;
-                            commonException.showMsg(i18n.chkFlow_term_ip_upgrade_success);
-                        }else {
-                            configFlowServ.hide();
-                            $scope.singleFileUpload.disable = false;
-                            commonException.showMsg(i18n.chkFlow_term_ip_upgrade_fail, "error");
+                        if(data.match("^\{(.+:.+,*){1,}\}$")){
+                            var resultJson = JSON.parse(result);
+                            if(resultJson.hasOwnProperty("result")&&resultJson.result === "success"){
+                                configFlowServ.hide();
+                                $scope.singleFileUpload.disable = false;
+                                commonException.showMsg(i18n.chkFlow_term_ip_upgrade_success);
+                            }else{
+                                configFlowServ.hide();
+                                $scope.singleFileUpload.disable = false;
+                                commonException.showMsg(i18n.chkFlow_term_ip_upgrade_fail, "error");
+                            }
+                        }else{
+                            var succStr="{'result':'success'}";
+                            if(-1 !== result.indexOf(succStr)){
+                                configFlowServ.hide();
+                                $scope.singleFileUpload.disable = false;
+                                commonException.showMsg(i18n.chkFlow_term_ip_upgrade_success);
+                            }else {
+                                configFlowServ.hide();
+                                $scope.singleFileUpload.disable = false;
+                                commonException.showMsg(i18n.chkFlow_term_ip_upgrade_fail, "error");
+                            }
                         }
                     },
                     "selectError" : function(event,file,errorMsg) {
@@ -118,7 +131,7 @@ define(["language/chkFlow",
                     },
                     "submitClick" : function() {
                         $scope.singleFileUpload.disable = true;
-                        if(typeof($scope.file) != "undefined"){
+                        if(typeof($scope.file) !== "undefined"){
                             var installConfirmWindow = {
                                 title:i18n.chkFlow_term_upload_confirm,
                                 height : "250px",

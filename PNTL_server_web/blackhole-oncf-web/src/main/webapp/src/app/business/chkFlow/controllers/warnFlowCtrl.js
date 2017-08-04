@@ -19,14 +19,14 @@ define(["language/chkFlow",
                     "value": i18n.chkFlow_term_no_support,
                     "tooltip":i18n.chkFlow_term_ak_tooltip,
                     "width":"130px",
-                    "disable":true,
+                    "disable":true
                 };
                 $scope.podTextBox = {
                     "id": "podTextBox_id",
                     "value": i18n.chkFlow_term_no_support,
                     "tooltip":i18n.chkFlow_term_ak_tooltip,
                     "width":"130px",
-                    "disable":true,
+                    "disable":true
                 };
                 $scope.type = {
                     "id":"type_id",
@@ -135,7 +135,7 @@ define(["language/chkFlow",
                     }
                     ],
                     callback:function (evtObj) {
-                        $scope.status = "notFirstBtnOk"
+                        $scope.status = "notFirstBtnOk";
                         var para = getValueFromInput();
                         para.offset = (evtObj.currentPage -1) * $scope.table.displayLength;
                         para.limit = $scope.table.displayLength;
@@ -152,7 +152,7 @@ define(["language/chkFlow",
                         return;
                     }
                     var searchData = getValueFromInput();
-                    if (searchData == "") {
+                    if (searchData === "") {
                         $scope.search.disable = false;
                     } else {
                         searchData.offset = 0;
@@ -177,7 +177,7 @@ define(["language/chkFlow",
                     } else{
                         selectType = "";
                     }
-                    if((startTime != ""&&endTime != "")||(startTime === ""&&endTime === "")){
+                    if((startTime !== ""&&endTime !== "")||(startTime === ""&&endTime === "")){
                         var searchData = {
                             "az_id":az,
                             "pod_id":pod,
@@ -201,10 +201,10 @@ define(["language/chkFlow",
 
                 var setTableDataType = function(result,resultLength) {
                     for (var i = 0;i<resultLength;i++){
-                        if(result[i].delay != ""){
+                        if(result[i].delay !== ""){
                             result[i].value = result[i].delay + "ms";
                             result[i].type = i18n.chkFlow_term_delayTime;
-                        }else if(result[i].lossRate != ""){
+                        }else if(result[i].lossRate !== ""){
                             result[i].value = result[i].lossRate;
                             result[i].type = i18n.chkFlow_term_packetsLossRate;
                         }
@@ -238,7 +238,7 @@ define(["language/chkFlow",
                         setTableDataType(result, result.length);
                         $scope.table.data = result;
 
-                        if($scope.status == "firstBtnOK")
+                        if($scope.status === "firstBtnOK")
                         {
                             commonException.showMsg(i18n.chkFlow_term_submit_ok);
                         } else {
@@ -246,7 +246,7 @@ define(["language/chkFlow",
                         }
                         $scope.search.disable = false;
                     },function(responseData){
-                        if($scope.status == "firstBtnOK")
+                        if($scope.status === "firstBtnOK")
                         {
                             commonException.showMsg(i18n.chkFlow_term_submit_err, "error");
                         } else {

@@ -151,13 +151,10 @@ public class PntlWarning implements Serializable{
     }
 
     private static boolean isGetAllWaringList(PntlWarningRequest param){
-        return (null == param.getAzId() ||  StringUtils.isEmpty(param.getAzId()))
-                && (null == param.getPodId() || StringUtils.isEmpty(param.getPodId()))
-                && (null == param.getSrcIp() || StringUtils.isEmpty(param.getSrcIp()))
-                && (null == param.getDstIp() || StringUtils.isEmpty(param.getDstIp()))
-                && (null == param.getStarTime() || StringUtils.isEmpty(param.getStarTime()))
-                && (null == param.getEndTime() || StringUtils.isEmpty(param.getEndTime()))
-                && (null == param.getType() || StringUtils.isEmpty(param.getType()));
+        return StringUtils.isEmpty(param.getAzId()) && StringUtils.isEmpty(param.getPodId())
+                && StringUtils.isEmpty(param.getSrcIp()) && StringUtils.isEmpty(param.getDstIp())
+                && StringUtils.isEmpty(param.getStarTime()) && StringUtils.isEmpty(param.getEndTime())
+                && StringUtils.isEmpty(param.getType());
     }
 
     private static boolean validParamCheck(PntlWarningRequest param){
