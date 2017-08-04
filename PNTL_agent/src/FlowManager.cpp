@@ -760,7 +760,7 @@ INT32 FlowManager_C::FlowDropReport(UINT32 uiFlowTableIndex)
     }
 
 
-    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, KAFKA_TOPIC_URL);
+    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, KAFKA_TOPIC_URL + this->pcAgentCfg->GetTopic());
     if (iRet)
     {
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);
@@ -801,7 +801,7 @@ INT32 FlowManager_C::FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay)
     }
     strReportData = ssReportData.str();
 
-    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, KAFKA_TOPIC_URL);
+    iRet = ReportDataToServer(pcAgentCfg, &ssReportData, KAFKA_TOPIC_URL + this->pcAgentCfg->GetTopic());
     if (iRet)
     {
         FLOW_MANAGER_ERROR("Flow Report Data failed[%d]", iRet);

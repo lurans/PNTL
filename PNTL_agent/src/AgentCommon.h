@@ -24,7 +24,7 @@ enum
 
 #define AGENT_TRUE                          1
 #define AGENT_FALSE                         0
-#define KAFKA_TOPIC_URL  "/mq/pntl"
+#define KAFKA_TOPIC_URL  "/mq/"
 
 // Whether agent begin to query pingList
 extern UINT32 SHOULD_DETECT_REPORT;

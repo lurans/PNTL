@@ -222,7 +222,7 @@ INT32 ReportAgentIPToServer(ServerAntAgentCfg_C * pcAgentCfg)
     pcAgentCfg->GetServerAddress(&uiServerIP, &uiServerPort);
 
     ssUrl.clear();
-    ssUrl << HTTP_PREFIX << pcAgentCfg->GetKafkaIp() << KAFKA_TOPIC_URL;
+    ssUrl << HTTP_PREFIX << pcAgentCfg->GetKafkaIp() << KAFKA_TOPIC_URL << pcAgentCfg->GetTopic();
     MSG_CLIENT_INFO("URL [%s]", ssUrl.str().c_str());
 
 
