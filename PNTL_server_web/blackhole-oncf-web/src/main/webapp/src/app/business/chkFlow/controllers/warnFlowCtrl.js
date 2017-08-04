@@ -94,14 +94,17 @@ define(["language/chkFlow",
                 };
 
                 $scope.table = {
-                    "id":"directivetableId",
+                    "id":"directiveTableId",
                     data : [], //初始数据为空
                     totalRecords:0,
-                    displayLength:1,
+                    displayLength:10,
+                    paginationStyle:"full_numbers",
+                    curPage:{"pageIndex":1},
                     "columns" : [{
                         "sTitle" : i18n.chkFlow_term_DateTime,
                         "sWidth":"16%",
-                        "mData":"time"
+                        "mData":"time",
+                        "bSortable":false
                     }, {
                         "sTitle" : i18n.chkFlow_term_az,
                         "sWidth":"10%",
@@ -144,13 +147,13 @@ define(["language/chkFlow",
 
                 $scope.searchBtnOK = function () {
                     $scope.search.disable = true;
-                    $scope.status = "firstBtnOK";
                     if (!window.tinyWidget.UnifyValid.FormValid((".container-fluid"))) {
                         divTip.option("content", i18n.chkFlow_term_input_valid);
                         divTip.show(1000);
                         $scope.search.disable = false;
                         return;
                     }
+                    $scope.status = "firstBtnOK";
                     var searchData = getValueFromInput();
                     if (searchData === "") {
                         $scope.search.disable = false;
@@ -225,7 +228,9 @@ define(["language/chkFlow",
                             "offset" : 0
                         };
                     }
-
+                    if(para.offset === 0){
+                        $scope.table.curPage={"pageIndex":1};
+                    }
                     $scope.table.totalRecords = 0;
                     $scope.table.data = [];
                     var result = [];
