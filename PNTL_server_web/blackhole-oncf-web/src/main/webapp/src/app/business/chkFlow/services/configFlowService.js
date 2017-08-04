@@ -26,13 +26,26 @@ define([], function () {
             "background-repeat": "no-repeat",
             "background-position": "50%"
         });
+        this.loading1 =  $('<div>').text("该过程需要1~2分钟，请耐心等待...").css({
+            "z-index": 10000000001,
+            "text-align": "center",
+            "position": "fixed",
+            "width": "300px",
+            "height": "100px",
+            "color": "#999",
+            "top": "485px",
+            "left":"700px",
+            "font-size":"14px"
+        });
         this.show = function () {
             $("body").append(this.background);
             $("body").append(this.loading);
+            $("body").append(this.loading1);
         };
         this.hide = function () {
             this.background.remove();
             this.loading.remove();
+            this.loading1.remove();
         };
 
         this.install= function(data){

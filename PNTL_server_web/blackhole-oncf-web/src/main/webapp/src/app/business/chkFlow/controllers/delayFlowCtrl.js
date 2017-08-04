@@ -129,42 +129,13 @@ define(["language/chkFlow",
                             .select("#DTvalue")
                             .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x]
                                 + " send_delay:" + d.send_delay + "ms" + " recv_delay:" + d.recv_delay + "ms"
-                                + " send_round_delay:" + d.send_round_delay + "ms");
+                                + " send_round_delay:" + d.send_round_delay + "ms" + " timestamp:" + d.timestamp);
                         d3.select("#DTtooltip").classed("hidden", false);
                     }
                     function mouseout() {
                         d3.select(this).classed("cell-hover", false);
                         d3.select("#DTtooltip").classed("hidden", true);
                     }
-                    // var legend = svg.selectAll(".legend")
-                    //     .data(delayTimeLevel)
-                    //     .enter().append("g")
-                    //     .attr("class", "legend");
-                    //
-                    // legend.append("rect")
-                    //     .attr("x", function (d, i) {
-                    //         return legendElementWidth * i;
-                    //     })
-                    //     .attr("y", height + 8)
-                    //     .attr("width", legendElementWidth)
-                    //     .attr("height", 8)
-                    //     .style("fill", function (d, i) {
-                    //         return colors[i];
-                    //     });
-                    //
-                    // legend.append("text")
-                    //     .attr("class", "mono")
-                    //     .text(function (d) {
-                    //         if(-1 == d)
-                    //             return i18n.chkFlow_term_disconnect;
-                    //         else
-                    //             return d+"ms";
-                    //     })
-                    //     .attr("width", legendElementWidth)
-                    //     .attr("x", function (d, i) {
-                    //         return legendElementWidth * i;
-                    //     })
-                    //     .attr("y", height + 32);
                     $scope.resetBtn = function()
                     {
                         d3.transition().duration(250).tween("zoom", function() {
@@ -196,7 +167,8 @@ define(["language/chkFlow",
                                 send_delay: "",
                                 recv_delay: "",
                                 send_round_delay: "",
-                                recv_round_delay: ""
+                                recv_round_delay: "",
+                                timestamp:""
                             };
                         });
                     });
@@ -216,6 +188,7 @@ define(["language/chkFlow",
                             $scope.delayMatrix[i][j].recv_delay = link["recv_delay"];
                             $scope.delayMatrix[i][j].send_round_delay = link["send_round_delay"];
                             $scope.delayMatrix[i][j].recv_round_delay = link["recv_round_delay"];
+                            $scope.delayMatrix[i][j].timestamp = link["timestamp"];
                         }
                     });
                 }
