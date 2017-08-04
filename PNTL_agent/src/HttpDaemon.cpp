@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
@@ -67,7 +66,9 @@ void request_completed (void *cls, struct MHD_Connection *connection,
     struct connection_info_struct *con_info = (connection_info_struct *) *con_cls;
 
     if (NULL == con_info)
+    {
         return;
+    }
 
     string response = "";
 
@@ -81,12 +82,6 @@ void request_completed (void *cls, struct MHD_Connection *connection,
 
     delete con_info;
     *con_cls = NULL;
-    INT32 index = response.find("exit");
-    if (-1 != index)
-    {
-        HTTP_DAEMON_WARNING("exit current process.");
-        exit(0);
-    }
 }
 
 // 业务处理, 每次处理一个key.
@@ -97,8 +92,6 @@ INT32 iterate_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
 {
     INT32 iRet = AGENT_OK;
     struct connection_info_struct *con_info = (connection_info_struct *)coninfo_cls;
-
-    //HTTP_DAEMON_WARNING("key:[%s],value[%s],size[%u]", key, data, size);
 
     if (size > 0)
     {
@@ -118,7 +111,6 @@ INT32 iterate_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
     else
     {
         // 有些client在post数据结尾忘记添加结束字符"\n", 销毁链接前daemon会补一个结束字符下来, 直接忽略即可.
-        // HTTP_DAEMON_WARNING("Ignore this key:[%s],value[%s],size[%u]", key, data, size);
         return MHD_YES;
     }
 }
@@ -305,9 +297,6 @@ HttpDaemon_C::HttpDaemon_C()
     pcResponcePageOK = "<html><head><title>Info</title></head><body>Process Request Sucess</body></html>";
     pcResponcePageError = "<html><head><title>Error</title></head><body>Process Request Failed</body></html>";
     pcResponcePageUnsupported = "<html><head><title>Error</title></head><body>Unsupported Request</body></html>";
-    keyPath = "/opt/huawei/ServerAntAgent/server.key";
-    certPath = "/opt/huawei/ServerAntAgent/server.pem";
-
 }
 
 // 析构函数, 释放必要资源.
@@ -316,7 +305,9 @@ HttpDaemon_C::~HttpDaemon_C()
     HTTP_DAEMON_INFO("Destroy an old Http Daemon.");
 
     if (pstDaemon) // 停止http daemon
+    {
         MHD_stop_daemon (pstDaemon);
+    }
     pstDaemon = NULL;
 }
 
@@ -338,19 +329,6 @@ INT32 HttpDaemon_C::StartHttpDaemon(UINT32 uiNewPort)
     {
         MHD_stop_daemon (pstDaemon);
         pstDaemon = NULL;
-    }
-
-    keyPem = loadFile(keyPath);
-    if (keyPem.empty())
-    {
-        HTTP_DAEMON_ERROR("Load server.key fail, exit.");
-        return AGENT_E_PARA;
-    }
-    certPem = loadFile(certPath);
-    if (certPem.empty())
-    {
-        HTTP_DAEMON_ERROR("Load server.pem fail, exit.");
-        return AGENT_E_PARA;
     }
 
     // 使用新端口号启动http daemon.
@@ -405,7 +383,6 @@ INT32 HttpDaemon_C::StopHttpDaemon()
 // Http Server Daemon POST操作处理函数
 INT32 HttpDaemon_C::ProcessPostIterate(const char * pcKey, const char * pcData, UINT32 uiDataSize, string * pstrResponce)
 {
-
     HTTP_DAEMON_WARNING("PostIterate use default func. key:[%s],value[%s],size[%u]", pcKey, pcData, uiDataSize);
 
     // 入参检查
@@ -424,10 +401,6 @@ INT32 HttpDaemon_C::ProcessPostIterate(const char * pcKey, const char * pcData, 
         // 整个post返回一个结果.
         (* pstrResponce) = pcResponcePageError;
 
-        // 整个post返回一个字符串, 字符串由多个key处理结果连接起来.
-        //(* pstrResponce) += pcResponcePageError;
-
-
         // 一旦返回错误, 会终止本次post处理, 忽略尚未处理的key/data值.
         return AGENT_E_ERROR;
     }
@@ -435,31 +408,7 @@ INT32 HttpDaemon_C::ProcessPostIterate(const char * pcKey, const char * pcData, 
     {
         // 整个post返回一个结果.
         (* pstrResponce) = pcResponcePageOK;
-
-        // 整个post返回一个字符串, 字符串由多个key处理结果连接起来.
-        //(* pstrResponce) += pcResponcePageOK;
-
         return AGENT_OK;
     }
 }
-
-string HttpDaemon_C::loadFile(string path)
-{
-    HTTP_DAEMON_INFO("Read file at [%s]", path.c_str());
-    string content = "";
-    ifstream in;
-    in.open(path.c_str(), ios::in);
-    if(in.fail())
-    {
-        return content;
-    }
-    string line = "";
-    while (getline(in, line))
-    {
-        content += line + "\n";
-    }
-    in.close();
-    return content;
-}
-
 

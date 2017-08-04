@@ -5,7 +5,6 @@
 
 FileNotifier_C::FileNotifier_C()
 {
-    FILE_NOTIFIER_INFO("Create a FileNotifier.");
     notifierId = -1;
     wd = -1;
 }
@@ -50,7 +49,6 @@ INT32 FileNotifier_C::Init(FlowManager_C* pcFlowManager)
         FILE_NOTIFIER_ERROR("StartFileNotifierThread failed[%d]", iRet);
         return iRet;
     }
-    FILE_NOTIFIER_INFO("Init success.");
     return AGENT_OK;
 }
 
@@ -58,12 +56,10 @@ INT32 FileNotifier_C::HandleEvent(struct inotify_event * event)
 {
     if (event->mask & IN_MODIFY)
     {
-        FILE_NOTIFIER_INFO("Config file is changed, refreash config.");
         GetLocalAgentConfig(manager);
     }
     else if (event->mask & IN_IGNORED)
     {
-        FILE_NOTIFIER_INFO("File maybe altered by vim, readd filewatch.");
         wd = inotify_add_watch(notifierId, filePath.c_str(), IN_MODIFY);
         if (0 > wd)
         {
