@@ -9,6 +9,7 @@ import com.huawei.blackhole.network.common.constants.PntlInfo;
 import com.huawei.blackhole.network.common.exception.ApplicationException;
 import com.huawei.blackhole.network.common.exception.ClientException;
 import com.huawei.blackhole.network.common.exception.InvalidFormatException;
+import com.huawei.blackhole.network.common.exception.InvalidParamException;
 import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
@@ -212,14 +213,35 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return result;
     }
 
+
+    private Result<String> stopAgentProbe(String probe_period){
+        Result<String> result = new Result<>();
+        try {
+            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
+            dataObj.put("probe_period", probe_period);
+            YamlUtil.setConf(dataObj, PntlInfo.PNTL_CONF);
+        } catch (ApplicationException e) {
+            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
+            result.addError("", e.prefix() + errMsg);
+            return result;
+        } catch (Exception e){
+            result.addError("", "parameter is invalid");
+            return result;
+        }
+
+        result = sendMsgToAgents();
+        if (!result.isSuccess()){
+            LOG.error("setProbeInterval failed");
+        }
+        return result;
+    }
+
     /**
      * 设置探测时间间隔，若为0，则停止探测
      * @return
      */
     public Result<String> setProbeInterval(String timeInterval){
         Result<String> result = new Result<>();
-        ProbeInterval interval = new ProbeInterval();
-        interval.setProbe_interval(timeInterval);
 
         if (hostList == null){
             result.addError("", "host is null");
@@ -239,12 +261,13 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
                 result.addError("", errMsg);
             }
             return result;
+        } else {
+            result = stopAgentProbe(timeInterval);
+            if (!result.isSuccess()){
+                LOG.error("setProbeInterval failed");
+            }
         }
 
-        result = sendMsgToAgents();
-        if (!result.isSuccess()){
-            LOG.error("setProbeInterval failed");
-        }
         return result;
     }
 

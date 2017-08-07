@@ -58,6 +58,19 @@ public class PntlConfig implements Serializable{
     @JsonProperty("package_size")
     private String packageSize;
 
+    public PntlConfig(){
+        this.probePeriod = "10";
+        this.portCount = "5";
+        this.reportPeriod = "30";
+        this.pkgCount = "0";
+        this.delayThreshold = "1";
+        this.lossRateThreshold = "20";
+        this.dscp = "0";
+        this.lossPkgTimeout = "1";
+        this.dropPkgThresh = "2";
+        this.packageSize = "1000";
+    }
+
     public String getPackageSize() {
         return packageSize;
     }

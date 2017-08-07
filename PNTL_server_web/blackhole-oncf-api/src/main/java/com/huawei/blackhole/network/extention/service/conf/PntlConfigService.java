@@ -13,6 +13,7 @@ import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
+import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.extention.bean.pntl.AgentConfig;
@@ -64,9 +65,9 @@ public class PntlConfigService {
             LOGGER.error(errMsg, e);
             result.addError("", ExceptionUtil.prefix(ExceptionType.CLIENT_ERR) + errMsg);
         } catch (InvalidFormatException e) {
-            String errMsg = "invalid format: " + Resource.NAME_CONF;
+            String errMsg = "invalid format: " + PntlInfo.PNTL_CONF;
             LOGGER.error(errMsg, e);
-            result.addError("", e.prefix() + errMsg);
+            result.addError("", errMsg);
         } catch (ApplicationException e) {
             String errMsg = "fail to get configuration: " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);

@@ -173,6 +173,7 @@ public class AgentConfig implements Serializable{
                 + "\"topic\":\"" + topic + "\","
                 + "\"vbondIp_flag\":\"" + vbondIpFlag + "\","
                 + "\"dropPkgThresh\":\"" + dropPkgThresh + "\","
+                + "\"package_size\":\"" + packageSize + "\","
                 + "\"pingList\":" + pingListToString(pingList)
                 + "}";
     }
