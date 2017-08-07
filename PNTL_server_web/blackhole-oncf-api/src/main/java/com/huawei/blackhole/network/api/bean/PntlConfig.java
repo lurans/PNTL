@@ -55,6 +55,29 @@ public class PntlConfig implements Serializable{
     private String topic;
     @JsonProperty("dropPkgThresh")
     private String dropPkgThresh;
+    @JsonProperty("package_size")
+    private String packageSize;
+
+    public PntlConfig(){
+        this.probePeriod = "10";
+        this.portCount = "5";
+        this.reportPeriod = "30";
+        this.pkgCount = "0";
+        this.delayThreshold = "1";
+        this.lossRateThreshold = "20";
+        this.dscp = "0";
+        this.lossPkgTimeout = "1";
+        this.dropPkgThresh = "2";
+        this.packageSize = "1000";
+    }
+
+    public String getPackageSize() {
+        return packageSize;
+    }
+
+    public void setPackageSize(String packageSize) {
+        this.packageSize = packageSize;
+    }
 
     public String getDropPkgThresh() {
         return dropPkgThresh;
@@ -222,6 +245,7 @@ public class PntlConfig implements Serializable{
         this.kafkaIp = MapUtils.getAsStr(data, "kafka_ip");
         this.topic = MapUtils.getAsStr(data, "topic");
         this.dropPkgThresh = MapUtils.getAsStr(data,"dropPkgThresh");
+        this.packageSize = MapUtils.getAsStr(data, "package_size");
     }
 
     private boolean containsEmptyField() {
@@ -231,7 +255,7 @@ public class PntlConfig implements Serializable{
                 || StringUtils.isEmpty(dscp) || StringUtils.isEmpty(lossPkgTimeout)
                 || StringUtils.isEmpty(ak) || StringUtils.isEmpty(sk) || StringUtils.isEmpty(repoUrl)
                 || StringUtils.isEmpty(topic) || StringUtils.isEmpty(dropPkgThresh)
-                || StringUtils.isEmpty(kafkaIp);
+                || StringUtils.isEmpty(kafkaIp) || StringUtils.isEmpty(packageSize);
 
     }
 
@@ -259,6 +283,7 @@ public class PntlConfig implements Serializable{
         data.put("kafka_ip", kafkaIp);
         data.put("topic", topic);
         data.put("dropPkgThresh", dropPkgThresh);
+        data.put("package_size", packageSize);
 
         return data;
     }

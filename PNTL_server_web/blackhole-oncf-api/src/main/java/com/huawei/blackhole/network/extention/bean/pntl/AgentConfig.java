@@ -39,8 +39,18 @@ public class AgentConfig implements Serializable{
     private String vbondIpFlag;
     @JsonProperty("dropPkgThresh")
     private String dropPkgThresh;
+    @JsonProperty("package_size")
+    private String packageSize;
     @JsonProperty("pingList")
     private Map<String, List<String>> pingList;
+
+    public String getPackageSize() {
+        return packageSize;
+    }
+
+    public void setPackageSize(String packageSize) {
+        this.packageSize = packageSize;
+    }
 
     public String getProbePeriod() {
         return probePeriod;
@@ -163,6 +173,7 @@ public class AgentConfig implements Serializable{
                 + "\"topic\":\"" + topic + "\","
                 + "\"vbondIp_flag\":\"" + vbondIpFlag + "\","
                 + "\"dropPkgThresh\":\"" + dropPkgThresh + "\","
+                + "\"package_size\":\"" + packageSize + "\","
                 + "\"pingList\":" + pingListToString(pingList)
                 + "}";
     }

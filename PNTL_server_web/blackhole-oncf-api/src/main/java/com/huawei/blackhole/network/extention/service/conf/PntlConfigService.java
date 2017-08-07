@@ -13,6 +13,7 @@ import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestClientExt;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
+import com.huawei.blackhole.network.core.bean.PntlHostContext;
 import com.huawei.blackhole.network.core.bean.Result;
 import com.huawei.blackhole.network.core.service.PntlService;
 import com.huawei.blackhole.network.extention.bean.pntl.AgentConfig;
@@ -64,9 +65,9 @@ public class PntlConfigService {
             LOGGER.error(errMsg, e);
             result.addError("", ExceptionUtil.prefix(ExceptionType.CLIENT_ERR) + errMsg);
         } catch (InvalidFormatException e) {
-            String errMsg = "invalid format: " + Resource.NAME_CONF;
+            String errMsg = "invalid format: " + PntlInfo.PNTL_CONF;
             LOGGER.error(errMsg, e);
-            result.addError("", e.prefix() + errMsg);
+            result.addError("", errMsg);
         } catch (ApplicationException e) {
             String errMsg = "fail to get configuration: " + e.getLocalizedMessage();
             LOGGER.error(errMsg, e);
@@ -196,6 +197,7 @@ public class PntlConfigService {
             dataObj.put("dscp", pntlConfig.getDscp());
             dataObj.put("lossPkg_timeout", pntlConfig.getLossPkgTimeout());
             dataObj.put("dropPkgThresh", pntlConfig.getDropPkgThresh());
+            dataObj.put("package_size", pntlConfig.getPackageSize());
 
             validPntlConfig(pntlConfig);
 
@@ -274,6 +276,11 @@ public class PntlConfigService {
             int dropPkgThresh = Integer.valueOf(pntlConfig.getDropPkgThresh());
             if (dropPkgThresh < 1 || dropPkgThresh > 10){
                 throw new InvalidParamException(ExceptionType.CLIENT_ERR, "drop package threshold is invalid");
+            }
+
+            int package_size = Integer.valueOf(pntlConfig.getPackageSize());
+            if (package_size < 40 || package_size > 2000){
+                throw new InvalidParamException(ExceptionType.CLIENT_ERR, "package size threshold is invalid");
             }
         } catch (Exception e){
             throw new Exception();
@@ -534,6 +541,7 @@ public class PntlConfigService {
         agentConfig.setReportPeriod(pntlConf.getModel().getReportPeriod());
         agentConfig.setTopic(pntlConf.getModel().getTopic());
         agentConfig.setDropPkgThresh(pntlConf.getModel().getDropPkgThresh());
+        agentConfig.setPackageSize(pntlConf.getModel().getPackageSize());
         //server启动，通知agent，用于上报vbondIp
         agentConfig.setVbondIpFlag(CommonInfo.getServerStart());
         Result<Map<String, List<String>>> pingList = pntlService.getPingList();
