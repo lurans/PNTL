@@ -815,7 +815,8 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         ipListInfo.setAzId(azId);
         ipListInfo.setPodId(podId);
         if (agentIpMap == null || agentIpMap.isEmpty()){
-            result.addError("", "no host list");
+            result.setModel(ipListInfo);
+            //result.addError("", "no host list");
             return result;
         }
 
