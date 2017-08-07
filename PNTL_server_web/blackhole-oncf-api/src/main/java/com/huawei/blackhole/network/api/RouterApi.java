@@ -424,6 +424,11 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
+        result = pntlService.notifyAgentConf(config);
+        if (!result.isSuccess()){
+            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
+        }
+
         return ResponseUtil.succ();
     }
 
