@@ -129,7 +129,8 @@ define(["language/chkFlow",
                             .select("#DTvalue")
                             .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x]
                                 + " send_delay:" + d.send_delay + "ms" + " recv_delay:" + d.recv_delay + "ms"
-                                + " send_round_delay:" + d.send_round_delay + "ms" + " timestamp:" + d.timestamp);
+                                + " send_round_delay:" + d.send_round_delay + "ms" + " timestamp:" + d.timestamp
+                                + " time:" + d.time);
                         d3.select("#DTtooltip").classed("hidden", false);
                     }
                     function mouseout() {
@@ -168,7 +169,8 @@ define(["language/chkFlow",
                                 recv_delay: "",
                                 send_round_delay: "",
                                 recv_round_delay: "",
-                                timestamp:""
+                                timestamp:"",
+                                time: ""
                             };
                         });
                     });
@@ -189,6 +191,7 @@ define(["language/chkFlow",
                             $scope.delayMatrix[i][j].send_round_delay = link["send_round_delay"];
                             $scope.delayMatrix[i][j].recv_round_delay = link["recv_round_delay"];
                             $scope.delayMatrix[i][j].timestamp = link["timestamp"];
+                            $scope.delayMatrix[i][j].time = link["time"];
                         }
                     });
                 }
