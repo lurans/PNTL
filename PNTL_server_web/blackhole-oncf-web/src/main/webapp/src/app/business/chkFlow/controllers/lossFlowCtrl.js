@@ -133,7 +133,8 @@ define(["language/chkFlow",
                             .select("#LPvalue")
                             .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x]
                                 + " send_loss_rate:" + d.send_loss_rate + " send_pkgs:" + d.send_pkgs
-                                + " recv_loss_rate:" + d.recv_loss_rate + " recv_pkgs:" + d.recv_pkgs);
+                                + " recv_loss_rate:" + d.recv_loss_rate + " recv_pkgs:" + d.recv_pkgs
+                                + " time:" + d.time);
                         d3.select("#LPtooltip").classed("hidden", false);
                     }
                     function mouseout() {
@@ -174,7 +175,8 @@ define(["language/chkFlow",
                             send_loss_rate: "",
                             send_pkgs: "",
                             recv_loss_rate: "",
-                            recv_pkgs: ""
+                            recv_pkgs: "",
+                            time: ""
                             };
                         });
                     });
@@ -194,6 +196,7 @@ define(["language/chkFlow",
                             $scope.lossMatrix[i][j].send_pkgs = link["send_pkgs"];
                             $scope.lossMatrix[i][j].recv_loss_rate = link["recv_loss_rate"];
                             $scope.lossMatrix[i][j].recv_pkgs = link["recv_pkgs"];
+                            $scope.lossMatrix[i][j].time = link["time"];
                         }
                     });
                 }
