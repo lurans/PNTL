@@ -62,7 +62,7 @@ public class DelayInfo implements Serializable {
         private String sendRoundDelay;
         @JsonProperty("recv_round_delay")
         private String recvRoundDelay;
-
+        @JsonProperty("time")
         private String timestamp;
         public String getSrcIp() {
             return srcIp;

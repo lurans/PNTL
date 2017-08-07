@@ -67,7 +67,7 @@ public class LossRate implements Serializable{
         private String recvLossRate;
         @JsonProperty("recv_pkgs")
         private String recvPkgs;
-
+        @JsonProperty("time")
         private String timestamp;
 
         public String getSrcIp() {
