@@ -29,6 +29,7 @@ private:
     CHAR buf[BUF_LEN];
     struct inotify_event *event;
     FlowManager_C* manager;
+    UINT32 lastAction;                // 0 for start, 1 for stop
 
     INT32 ThreadHandler();
     INT32 PreStopHandler();
