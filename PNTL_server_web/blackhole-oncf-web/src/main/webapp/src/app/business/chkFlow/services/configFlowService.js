@@ -33,7 +33,7 @@ define([], function () {
             "width": "300px",
             "height": "100px",
             "color": "#999",
-            "top": "485px",
+            "top": "52%",
             "left":"700px",
             "font-size":"14px"
         });
