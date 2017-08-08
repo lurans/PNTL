@@ -6,10 +6,7 @@ import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
-import com.huawei.blackhole.network.common.exception.ApplicationException;
-import com.huawei.blackhole.network.common.exception.ClientException;
-import com.huawei.blackhole.network.common.exception.InvalidFormatException;
-import com.huawei.blackhole.network.common.exception.InvalidParamException;
+import com.huawei.blackhole.network.common.exception.*;
 import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
@@ -20,10 +17,8 @@ import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import com.huawei.blackhole.network.extention.service.pntl.PntlWarnService;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -184,13 +179,33 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     public Result<String> startAgents(){
+        //todo:
         Result<String> result = new Result<>();
-        try{
+        PntlConfig pntlConfig = new PntlConfig();
+        try {
+            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
+            dataObj.put("probe_period", pntlConfig.getProbePeriod());
+            pntlConfig.setByMap(dataObj);
+            Map<String, Object> data = pntlConfig.convertToMap();
+            YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
+
             String token = identityWrapperService.getPntlAccessToken();
             RestResp resp = pntlRequest.startAgent(hostList, token);
             if (resp.getStatusCode().isError()){
                 result.addError("", "cmd to start agent failed");
             }
+        } catch (ApplicationException e) {
+            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
+            result.addError("", e.prefix() + errMsg);
+            return result;
+        } catch (ConfigLostException e) {
+            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
+            result.addError("", e.prefix() + errMsg);
+            return result;
+        } catch (InvalidFormatException e) {
+            String errMsg = "invalid file format: " + PntlInfo.PNTL_CONF  + e.getLocalizedMessage();
+            result.addError("", e.prefix() + errMsg);
+            return result;
         } catch (ClientException e){
             String errMsg = "cmd to start agent failed, " + e.getMessage();
             LOG.error(errMsg);
