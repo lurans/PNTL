@@ -181,21 +181,16 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     public Result<String> startAgents(){
         //todo:
         Result<String> result = new Result<>();
-        PntlConfig pntlConfig = new PntlConfig();
         try {
-            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
-            dataObj.put("probe_period", pntlConfig.getProbePeriod());
-            pntlConfig.setByMap(dataObj);
-            Map<String, Object> data = pntlConfig.convertToMap();
-            YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
-        } catch (ApplicationException e) {
-            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
-            result.addError("", e.prefix() + errMsg);
-            return result;
-        } catch (Exception e) {
-            String errMsg = "invalid file format: " + PntlInfo.PNTL_CONF  + e.getLocalizedMessage();
+            String token = identityWrapperService.getPntlAccessToken();
+            RestResp resp = pntlRequest.startAgent(hostList, token);
+            if (resp.getStatusCode().isError()){
+                result.addError("", "cmd to start agent failed");
+            }
+        } catch (ClientException e){
+            String errMsg = "cmd to start agent failed, " + e.getMessage();
+            LOG.error(errMsg);
             result.addError("", errMsg);
-            return result;
         }
         return result;
     }
