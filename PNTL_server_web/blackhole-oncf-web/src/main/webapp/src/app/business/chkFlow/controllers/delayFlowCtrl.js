@@ -147,7 +147,7 @@ define(["language/chkFlow",
                                 svg.call(zoom.translate([xi(t),yi(t)]).scale(si(t)).event);
                             }
                         });
-                    }
+                    };
                     svg.call(zoom.event);
                 }
                 function getIpInfo(delayDataJson)
@@ -177,14 +177,14 @@ define(["language/chkFlow",
                 }
                 function getDelayLinkInfo(linkDataInfo)
                 {
-                    linkDataInfo.forEach(function(link,i){
+                    linkDataInfo.forEach(function(link,index){
                         var srcIp = link['src_ip'];
                         var dstIp = link['dst_ip'];
                         if(srcIp in $scope.ipSeq && dstIp in $scope.ipSeq)
                         {
                             var i = $scope.ipSeq[srcIp];
                             var j = $scope.ipSeq[dstIp];
-                            var sendRoundDelay = link['send_round_delay'][0] == '-' ? -1 : parseFloat(link['send_round_delay']);
+                            var sendRoundDelay = link['send_round_delay'][0] === '-' ? -1 : parseFloat(link['send_round_delay']);
                             $scope.delayMatrix[i][j].z = sendRoundDelay < 0 ? -1 : sendRoundDelay;
                             $scope.delayMatrix[i][j].send_delay = link["send_delay"];
                             $scope.delayMatrix[i][j].recv_delay = link["recv_delay"];
@@ -214,7 +214,7 @@ define(["language/chkFlow",
                     };
                     var ipListPromise = delayFlowServ.postIpList(para);
                     ipListPromise.then(function(responseData){
-                        if(responseData.result == null||responseData.result == ""){
+                        if(responseData.result === null||responseData.result === ""){
                             $scope.noData = true;
                             $scope.showData = false;
                         }else {
@@ -239,7 +239,7 @@ define(["language/chkFlow",
                         $interval.cancel(autoRefresh);
                         autoRefresh = null;
                     }
-                }
+                };
                 $scope.$on('$destroy', function (angularEvent, current, previous) {
                     $scope.stopAutoRefresh();
                 });

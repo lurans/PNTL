@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -132,25 +133,25 @@ public class DelayInfo implements Serializable {
             return;
         }
 
-        DecimalFormat df = new DecimalFormat(Constants.DECIMAL_FORMAT);
-        Double t1 = new Double(df.format(Double.parseDouble(flow.getTimes().getT1()) / 1000));
-        Double t2 = new Double(df.format(Double.parseDouble(flow.getTimes().getT2()) / 1000));
-        Double t3 = new Double(df.format(Double.parseDouble(flow.getTimes().getT3()) / 1000));//对端接收到发送时间
-        Double t4 = new Double(df.format(Double.parseDouble(flow.getTimes().getT4()) / 1000));//本端发送到接收时间
+        BigDecimal div = new BigDecimal(Double.toString(1000.000));
+        BigDecimal t1 = new BigDecimal(flow.getTimes().getT1()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
+        BigDecimal t2 = new BigDecimal(flow.getTimes().getT2()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
+        BigDecimal t3 = new BigDecimal(flow.getTimes().getT3()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
+        BigDecimal t4 = new BigDecimal(flow.getTimes().getT4()).divide(div).setScale(3,BigDecimal.ROUND_HALF_UP);
 
         boolean hasData = false;
 
-        if (t4 < DelayInfo.getDelayThreshold()){
+        if (t4.floatValue() < DelayInfo.getDelayThreshold()){
             return;
         }
 
         DelayInfoResult newData = new DelayInfoResult();
         newData.setSrcIp(srcIp);
         newData.setDstIp(dstIp);
-        newData.setSendDelay(String.valueOf(t2-t1));
-        newData.setRecvDelay(String.valueOf(t3));
-        newData.setSendRoundDelay(String.valueOf(t4));
-        newData.setRecvRoundDelay("0");
+        newData.setSendDelay(t2.subtract(t1).toString());
+        newData.setRecvDelay(t3.toString());
+        newData.setSendRoundDelay(t4.toString());
+        newData.setRecvRoundDelay("0.000");
         newData.setTimestamp(flow.getTime());
 
         PntlWarning.saveWarnToWarningList(newData);
