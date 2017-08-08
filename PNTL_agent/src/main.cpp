@@ -85,7 +85,7 @@ INT32 ServerAntAgent()
     }
 
     FileNotifier_C* pcFileNotifier = new FileNotifier_C;
-    iRet = pcFileNotifier -> Init();
+    iRet = pcFileNotifier -> Init(pcFlowManager);
     if (iRet)
     {
         INIT_ERROR("Init filenotifier error[%d].", iRet);

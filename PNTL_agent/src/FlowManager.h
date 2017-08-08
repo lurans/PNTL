@@ -215,7 +215,7 @@ public:
 
     INT32 ServerWorkingFlowTableAdd(ServerFlowKey_S *pstServerFlowKey);       // 向ServerWorkingFlowTable中添加Urgent Entry, 由Server下发消息触发
 
-    void FlowManagerAction();	    // 根据参数启停FlowManager
+    void FlowManagerAction(UINT32 action);	    // 根据参数启停FlowManager
     void SetPkgFlag();
     void RefreshAgentTable();
     INT32 ServerClearFlowTable();   // 清空特定流表

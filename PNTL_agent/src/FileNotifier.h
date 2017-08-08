@@ -12,6 +12,7 @@
 #include <limits.h>
 #include <fcntl.h>
 
+#include "FlowManager.h"
 #include "Sal.h"
 #include "ThreadClass.h"
 
@@ -27,6 +28,7 @@ private:
     INT32 wd;
     CHAR buf[BUF_LEN];
     struct inotify_event *event;
+    FlowManager_C* manager;
 
     INT32 ThreadHandler();
     INT32 PreStopHandler();
@@ -35,7 +37,8 @@ private:
 public:
     FileNotifier_C();
     ~FileNotifier_C();
-    INT32 Init();
+    INT32 Init(FlowManager_C* pcFlowManager);
+    void HandleProbePeriod();
 };
 
 #endif

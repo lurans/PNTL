@@ -1160,9 +1160,13 @@ INT32 FlowManager_C::PreStopHandler()
     return AGENT_OK;
 }
 
-void FlowManager_C::FlowManagerAction()
+void FlowManager_C::FlowManagerAction(UINT32 action)
 {
-    SetNewInterval(0);
+    SetNewInterval(action);
+    if (START_AGENT == action)
+    {
+        StartThread();
+    }
 }
 
 void FlowManager_C::SetPkgFlag()

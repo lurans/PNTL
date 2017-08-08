@@ -27,8 +27,9 @@ FileNotifier_C::~FileNotifier_C()
     }
 }
 
-INT32 FileNotifier_C::Init()
+INT32 FileNotifier_C::Init(FlowManager_C* pcFlowManager)
 {
+    manager = pcFlowManager;
     notifierId = inotify_init();
     if (0 > notifierId)
     {
@@ -55,7 +56,7 @@ INT32 FileNotifier_C::HandleEvent(struct inotify_event * event)
 {
     if (event->mask & IN_MODIFY)
     {
-        SHOULD_REFRESH_CONF = 1;
+        HandleProbePeriod();
     }
     else if (event->mask & IN_IGNORED)
     {
@@ -65,7 +66,7 @@ INT32 FileNotifier_C::HandleEvent(struct inotify_event * event)
             FILE_NOTIFIER_ERROR("Create a watch Item fail[%d]", wd);
             return AGENT_E_ERROR;
         }
-        SHOULD_REFRESH_CONF = 1;
+        HandleProbePeriod();
     }
 }
 
@@ -86,11 +87,37 @@ INT32 FileNotifier_C::ThreadHandler()
     while(GetCurrentInterval())
     {
         sizeRead = read(notifierId, buf, BUF_LEN);
+        if (0 > sizeRead)
+        {
+            continue;
+        }
+        FILE_NOTIFIER_INFO("File notifier.");
         for (pBuf = buf; pBuf < buf + sizeRead;)
         {
             event = (struct inotify_event *) pBuf;
             HandleEvent(event);
             pBuf +=sizeof(struct inotify_event) + event->len;
         }
+    }
+}
+
+void FileNotifier_C::HandleProbePeriod()
+{
+    UINT32 probePeriod = GetProbePeriod(manager);
+    if (0 > probePeriod || 120 < probePeriod)
+    {
+        FILE_NOTIFIER_ERROR("Parse local config file error, probePeriod is [%u], return.", probePeriod);
+        return ;
+    }
+    else if (0 == probePeriod)
+    {
+        FILE_NOTIFIER_INFO("Probe_period is [%u], will stop flowmanger.", probePeriod);
+        manager->FlowManagerAction(STOP_AGENT);
+    }
+    else
+    {
+        FILE_NOTIFIER_INFO("Probe_period is [%u], will start flowmanger.", probePeriod);
+        manager->FlowManagerAction(START_AGENT);
+        SHOULD_REFRESH_CONF = 1;
     }
 }
