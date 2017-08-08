@@ -27,7 +27,7 @@ public interface PntlService {
 
     Result<String> updateAgents(String type);
 
-    Result<String> notifyAgentConf(PntlConfig config);
+    Result<String> notifyAgentConf();
 
     Result<Map<String, List<String>>> getPingList();
     Result<String> saveVbondIp(String agentIp, String vbondIp);//test

@@ -6,10 +6,7 @@ import com.huawei.blackhole.network.api.bean.*;
 import com.huawei.blackhole.network.common.constants.Constants;
 import com.huawei.blackhole.network.common.constants.ExceptionType;
 import com.huawei.blackhole.network.common.constants.PntlInfo;
-import com.huawei.blackhole.network.common.exception.ApplicationException;
-import com.huawei.blackhole.network.common.exception.ClientException;
-import com.huawei.blackhole.network.common.exception.InvalidFormatException;
-import com.huawei.blackhole.network.common.exception.InvalidParamException;
+import com.huawei.blackhole.network.common.exception.*;
 import com.huawei.blackhole.network.common.utils.FileUtil;
 import com.huawei.blackhole.network.common.utils.YamlUtil;
 import com.huawei.blackhole.network.common.utils.http.RestResp;
@@ -20,10 +17,8 @@ import com.huawei.blackhole.network.extention.service.conf.PntlConfigService;
 import com.huawei.blackhole.network.extention.service.pntl.Pntl;
 import com.huawei.blackhole.network.extention.service.pntl.PntlWarnService;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -184,8 +179,9 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
     public Result<String> startAgents(){
+        //todo:
         Result<String> result = new Result<>();
-        try{
+        try {
             String token = identityWrapperService.getPntlAccessToken();
             RestResp resp = pntlRequest.startAgent(hostList, token);
             if (resp.getStatusCode().isError()){
@@ -199,7 +195,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         return result;
     }
 
-    public Result<String> notifyAgentConf(PntlConfig config){
+    public Result<String> notifyAgentConf(){
         Result<String> result = new Result<>();
         if (hostList == null){
             result.addError("", "host is null");
@@ -214,7 +210,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
 
-    private Result<String> stopAgentProbe(String probe_period){
+    private Result<String> setAgentProbePeriod(String probe_period){
         Result<String> result = new Result<>();
         try {
             Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
@@ -262,7 +258,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
             return result;
         } else {
-            result = stopAgentProbe(timeInterval);
+            result = setAgentProbePeriod(timeInterval);
             if (!result.isSuccess()){
                 LOG.error("setProbeInterval failed");
             }
@@ -575,13 +571,25 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     private Result<String> initPntlConfig(){
         Result<String> result = new Result<String>();
-        //read config.yml
+        //读取配置文件config.yml并对未配置的agent参数进行初始化
         Result<PntlConfig> pntlConfig = pntlConfigService.getPntlConfig();
         if (!pntlConfig.isSuccess()){
             LOG.error("get pntlConfig failed");
             result.addError("", "get pntlConfig failed");
             return result;
         }
+
+        //将初始化后的配置参数同步保存在pntlConfig.yml
+        PntlConfig pntlConfigModel = pntlConfig.getModel();
+        try{
+            Map<String, Object> data = pntlConfigModel.convertToMap();
+            YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
+        } catch (ApplicationException e) {
+            String errMsg = "fail to initial save configuration: " + e.getLocalizedMessage();
+            LOG.error(errMsg, e);
+            result.addError("", e.prefix() + errMsg);
+        }
+
         LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
         DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
         CommonInfo.setRepoUrl(pntlConfig.getModel().getRepoUrl());

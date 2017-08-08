@@ -52,7 +52,6 @@ public class PntlConfigService {
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
-
             PntlConfig pntlConfig = new PntlConfig();
             pntlConfig.setByMap(data);
             result.setModel(pntlConfig);

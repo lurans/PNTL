@@ -227,14 +227,28 @@ public class PntlConfig implements Serializable{
         if (data == null) {
             return;
         }
-        this.delayThreshold = MapUtils.getAsStr(data, "delay_threshold");
-        this.lossRateThreshold = MapUtils.getAsStr(data, "lossRate_threshold");
-        this.probePeriod = MapUtils.getAsStr(data, "probe_period");
-        this.pkgCount = MapUtils.getAsStr(data, "pkg_count");
-        this.portCount = MapUtils.getAsStr(data, "port_count");
-        this.dscp = MapUtils.getAsStr(data, "dscp");
-        this.lossPkgTimeout = MapUtils.getAsStr(data, "lossPkg_timeout");
-        this.reportPeriod = MapUtils.getAsStr(data, "report_period");
+        //agent参数配置
+        this.delayThreshold = (null ==  MapUtils.getAsStr(data, "delay_threshold") ?
+                this.delayThreshold : MapUtils.getAsStr(data, "delay_threshold"));
+        this.lossRateThreshold = (null ==  MapUtils.getAsStr(data, "lossRate_threshold") ?
+                this.lossRateThreshold : MapUtils.getAsStr(data, "lossRate_threshold"));
+        this.probePeriod = (null ==  MapUtils.getAsStr(data, "probe_period") ?
+                this.probePeriod : MapUtils.getAsStr(data, "probe_period"));
+        this.pkgCount = (null ==  MapUtils.getAsStr(data, "pkg_count") ?
+                this.pkgCount : MapUtils.getAsStr(data, "pkg_count"));
+        this.portCount = (null ==  MapUtils.getAsStr(data, "port_count") ?
+                this.portCount : MapUtils.getAsStr(data, "port_count"));
+        this.dscp = (null ==  MapUtils.getAsStr(data, "dscp") ?
+                this.dscp : MapUtils.getAsStr(data, "dscp"));
+        this.lossPkgTimeout = (null ==  MapUtils.getAsStr(data, "lossPkg_timeout") ?
+                this.lossPkgTimeout : MapUtils.getAsStr(data, "lossPkg_timeout"));
+        this.reportPeriod = (null ==  MapUtils.getAsStr(data, "report_period") ?
+                this.reportPeriod : MapUtils.getAsStr(data, "report_period"));
+        this.dropPkgThresh = (null ==  MapUtils.getAsStr(data, "dropPkgThresh") ?
+                this.dropPkgThresh : MapUtils.getAsStr(data, "dropPkgThresh"));
+        this.packageSize = (null ==  MapUtils.getAsStr(data, "package_size") ?
+                this.packageSize :  MapUtils.getAsStr(data, "package_size"));
+
         this.ak = MapUtils.getAsStr(data, "ak");
         this.sk = MapUtils.getAsStr(data, "sk");
         this.basicToken = MapUtils.getAsStr(data, "basicToken");
@@ -244,8 +258,6 @@ public class PntlConfig implements Serializable{
         this.installScriptRepoUrl = MapUtils.getAsStr(data, "installScriptRepoUrl");
         this.kafkaIp = MapUtils.getAsStr(data, "kafka_ip");
         this.topic = MapUtils.getAsStr(data, "topic");
-        this.dropPkgThresh = MapUtils.getAsStr(data,"dropPkgThresh");
-        this.packageSize = MapUtils.getAsStr(data, "package_size");
     }
 
     private boolean containsEmptyField() {
