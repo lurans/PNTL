@@ -208,15 +208,15 @@ void FlowManager_C::AgentFlowTableAdd(ServerFlowTableEntry_S * pstServerFlowEntr
     stNewAgentEntry.stFlowKey.uiDestPort = pstServerFlowEntry->stServerFlowKey.uiDestPort;
     stNewAgentEntry.stFlowKey.uiDscp = pstServerFlowEntry->stServerFlowKey.uiDscp;
     stNewAgentEntry.stFlowKey.stServerTopo = pstServerFlowEntry->stServerFlowKey.stServerTopo;
-	if (this->pcAgentCfg->GetBigPkgRate())
-	{
-		stNewAgentEntry.stFlowKey.uiIsBigPkg = 1;
-	}
-	else
-	{
-		stNewAgentEntry.stFlowKey.uiIsBigPkg = 0;
-	}
-    
+    if (this->pcAgentCfg->GetBigPkgRate())
+    {
+        stNewAgentEntry.stFlowKey.uiIsBigPkg = 1;
+    }
+    else
+    {
+        stNewAgentEntry.stFlowKey.uiIsBigPkg = 0;
+    }
+
 
     // 刷新索引信息
     stNewAgentEntry.stFlowKey.uiAgentFlowTableIndex = AgentFlowTable.size();
@@ -240,7 +240,7 @@ void FlowManager_C::AgentFlowTableAdd(ServerFlowTableEntry_S * pstServerFlowEntr
         {
             FLOW_ENTRY_STATE_CLEAR(stNewAgentEntry.uiFlowState, FLOW_ENTRY_STATE_ENABLE);
         }
-        
+
         AgentFlowTable.push_back(stNewAgentEntry);
         stNewAgentEntry.stFlowKey.uiAgentFlowTableIndex ++ ;
         uiAgentIndexCounter ++ ;
@@ -511,7 +511,7 @@ INT32 FlowManager_C::DoDetect()
                 {
                     stFlowKey = pAgentFlowEntry->stFlowKey;
                     iRet = WorkerList_UDP->PushSession(stFlowKey);
-					
+
                     if (iRet && AGENT_E_SOCKET != iRet)
                     {
                         FLOW_MANAGER_ERROR("Push Session to Worker Failed[%d], SrcPort[%u]", iRet, pAgentFlowEntry->stFlowKey.uiSrcPort);
@@ -1094,7 +1094,7 @@ INT32 FlowManager_C::ThreadHandler()
 
         // 当前周期是否该收集探测结果
         if (DetectResultCheck(counter))
-        {  
+        {
             // 启动收集探测结果流程
             iRet = GetDetectResult();
             if (iRet)
@@ -1128,11 +1128,11 @@ INT32 FlowManager_C::ThreadHandler()
             }
         }
 
-		if (SHOULD_REFRESH_CONF)
-		{
-			GetLocalAgentConfig(this);
-		    SHOULD_REFRESH_CONF = 0;
-		}
+        if (SHOULD_REFRESH_CONF)
+        {
+            GetLocalAgentConfig(this);
+            SHOULD_REFRESH_CONF = 0;
+        }
 
         sleep(1);
         counter ++;

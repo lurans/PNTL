@@ -495,9 +495,9 @@ INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManag
         JSON_PARSER_INFO("Current report_period is [%u].", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
         data = ptDataRoot.get<UINT32>("package_size");
-		pcFlowManager->pcAgentCfg->SetBigPkgSize(data);
-		JSON_PARSER_INFO("Current package_size is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgSize());
-		
+        pcFlowManager->pcAgentCfg->SetBigPkgSize(data);
+        JSON_PARSER_INFO("Current package_size is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgSize());
+
         data = ptDataRoot.get<UINT32>("pkg_count");
         pcFlowManager->pcAgentCfg->SetBigPkgRate(data);
         JSON_PARSER_INFO("Current pkg_count is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgRate());

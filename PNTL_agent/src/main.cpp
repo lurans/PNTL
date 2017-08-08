@@ -63,7 +63,7 @@ INT32 ServerAntAgent()
     }
 
     pcFlowManager = new FlowManager_C(pcCfg);
-	INIT_INFO("--------  Get agentConfig.cfg -------- ");
+    INIT_INFO("--------  Get agentConfig.cfg -------- ");
     iRet = GetLocalAgentConfig(pcFlowManager);
     if (AGENT_OK != iRet)
     {
@@ -73,7 +73,7 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-	// 启动FlowManager对象
+    // 启动FlowManager对象
     INIT_INFO("-------- Start FlowManager --------");
     iRet = pcFlowManager->Init(pcCfg);
     if (AGENT_OK != iRet)
@@ -95,7 +95,7 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-    
+
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
 
