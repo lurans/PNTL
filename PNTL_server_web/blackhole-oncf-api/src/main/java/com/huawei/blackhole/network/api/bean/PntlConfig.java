@@ -244,8 +244,8 @@ public class PntlConfig implements Serializable{
                 this.lossPkgTimeout : MapUtils.getAsStr(data, "lossPkg_timeout"));
         this.reportPeriod = (null ==  MapUtils.getAsStr(data, "report_period") ?
                 this.reportPeriod : MapUtils.getAsStr(data, "report_period"));
-        this.dropPkgThresh = (null ==  MapUtils.getAsStr(data,"dropPkgThresh") ?
-                this.dropPkgThresh : MapUtils.getAsStr(data,"dropPkgThresh"));
+        this.dropPkgThresh = (null ==  MapUtils.getAsStr(data, "dropPkgThresh") ?
+                this.dropPkgThresh : MapUtils.getAsStr(data, "dropPkgThresh"));
         this.packageSize = (null ==  MapUtils.getAsStr(data, "package_size") ?
                 this.packageSize :  MapUtils.getAsStr(data, "package_size"));
 
