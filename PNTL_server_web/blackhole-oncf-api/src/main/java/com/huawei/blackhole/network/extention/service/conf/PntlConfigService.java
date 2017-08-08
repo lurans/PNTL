@@ -51,14 +51,9 @@ public class PntlConfigService {
         Result<PntlConfig> result = new Result<PntlConfig>();
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
-
+            Map<String, Object> data = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
             PntlConfig pntlConfig = new PntlConfig();
-            //配置文件pntlConfig.yml初始化，并同步保存在pntlConfig.yml
-            pntlConfig.setByMap(dataObj);
-            Map<String, Object> data = pntlConfig.convertToMap();
-            YamlUtil.setConf(data,PntlInfo.PNTL_CONF);
-
+            pntlConfig.setByMap(data);
             result.setModel(pntlConfig);
         } catch (ConfigLostException e) {
             String errMsg = Resource.NAME_CONF + " not found : " + e.getLocalizedMessage();

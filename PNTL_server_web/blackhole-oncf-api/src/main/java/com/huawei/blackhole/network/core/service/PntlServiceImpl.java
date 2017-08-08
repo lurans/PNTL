@@ -590,13 +590,25 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
 
     private Result<String> initPntlConfig(){
         Result<String> result = new Result<String>();
-        //read config.yml
+        //读取配置文件config.yml并对未配置的agent参数进行初始化
         Result<PntlConfig> pntlConfig = pntlConfigService.getPntlConfig();
         if (!pntlConfig.isSuccess()){
             LOG.error("get pntlConfig failed");
             result.addError("", "get pntlConfig failed");
             return result;
         }
+
+        //将初始化后的配置参数同步保存在pntlConfig.yml
+        PntlConfig pntlConfigModel = pntlConfig.getModel();
+        try{
+            Map<String, Object> data = pntlConfigModel.convertToMap();
+            YamlUtil.setConf(data, PntlInfo.PNTL_CONF);
+        } catch (ApplicationException e) {
+            String errMsg = "fail to initial save configuration: " + e.getLocalizedMessage();
+            LOG.error(errMsg, e);
+            result.addError("", e.prefix() + errMsg);
+        }
+
         LossRate.setLossRateThreshold(Integer.valueOf(pntlConfig.getModel().getLossRateThreshold()));
         DelayInfo.setDelayThreshold(Long.valueOf(pntlConfig.getModel().getDelayThreshold()));
         CommonInfo.setRepoUrl(pntlConfig.getModel().getRepoUrl());
