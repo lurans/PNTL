@@ -31,6 +31,7 @@ ServerAntAgentCfg_C::ServerAntAgentCfg_C()
     uiMaxDelay = 0;
     uiBigPkgRate = 0;
     uiPortCount = 0;
+    bigPkgSize = 0;
 }
 
 // 析构函数,释放资源
@@ -184,10 +185,6 @@ UINT32 ServerAntAgentCfg_C::GetBigPkgRate()
 
 void ServerAntAgentCfg_C::SetBigPkgRate(UINT32 newRate)
 {
-    if (GetBigPkgRate() != newRate)
-    {
-        BIG_PKG_RATE = 1;
-    }
     uiBigPkgRate = newRate;
 }
 
@@ -199,5 +196,35 @@ UINT32 ServerAntAgentCfg_C::GetMaxDelay()
 void ServerAntAgentCfg_C::SetMaxDelay(UINT32 newMaxDelay)
 {
     uiMaxDelay = newMaxDelay;
+}
+
+string ServerAntAgentCfg_C::GetKafkaIp()
+{
+    return kafkaIp;
+}
+
+void ServerAntAgentCfg_C::SetKafkaIp(string newIp)
+{
+    kafkaIp = newIp;
+}
+
+string ServerAntAgentCfg_C::GetTopic()
+{
+    return topic;
+}
+
+void ServerAntAgentCfg_C::SetTopic(string newTopic)
+{
+    topic = newTopic;
+}
+
+UINT32 ServerAntAgentCfg_C::GetBigPkgSize()
+{
+    return bigPkgSize;
+}
+
+void ServerAntAgentCfg_C::SetBigPkgSize(UINT32 newSize)
+{
+    bigPkgSize = newSize;
 }
 

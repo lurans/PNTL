@@ -29,12 +29,9 @@ enum
 // Whether agent begin to query pingList
 extern UINT32 SHOULD_DETECT_REPORT;
 
-// 100, all big pkgs, 0, all small pkgs
-extern UINT32 BIG_PKG_RATE;
-
-extern UINT32 PROBE_INTERVAL;
-
 extern UINT32 SHOULD_REPORT_IP;
+
+extern UINT32 SHOULD_REFRESH_CONF;
 
 const UINT32 BIG_PACKAGE_SIZE = 1000;
 const UINT32 NORMAL_PACKAGE_SIZE = 40;

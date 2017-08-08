@@ -27,9 +27,8 @@ FileNotifier_C::~FileNotifier_C()
     }
 }
 
-INT32 FileNotifier_C::Init(FlowManager_C* pcFlowManager)
+INT32 FileNotifier_C::Init()
 {
-    manager = pcFlowManager;
     notifierId = inotify_init();
     if (0 > notifierId)
     {
@@ -56,7 +55,7 @@ INT32 FileNotifier_C::HandleEvent(struct inotify_event * event)
 {
     if (event->mask & IN_MODIFY)
     {
-        GetLocalAgentConfig(manager);
+        SHOULD_REFRESH_CONF = 1;
     }
     else if (event->mask & IN_IGNORED)
     {
@@ -66,7 +65,7 @@ INT32 FileNotifier_C::HandleEvent(struct inotify_event * event)
             FILE_NOTIFIER_ERROR("Create a watch Item fail[%d]", wd);
             return AGENT_E_ERROR;
         }
-        GetLocalAgentConfig(manager);
+        SHOULD_REFRESH_CONF = 1;
     }
 }
 
