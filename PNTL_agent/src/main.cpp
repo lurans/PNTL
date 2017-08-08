@@ -62,9 +62,19 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-    // 启动FlowManager对象
+    pcFlowManager = new FlowManager_C(pcCfg);
+	INIT_INFO("--------  Get agentConfig.cfg -------- ");
+    iRet = GetLocalAgentConfig(pcFlowManager);
+    if (AGENT_OK != iRet)
+    {
+        destroyFlowManagerObj(pcFlowManager);
+        destroyServerCfgObj(pcCfg);
+        INIT_ERROR("GetLocalAgentConfig failed [%d]", iRet);
+        return iRet;
+    }
+
+	// 启动FlowManager对象
     INIT_INFO("-------- Start FlowManager --------");
-    pcFlowManager = new FlowManager_C;
     iRet = pcFlowManager->Init(pcCfg);
     if (AGENT_OK != iRet)
     {
@@ -75,7 +85,7 @@ INT32 ServerAntAgent()
     }
 
     FileNotifier_C* pcFileNotifier = new FileNotifier_C;
-    iRet = pcFileNotifier -> Init(pcFlowManager);
+    iRet = pcFileNotifier -> Init();
     if (iRet)
     {
         INIT_ERROR("Init filenotifier error[%d].", iRet);
@@ -85,17 +95,7 @@ INT32 ServerAntAgent()
         return iRet;
     }
 
-    INIT_INFO("--------  Get agentConfig.cfg -------- ");
-    iRet = GetLocalAgentConfig(pcFlowManager);
-    if (AGENT_OK != iRet)
-    {
-        destroyFlowManagerObj(pcFlowManager);
-        destroyServerCfgObj(pcCfg);
-        destroyFileNotifier(pcFileNotifier);
-        INIT_ERROR("GetLocalAgentConfig failed [%d]", iRet);
-        return iRet;
-    }
-
+    
     // 所有对象已经启动完成, 开始工作.
     INIT_INFO("-------- Starting ServerAntAgent Complete --------");
 
@@ -107,7 +107,7 @@ INT32 ServerAntAgent()
         {
             INIT_ERROR("Report Agent ip to Server fail[%d]", iRet);
             sleep(5 * reportCount);
-            INIT_ERROR("Retry to report Agent ip to Server, time [%u]", ++reportCount);
+            INIT_INFO("Retry to report Agent ip to Server, time [%u]", ++reportCount);
         }
         else
         {
@@ -132,13 +132,11 @@ INT32 ServerAntAgent()
     return AGENT_OK;
 }
 
-UINT32 BIG_PKG_RATE = 0;
-
 UINT32 SHOULD_REPORT_IP = 0;
 
 UINT32 SHOULD_DETECT_REPORT = 0;
 
-UINT32 PROBE_INTERVAL = 9999;
+UINT32 SHOULD_REFRESH_CONF = 0;
 
 // 程序入口, 默认直接启动.
 // 不带参数时直接启动

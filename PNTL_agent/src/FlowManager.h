@@ -189,8 +189,8 @@ private:
         INT64 * plStandardDeviation);                    // 计算标准差
     INT32 FlowPrepareReport(UINT32 uiFlowTableIndex);   // 计算统计数据,准备上报
     INT32 FlowReportData(string * pstrReportData);      // 统一上报接口
-    INT32 FlowDropReport(UINT32 uiFlowTableIndex);      // 丢包上报接口
-    INT32 FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay);   // 延时上报接口
+    INT32 FlowDropReport(UINT32 uiFlowTableIndex, UINT32 bigPkgSize);      // 丢包上报接口
+    INT32 FlowLatencyReport(UINT32 uiFlowTableIndex, UINT32 maxDelay, UINT32 bigPkgSize);   // 延时上报接口
 
     UINT32 uiLastQuerytTimeCounter;           // 最近一次启动查询Server的时间点
     UINT32 uiLastQueryConfigCounter;
@@ -205,6 +205,7 @@ private:
 
 public:
     FlowManager_C();                               // 构造函数, 填充默认值.
+    FlowManager_C(ServerAntAgentCfg_C* pcNewAgentCfg);
     ~FlowManager_C();                              // 析构函数, 释放必要资源.
 
     // 全局AgentCfg信息

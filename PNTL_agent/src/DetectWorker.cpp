@@ -129,7 +129,7 @@ INT32 DetectWorker_C::ThreadHandler()
     struct sockaddr_in stPrtnerAddr;    // 对端socket地址信息
     char acCmsgBuf[CMSG_SPACE(sizeof(INT32))];// 保存报文所有附加信息的buffer, 当前只预留了tos值空间.
     PacketInfo_S stSendMsg;    // 保存报文payload信息的buffer, 当前只缓存一个报文.
-    char aucBuffer[1000];
+    char aucBuffer[pcAgentCfg->GetBigPkgSize()];
     struct msghdr msg;      // 描述报文信息, socket收发包使用.
     struct cmsghdr *cmsg;   // 用于遍历 msg.msg_control中所有报文附加信息, 目前是tos值.
     struct iovec iov[1];    // 用于保存报文payload buffer的结构体.参见msg.msg_iov. 当前只使用一个缓冲区.
@@ -522,7 +522,7 @@ INT32 DetectWorker_C::TxPacket(DetectWorkerSession_S*
     struct timeval tm;
     PacketInfo_S stSendMsg;
     PacketInfo_S *pstSendMsg;
-    char aucBuff[1000];
+    char aucBuff[pcAgentCfg->GetBigPkgSize()];
     struct sockaddr_in servaddr;
     INT32 tos = 0;
 

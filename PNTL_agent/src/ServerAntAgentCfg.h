@@ -45,7 +45,7 @@ private:
     string kafkaIp;
     string topic;
     UINT32 dropPkgThresh;
-
+    UINT32 bigPkgSize;
     sal_mutex_t AgentCfgLock;               // »¥³âËø±£»¤
 
 public:
@@ -103,24 +103,15 @@ public:
     UINT32 GetMaxDelay();
     void SetMaxDelay(UINT32 newMaxDelay);
 
-    string GetKafkaIp()
-    {
-        return kafkaIp;
-    }
-    void SetKafkaIp(string newIp)
-    {
-        kafkaIp = newIp;
-    }
+    UINT32 GetBigPkgSize();
+    void SetBigPkgSize(UINT32 newSize);
 
-    string GetTopic()
-    {
-        return topic;
-    }
+    string GetKafkaIp();
+    void SetKafkaIp(string newIp);
 
-    void SetTopic(string newTopic)
-    {
-        topic = newTopic;
-    }
+    string GetTopic();
+
+    void SetTopic(string newTopic);
 };
 
 #endif

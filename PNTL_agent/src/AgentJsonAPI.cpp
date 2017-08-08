@@ -181,7 +181,7 @@ INT32 CreatAgentIPRequestPostData(ServerAntAgentCfg_C * pcCfg, stringstream * ps
 #define LatencyReportSignature    "HuaweiDC3ServerAntsFull"
 
 // 生成json格式的字符串, 用于向Analyzer上报延时信息.
-INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay)
+INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 maxDelay, UINT32 bigPkgSize)
 {
     INT64 max = pstAgentFlowEntry->stFlowDetectResult.lLatencyMax;
     if (-1 != max && 0 != maxDelay && maxDelay * 1000 > max)
@@ -234,7 +234,14 @@ INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, strings
             ptDataFlowEntry.put_child("statistics", ptDataFlowEntryTemp);
             if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
             {
-                ptDataFlowEntry.put("package-size", BIG_PACKAGE_SIZE);
+                if (bigPkgSize)
+                {
+                    ptDataFlowEntry.put("package-size", bigPkgSize);
+                }
+                else
+                {
+                    ptDataFlowEntry.put("package-size", BIG_PACKAGE_SIZE);
+                }
             }
             else
             {
@@ -304,7 +311,7 @@ INT32 CreateLatencyReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, strings
 #define DropReportSignature    "HuaweiDC3ServerAntsDropNotice"
 
 // 生成json格式的字符串, 用于向Analyzer上报丢包信息.
-INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData)
+INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstream * pssReportData, UINT32 bigPkgSize)
 {
     // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
     char            acCurTime[32]   = {0};                      // 缓存时间戳
@@ -332,7 +339,14 @@ INT32 CreateDropReportData(AgentFlowTableEntry_S * pstAgentFlowEntry, stringstre
 
             if (pstAgentFlowEntry->stFlowKey.uiIsBigPkg)
             {
-                ptDataFlowEntry.put("package-size", BIG_PACKAGE_SIZE);
+                if (bigPkgSize)
+                {
+                    ptDataFlowEntry.put("package-size", bigPkgSize);
+                }
+                else
+                {
+                    ptDataFlowEntry.put("package-size", BIG_PACKAGE_SIZE);
+                }
             }
             else
             {
@@ -480,6 +494,10 @@ INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManag
         pcFlowManager->pcAgentCfg->SetReportPeriod(data);
         JSON_PARSER_INFO("Current report_period is [%u].", pcFlowManager->pcAgentCfg->GetReportPeriod());
 
+        data = ptDataRoot.get<UINT32>("package_size");
+		pcFlowManager->pcAgentCfg->SetBigPkgSize(data);
+		JSON_PARSER_INFO("Current package_size is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgSize());
+		
         data = ptDataRoot.get<UINT32>("pkg_count");
         pcFlowManager->pcAgentCfg->SetBigPkgRate(data);
         JSON_PARSER_INFO("Current pkg_count is [%u].", pcFlowManager->pcAgentCfg->GetBigPkgRate());
