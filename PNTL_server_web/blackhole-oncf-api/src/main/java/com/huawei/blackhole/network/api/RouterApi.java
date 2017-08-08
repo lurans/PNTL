@@ -446,7 +446,7 @@ public class RouterApi {
         return ResponseUtil.succ(result.getModel());
     }
 
-    /*停止探测，agent依然活着*/
+    /*停止探测，探测周期设置为0*/
     @Path("/stopProbe")
     @POST
     public Response stopProbe(){
@@ -456,24 +456,23 @@ public class RouterApi {
         }
         return ResponseUtil.succ();
     }
-
-    /*退出探测，agent死了*/
-    @Path("/exitProbe")
+    /*启动探测，探测周期恢复初始默认值*/
+    @Path("/startAgents")
     @POST
-    public Response exitAgent(){
-        Result<String> result = pntlService.setProbeInterval("-1");
+    public Response startAgents(){
+        PntlConfig pntlConfig = new PntlConfig();
+        Result<String> result = pntlService.setProbeInterval(pntlConfig.getProbePeriod());
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
         return ResponseUtil.succ();
     }
 
-    /*重新启动探测，启动agent*/
-    @Path("/startAgents")
+    /*卸载agent，agent死了并且删除相关文件*/
+    @Path("/exitProbe")
     @POST
-    public Response startAgents(){
-        PntlConfig pntlConfig = new PntlConfig();
-        Result<String> result = pntlService.setProbeInterval(pntlConfig.getProbePeriod());
+    public Response exitAgent(){
+        Result<String> result = pntlService.setProbeInterval("-1");
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
