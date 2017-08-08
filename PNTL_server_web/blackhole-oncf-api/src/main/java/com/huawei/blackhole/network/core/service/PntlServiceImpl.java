@@ -183,13 +183,6 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
         Result<String> result = new Result<>();
         PntlConfig pntlConfig = new PntlConfig();
         try {
-            String token = identityWrapperService.getPntlAccessToken();
-            RestResp resp = pntlRequest.startAgent(hostList, token);
-            if (resp.getStatusCode().isError()){
-                result.addError("", "cmd to start agent failed");
-                return result;
-            }
-
             Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
             dataObj.put("probe_period", pntlConfig.getProbePeriod());
             pntlConfig.setByMap(dataObj);
@@ -199,23 +192,15 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
             result.addError("", e.prefix() + errMsg);
             return result;
-        } catch (ConfigLostException e) {
-            String errMsg = "set config [" + PntlInfo.PNTL_CONF + "] failed : " + e.getLocalizedMessage();
-            result.addError("", e.prefix() + errMsg);
-            return result;
-        } catch (InvalidFormatException e) {
+        } catch (Exception e) {
             String errMsg = "invalid file format: " + PntlInfo.PNTL_CONF  + e.getLocalizedMessage();
-            result.addError("", e.prefix() + errMsg);
-            return result;
-        } catch (ClientException e){
-            String errMsg = "cmd to start agent failed, " + e.getMessage();
-            LOG.error(errMsg);
             result.addError("", errMsg);
+            return result;
         }
         return result;
     }
 
-    public Result<String> notifyAgentConf(PntlConfig config){
+    public Result<String> notifyAgentConf(){
         Result<String> result = new Result<>();
         if (hostList == null){
             result.addError("", "host is null");
@@ -230,7 +215,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
     }
 
 
-    private Result<String> stopAgentProbe(String probe_period){
+    private Result<String> setAgentProbePeriod(String probe_period){
         Result<String> result = new Result<>();
         try {
             Map<String, Object> dataObj = (Map<String, Object>) YamlUtil.getConf(PntlInfo.PNTL_CONF);
@@ -278,7 +263,7 @@ public class PntlServiceImpl extends  BaseRouterService implements PntlService{
             }
             return result;
         } else {
-            result = stopAgentProbe(timeInterval);
+            result = setAgentProbePeriod(timeInterval);
             if (!result.isSuccess()){
                 LOG.error("setProbeInterval failed");
             }

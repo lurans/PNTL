@@ -408,7 +408,7 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
-        result = pntlService.notifyAgentConf(config);
+        result = pntlService.notifyAgentConf();
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -424,7 +424,7 @@ public class RouterApi {
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
 
-        result = pntlService.notifyAgentConf(config);
+        result = pntlService.notifyAgentConf();
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
@@ -472,13 +472,8 @@ public class RouterApi {
     @Path("/startAgents")
     @POST
     public Response startAgents(){
-        Result<String> result = pntlService.startAgents();
-        if (!result.isSuccess()){
-            return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
-        }
-
         PntlConfig pntlConfig = new PntlConfig();
-        result = pntlService.notifyAgentConf(pntlConfig);
+        Result<String> result = pntlService.setProbeInterval(pntlConfig.getProbePeriod());
         if (!result.isSuccess()){
             return ResponseUtil.err(Response.Status.INTERNAL_SERVER_ERROR, result.getErrorMessage());
         }
