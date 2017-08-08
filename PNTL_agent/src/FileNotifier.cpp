@@ -7,6 +7,7 @@ FileNotifier_C::FileNotifier_C()
 {
     notifierId = -1;
     wd = -1;
+    lastAction = 0;
 }
 
 FileNotifier_C::~FileNotifier_C()
@@ -91,7 +92,6 @@ INT32 FileNotifier_C::ThreadHandler()
         {
             continue;
         }
-        FILE_NOTIFIER_INFO("File notifier.");
         for (pBuf = buf; pBuf < buf + sizeRead;)
         {
             event = (struct inotify_event *) pBuf;
@@ -113,11 +113,16 @@ void FileNotifier_C::HandleProbePeriod()
     {
         FILE_NOTIFIER_INFO("Probe_period is [%u], will stop flowmanger.", probePeriod);
         manager->FlowManagerAction(STOP_AGENT);
+        lastAction = 1;
     }
     else
     {
-        FILE_NOTIFIER_INFO("Probe_period is [%u], will start flowmanger.", probePeriod);
-        manager->FlowManagerAction(START_AGENT);
+        if (lastAction)
+        {
+            FILE_NOTIFIER_INFO("Probe_period is [%u], will start flowmanger.", probePeriod);
+            manager->FlowManagerAction(START_AGENT);
+            lastAction = 0;
+        }
         SHOULD_REFRESH_CONF = 1;
     }
 }
