@@ -33,3 +33,4 @@ agentConfUrl:
 kafka_ip: 8.15.4.108:8000
 topic: pntl
 dropPkgThresh: 2
+package_size: 1000
