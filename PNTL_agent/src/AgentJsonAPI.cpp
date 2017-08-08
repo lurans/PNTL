@@ -473,18 +473,9 @@ INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManag
         // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
         stringstream ssStringData(pcJsonData);
         read_json(ssStringData, ptDataRoot);
-
         data = ptDataRoot.get<UINT32>("probe_period");
-        if (data)
-        {
-            pcFlowManager->pcAgentCfg->SetDetectPeriod(data);
-            JSON_PARSER_INFO("Current probe_period is [%u].", pcFlowManager->pcAgentCfg->GetDetectPeriod());
-        }
-        else
-        {
-            JSON_PARSER_INFO("probe_period is [%u], will stop detect now. ", data);
-            pcFlowManager->FlowManagerAction();
-        }
+        pcFlowManager->pcAgentCfg->SetDetectPeriod(data);
+        JSON_PARSER_INFO("Current probe_period is [%u].", pcFlowManager->pcAgentCfg->GetDetectPeriod());
 
         data = ptDataRoot.get<UINT32>("port_count");
         pcFlowManager->pcAgentCfg->SetPortCount(data);
@@ -571,6 +562,31 @@ INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFlowManag
     {
         JSON_PARSER_ERROR("Caught exception [%s] when ParseLocalAgentConfig. LocalConfig:[%s]", e.what(), pcJsonData);
         return AGENT_E_ERROR;
+    }
+    return iRet;
+}
+
+UINT32 ParseProbePeriodConfig(const char * pcJsonData, FlowManager_C * pcFlowManager)
+{
+    UINT32 iRet = 9999;
+    string strTemp;
+    UINT32 data;
+    // boost::property_tree对象, 用于存储json格式数据.
+    ptree ptDataRoot;
+
+    // boost库中出现错误会抛出异常, 未被catch的异常会逐级上报, 最终导致进程abort退出.
+    try
+    {
+        // pcData字符串转存stringstream格式, 方便后续boost::property_tree处理.
+        stringstream ssStringData(pcJsonData);
+        read_json(ssStringData, ptDataRoot);
+        data = ptDataRoot.get<UINT32>("probe_period");
+        return data;
+    }
+    catch (exception const & e)
+    {
+        JSON_PARSER_ERROR("Caught exception [%s] when ParseLocalAgentConfig. LocalConfig:[%s]", e.what(), pcJsonData);
+        return iRet;
     }
     return iRet;
 }

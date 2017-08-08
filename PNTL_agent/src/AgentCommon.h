@@ -36,6 +36,10 @@ extern UINT32 SHOULD_REFRESH_CONF;
 const UINT32 BIG_PACKAGE_SIZE = 1000;
 const UINT32 NORMAL_PACKAGE_SIZE = 40;
 
+const UINT32 START_AGENT = 100000;
+
+const UINT32 STOP_AGENT = 0;
+
 typedef enum  tagAgentDetectProtocolType
 {
     AGENT_DETECT_PROTOCOL_NULL = 0,   // Œ¥≈‰÷√

@@ -24,4 +24,6 @@ extern INT32 ParseLocalAgentConfig(const char * pcJsonData, FlowManager_C * pcFl
 
 extern INT32 GetFlowInfoFromConfigFile(string dip, ServerFlowKey_S * pstNewServerFlowKey, ServerAntAgentCfg_C* pcAgentCfg);
 
+extern UINT32 ParseProbePeriodConfig(const char * pcJsonData, FlowManager_C * pcFlowManager);
+
 #endif

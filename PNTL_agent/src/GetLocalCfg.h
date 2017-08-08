@@ -10,4 +10,6 @@ extern INT32 GetLocalCfg(ServerAntAgentCfg_C * pcCfg);
 
 extern INT32 GetLocalAgentConfig(FlowManager_C * pcFlowManager);
 
+extern UINT32 GetProbePeriod(FlowManager_C * pcFlowManager);
+
 #endif

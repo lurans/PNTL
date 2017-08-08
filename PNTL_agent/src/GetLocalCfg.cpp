@@ -95,3 +95,17 @@ INT32 GetLocalAgentConfig(FlowManager_C * pcFlowManager)
     return AGENT_OK;
 }
 
+UINT32 GetProbePeriod(FlowManager_C * pcFlowManager)
+{
+    string strCfgJsonData;
+    stringstream ssCfgFileName;
+    strCfgJsonData = GetJsonDataFromFile(AGENT_CONFIG_FILE_NAME, AGENT_CONFIG_FILE_PATH);
+    if ("" == strCfgJsonData)
+    {
+        return AGENT_E_ERROR;
+    }
+
+    UINT32 uiRet = ParseProbePeriodConfig(strCfgJsonData.c_str(), pcFlowManager);
+    return uiRet;
+}
+
