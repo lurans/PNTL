@@ -131,12 +131,12 @@ define(["language/chkFlow",
                     },
                     "submitClick" : function() {
                         $scope.singleFileUpload.disable = true;
-                        if(typeof($scope.file) !== "undefined"){
+                        if(typeof($scope.file) != "undefined"){
                             var installConfirmWindow = {
                                 title:i18n.chkFlow_term_upload_confirm,
                                 height : "250px",
                                 width : "400px",
-                                content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>文件上传</span>：请确定添加和删除操作，文件上传过程需要1~2分钟，请耐心等待</p><p style='text-align:center;margin-top: 30px;color: #999;font-size: 14px;'>确定上传？</p>",
+                                content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>" + i18n.chkFlow_term_file_upload + "</span>" + i18n.chkFlow_term_upload_explain + "</p><p style='text-align:center;margin-top: 15px;color: #999;font-size: 14px;'>" + i18n.chkFlow_term_confirm_upload + "</p>",
                                 closeable:false,
                                 resizable:false,
                                 buttons:[{

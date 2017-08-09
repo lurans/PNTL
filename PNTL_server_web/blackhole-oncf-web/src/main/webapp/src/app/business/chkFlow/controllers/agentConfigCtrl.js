@@ -336,13 +336,65 @@ define(["language/chkFlow",
                 };
                 $scope.probeStartBtnOK = function(){
                     $scope.probeStartBtn.disable = true;
-                    var para={};
-                    postProbeStart(para);
+                    var installConfirmWindow = {
+                        title:i18n.chkFlow_term_start_probe_confirm,
+                        height : "250px",
+                        width : "400px",
+                        content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>" + i18n.chkFlow_term_start_Probe_btn + "</span>" + i18n.chkFlow_term_start_Probel_explain + "</p><p style='text-align:center;margin-top: 15px;color: #999;font-size: 14px;'>" + i18n.chkFlow_term_confirm_start + "</p>",
+                        closeable:false,
+                        resizable:false,
+                        buttons:[{
+                            key:"btnOK",
+                            label : i18n.chkFlow_term_ok,//按钮上显示的文字
+                            focused : false,//默认焦点
+                            handler : function(event) {//点击回调函数
+                                installConfirmWin.destroy();
+                                var para={};
+                                postProbeStart(para);
+                            }
+                        }, {
+                            key:"btnCancel",
+                            label : i18n.chkFlow_term_cancel,
+                            focused : true,
+                            handler : function(event) {
+                                installConfirmWin.destroy();
+                                $scope.probeStartBtn.disable = false;
+                            }
+                        }]
+                    }
+                    var installConfirmWin = new tinyWidget.Window(installConfirmWindow);
+                    installConfirmWin.show();
                 };
                 $scope.probeStopBtnOK = function(){
                     $scope.probeStopBtnOK.disable = true;
-                    var para={};
-                    postProbeStop(para);
+                    var installConfirmWindow = {
+                        title:i18n.chkFlow_term_stop_probe_confirm,
+                        height : "250px",
+                        width : "400px",
+                        content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>" + i18n.chkFlow_term_stop_Probe_btn + "</span>" + i18n.chkFlow_term_stop_Probel_explain + "</p><p style='text-align:center;margin-top: 15px;color: #999;font-size: 14px;'>" + i18n.chkFlow_term_confirm_stop + "</p>",
+                        closeable:false,
+                        resizable:false,
+                        buttons:[{
+                            key:"btnOK",
+                            label : i18n.chkFlow_term_ok,//按钮上显示的文字
+                            focused : false,//默认焦点
+                            handler : function(event) {//点击回调函数
+                                installConfirmWin.destroy();
+                                var para={};
+                                postProbeStop(para);
+                            }
+                        }, {
+                            key:"btnCancel",
+                            label : i18n.chkFlow_term_cancel,
+                            focused : true,
+                            handler : function(event) {
+                                installConfirmWin.destroy();
+                                $scope.probeStopBtnOK.disable = false;
+                            }
+                        }]
+                    }
+                    var installConfirmWin = new tinyWidget.Window(installConfirmWindow);
+                    installConfirmWin.show();
                 };
 
                 function init(){
