@@ -244,7 +244,7 @@ define(["language/chkFlow",
                         title:i18n.chkFlow_term_install_confirm,
                         height : "250px",
                         width : "400px",
-                        content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>安装</span>：在首次部署时，安装并启动agent探测工具，其只对ipList.yml文件中的主机进行安装操作，安装过程需要1~2分钟，请耐心等待。</p><p style='text-align:center;margin-top: 15px;color: #999;font-size: 14px;'>确定安装？</p>",
+                        content: "<p style='color: #999'><span style='font-size: 14px;color: #ff9955'>" + i18n.chkFlow_term_install_btn + "</span>" + i18n.chkFlow_term_install_explain + "</p><p style='text-align:center;margin-top: 15px;color: #999;font-size: 14px;'>" + i18n.chkFlow_term_confirm_install + "</p>",
                         closeable:false,
                         resizable:false,
                         buttons:[{

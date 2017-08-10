@@ -392,9 +392,10 @@ text.text-hover {
 #DTtooltip.hidden {
     display: none;
 }
-#DTtooltip p {
-    margin: 0;
+#DTtooltip pre {
     font-family: sans-serif;
+    background-color: white;
+    border: #ffffff;
     font-size: 12px;
     line-height: 20px;
 }
@@ -415,9 +416,10 @@ text.text-hover {
 #LPtooltip.hidden {
     display: none;
 }
-#LPtooltip p {
-    margin: 0;
+#LPtooltip pre {
     font-family: sans-serif;
+    background-color: white;
+    border: #ffffff;
     font-size: 12px;
     line-height: 20px;
 }

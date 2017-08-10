@@ -127,10 +127,10 @@ define(["language/chkFlow",
                             .style("top", (d3.event.pageY - 10 - delay_time_chart_pos.y + 80) + "px")
                             .style("z-index",PRIORITY)
                             .select("#DTvalue")
-                            .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x]
-                                + " send_delay:" + d.send_delay + "ms" + " recv_delay:" + d.recv_delay + "ms"
-                                + " send_round_delay:" + d.send_round_delay + "ms" + " timestamp:" + d.timestamp
-                                + " time:" + d.time);
+                            .text("src_ip:"+$scope.ipList[d.y] + "\n" + "dst_ip:" + $scope.ipList[d.x]
+                                +  "\n" + "send_delay:" + d.send_delay + "ms" +  "\n" + "recv_delay:"
+                                + d.recv_delay + "ms" + "\n" +  "send_round_delay:" + d.send_round_delay + "ms"
+                                + "\n" +  "time:" + d.time);
                         d3.select("#DTtooltip").classed("hidden", false);
                     }
                     function mouseout() {
@@ -169,7 +169,6 @@ define(["language/chkFlow",
                                 recv_delay: "",
                                 send_round_delay: "",
                                 recv_round_delay: "",
-                                timestamp:"",
                                 time: ""
                             };
                         });
@@ -190,7 +189,6 @@ define(["language/chkFlow",
                             $scope.delayMatrix[i][j].recv_delay = link["recv_delay"];
                             $scope.delayMatrix[i][j].send_round_delay = link["send_round_delay"];
                             $scope.delayMatrix[i][j].recv_round_delay = link["recv_round_delay"];
-                            $scope.delayMatrix[i][j].timestamp = link["timestamp"];
                             $scope.delayMatrix[i][j].time = link["time"];
                         }
                     });

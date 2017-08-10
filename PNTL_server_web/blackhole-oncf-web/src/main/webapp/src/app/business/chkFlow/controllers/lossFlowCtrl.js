@@ -131,10 +131,10 @@ define(["language/chkFlow",
                             .style("top", (d3.event.pageY - 10 - packets_loss_chart_pos.y + 80) + "px")
                             .style("z-index",PRIORITY)
                             .select("#LPvalue")
-                            .text("src_ip:"+$scope.ipList[d.y] + " dst_ip:" + $scope.ipList[d.x]
-                                + " send_loss_rate:" + d.send_loss_rate + " send_pkgs:" + d.send_pkgs
-                                + " recv_loss_rate:" + d.recv_loss_rate + " recv_pkgs:" + d.recv_pkgs
-                                + " time:" + d.time);
+                            .text("src_ip:"+$scope.ipList[d.y] + "\n" + "dst_ip:" + $scope.ipList[d.x]
+                                + "\n" + "send_loss_rate:" + d.send_loss_rate + "\n" + "send_pkgs:" + d.send_pkgs
+                                + "\n" + "recv_loss_rate:" + d.recv_loss_rate + "\n" + "recv_pkgs:" + d.recv_pkgs
+                                + "\n" + "time:" + d.time);
                         d3.select("#LPtooltip").classed("hidden", false);
                     }
                     function mouseout() {
