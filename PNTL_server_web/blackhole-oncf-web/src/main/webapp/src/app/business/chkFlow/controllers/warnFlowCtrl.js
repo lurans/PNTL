@@ -143,7 +143,15 @@ define(["language/chkFlow",
                         para.offset = (evtObj.currentPage -1) * $scope.table.displayLength;
                         para.limit = $scope.table.displayLength;
                         postSearchData(para);
-                    }};
+                    },
+                    changeSelect:function (evtObj) {
+                        $scope.status = "notFirstBtnOk";
+                        var para = getValueFromInput();
+                        para.limit = evtObj.displayLength;
+                        para.offset = (evtObj.currentPage -1) * evtObj.displayLength;
+                        postSearchData(para);
+                    }
+                };
 
                 $scope.searchBtnOK = function () {
                     $scope.search.disable = true;
