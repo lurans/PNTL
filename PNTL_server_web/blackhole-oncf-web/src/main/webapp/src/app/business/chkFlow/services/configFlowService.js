@@ -30,11 +30,10 @@ define([], function () {
             "z-index": 10000000001,
             "text-align": "center",
             "position": "fixed",
-            "width": "300px",
-            "height": "100px",
+            "width": "100%",
+            "height": "100%",
             "color": "#999",
             "top": "52%",
-            "left":"700px",
             "font-size":"14px"
         });
         this.show = function () {
